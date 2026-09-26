@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+
+<head>
+
+  <meta charset="UTF-8">
+
+
+
+  <meta
+
+    name="viewport"
+
+    content="width=device-width, initial-scale=1.0"
+
+  >
+
+
+
+  <meta
+
+    name="description"
+
+    content="BagVyr is a Solana token scanner for holder analysis, creator activity and on-chain risk signals."
+
+  >
+
+
+
+  <meta name="theme-color" content="#f5fbf8">
+
+
+
+  <title>BagVyr | Solana Token Scanner</title>
+
+
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+
+
+
+<body>
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- BACKGROUND -->
+
+  <!-- ===================================================== -->
+
+
+
+  <div class="background-grid"></div>
+
+  <div class="background-glow glow-one"></div>
+
+  <div class="background-glow glow-two"></div>
+
+
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- HEADER -->
+
+  <!-- ===================================================== -->
+
+
+
+  <header class="site-header">
+
+
+
+    <div class="header-inner">
+
+
+
+      <a href="./" class="brand">
+
+
+
+        <div class="brand-mark">
+
+          <img
+
+            src="logo.png"
+
+            alt="BagVyr logo"
+
+            class="brand-logo"
+
+          >
+
+        </div>
+
+
+
+        <div class="brand-text">
+
+          <span class="brand-name">BAGVYR</span>
+
+          <span class="brand-version">BETA</span>
+
+        </div>
+
+
+
+      </a>
+
+
+
+
+
+      <nav class="header-nav">
+
+
+
+        <a
+
+          href="#scanner"
+
+          class="nav-link"
+
+        >
+
+          Scanner
+
+        </a>
+
+
+
+        <a
+
+          href="#how-it-works"
+
+          class="nav-link"
+
+        >
+
+          How it works
+
+        </a>
+
+
+
+        <a
+
+          href="https://x.com/BagVyr"
+
+          target="_blank"
+
+          rel="noopener noreferrer"
+
+          class="x-button"
+
+          aria-label="BagVyr on X"
+
+        >
+
+          X
+
+        </a>
+
+
+
+      </nav>
+
+
+
+    </div>
+
+
+
+  </header>
+
+
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- MAIN -->
+
+  <!-- ===================================================== -->
+
+
+
+  <main>
+
+
+
+
+
+    <!-- =================================================== -->
+
+    <!-- HERO -->
+
+    <!-- =================================================== -->
+
+
+
+    <section
+
+      class="hero"
+
+      id="scanner"
+
+    >
+
+
+
+      <div class="hero-background">
+
+        <img
+
+          src="banner.png"
+
+          alt=""
+
+          class="hero-banner"
+
+        >
+
+        <div class="hero-banner-overlay"></div>
+
+      </div>
+
+
+
+
+
+      <div class="hero-content">
+
+
+
+        <div class="status-pill">
+
+          <span class="status-dot"></span>
+
+          SOLANA MAINNET
+
+        </div>
+
+
+
+
+
+        <h1>
+
+          CHECK
+
+          <span>SOLANA TOKEN</span>
+
+        </h1>
+
+
+
+
+
+        <p class="hero-description">
+
+          Enter a contract address and get a clear look at the token,
+
+          holders, creator and on-chain signals.
+
+        </p>
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- SEARCH -->
+
+        <!-- =============================================== -->
+
+
+
+        <div class="scanner-box">
+
+
+
+          <div class="scanner-label">
+
+            TOKEN CONTRACT ADDRESS
+
+          </div>
+
+
+
+
+
+          <div class="scanner-input-row">
+
+
+
+            <input
+
+              type="text"
+
+              id="contractInput"
+
+              class="contract-input"
+
+              placeholder="Paste Solana contract address..."
+
+              autocomplete="off"
+
+              spellcheck="false"
+
+              maxlength="50"
+
+            >
+
+
+
+
+
+            <button
+
+              id="analyzeButton"
+
+              class="analyze-button"
+
+              type="button"
+
+            >
+
+
+
+              <span class="button-text">
+
+                ANALYZE
+
+              </span>
+
+
+
+              <span class="button-arrow">
+
+                →
+
+              </span>
+
+
+
+            </button>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="scanner-footer">
+
+
+
+            <span>
+
+              No wallet connection required
+
+            </span>
+
+
+
+            <span class="scanner-separator">
+
+              •
+
+            </span>
+
+
+
+            <span>
+
+              Free analysis
+
+            </span>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- ERROR -->
+
+        <!-- =============================================== -->
+
+
+
+        <div
+
+          id="errorBox"
+
+          class="message-box error-box hidden"
+
+        >
+
+
+
+          <span class="message-icon">
+
+            !
+
+          </span>
+
+
+
+          <div>
+
+
+
+            <strong>
+
+              Unable to analyze token
+
+            </strong>
+
+
+
+            <p id="errorMessage">
+
+              Please check the contract address and try again.
+
+            </p>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- LOADING -->
+
+        <!-- =============================================== -->
+
+
+
+        <div
+
+          id="loadingSection"
+
+          class="loading-section hidden"
+
+        >
+
+
+
+          <div class="scanner-loader"></div>
+
+
+
+          <div class="loading-copy">
+
+
+
+            <strong>
+
+              Analyzing on-chain data
+
+            </strong>
+
+
+
+            <span id="loadingText">
+
+              Reading token information...
+
+            </span>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =================================================== -->
+
+    <!-- RESULTS -->
+
+    <!-- =================================================== -->
+
+
+
+    <section
+
+      id="resultsSection"
+
+      class="results-section hidden"
+
+    >
+
+
+
+      <div class="results-container">
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- TOKEN HEADER -->
+
+        <!-- =============================================== -->
+
+
+
+        <div class="token-overview card">
+
+
+
+          <div class="token-main">
+
+
+
+            <div
+
+              id="tokenImageWrapper"
+
+              class="token-image-wrapper"
+
+            >
+
+
+
+              <img
+
+                id="tokenImage"
+
+                class="token-image hidden"
+
+                alt="Token logo"
+
+              >
+
+
+
+              <div
+
+                id="tokenImageFallback"
+
+                class="token-image-fallback"
+
+              >
+
+                ?
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <div class="token-identity">
+
+
+
+              <div class="token-name-row">
+
+
+
+                <h2 id="tokenName">
+
+                  Token
+
+                </h2>
+
+
+
+                <span
+
+                  id="tokenSymbol"
+
+                  class="token-symbol"
+
+                >
+
+                  ---
+
+                </span>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="contract-row">
+
+
+
+                <code id="tokenContract">
+
+                  ---
+
+                </code>
+
+
+
+                <button
+
+                  id="copyContractButton"
+
+                  class="icon-button"
+
+                  type="button"
+
+                  title="Copy contract address"
+
+                >
+
+                  COPY
+
+                </button>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="token-links">
+
+
+
+                <a
+
+                  id="solscanTokenLink"
+
+                  href="#"
+
+                  target="_blank"
+
+                  rel="noopener noreferrer"
+
+                >
+
+                  Solscan ↗
+
+                </a>
+
+
+
+                <a
+
+                  id="pumpFunLink"
+
+                  href="#"
+
+                  target="_blank"
+
+                  rel="noopener noreferrer"
+
+                >
+
+                  Pump.fun ↗
+
+                </a>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+          <!-- BAGVYR SCORE -->
+
+
+
+          <div class="score-area">
+
+
+
+            <span class="score-label">
+
+              BAGVYR SCORE
+
+            </span>
+
+
+
+            <div class="score-value-row">
+
+
+
+              <span id="riskScore">
+
+                --
+
+              </span>
+
+
+
+              <small>/100</small>
+
+
+
+            </div>
+
+
+
+            <span
+
+              id="riskLevel"
+
+              class="risk-badge neutral"
+
+            >
+
+              ANALYZING
+
+            </span>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- QUICK STATS -->
+
+        <!-- =============================================== -->
+
+
+
+        <div class="quick-stats">
+
+
+
+          <div class="stat-card featured-stat">
+
+
+
+            <span class="stat-label">
+
+              MARKET CAP
+
+            </span>
+
+
+
+            <strong id="marketCap">
+
+              ---
+
+            </strong>
+
+
+
+            <span class="stat-note">
+
+              current
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="stat-card">
+
+
+
+            <span class="stat-label">
+
+              HOLDERS
+
+            </span>
+
+
+
+            <strong id="holderCount">
+
+              ---
+
+            </strong>
+
+
+
+            <span class="stat-note">
+
+              wallets
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="stat-card">
+
+
+
+            <span class="stat-label">
+
+              SUPPLY
+
+            </span>
+
+
+
+            <strong id="tokenSupply">
+
+              ---
+
+            </strong>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="stat-card">
+
+
+
+            <span class="stat-label">
+
+              TOP 10
+
+            </span>
+
+
+
+            <strong id="top10Concentration">
+
+              ---
+
+            </strong>
+
+
+
+            <span class="stat-note">
+
+              concentration
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="stat-card">
+
+
+
+            <span class="stat-label">
+
+              ADJUSTED TOP 10
+
+            </span>
+
+
+
+            <strong id="adjustedTop10Concentration">
+
+              ---
+
+            </strong>
+
+
+
+            <span class="stat-note">
+
+              excluding identified protocol liquidity
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="stat-card">
+
+
+
+            <span class="stat-label">
+
+              PLATFORM
+
+            </span>
+
+
+
+            <strong id="launchPlatform">
+
+              ---
+
+            </strong>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- SECURITY -->
+
+        <!-- =============================================== -->
+
+
+
+        <section class="result-block">
+
+
+
+          <div class="section-heading">
+
+
+
+            <div>
+
+
+
+              <span class="section-number">
+
+                01
+
+              </span>
+
+
+
+              <h3>
+
+                Token Security
+
+              </h3>
+
+
+
+            </div>
+
+
+
+            <span class="section-description">
+
+              Authority and metadata checks
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="security-grid">
+
+
+
+
+
+            <!-- MINT AUTHORITY -->
+
+
+
+            <div
+
+              id="mintAuthorityCard"
+
+              class="security-card"
+
+            >
+
+
+
+              <div class="security-icon">
+
+                ✓
+
+              </div>
+
+
+
+              <div>
+
+
+
+                <span class="security-title">
+
+                  Mint Authority
+
+                </span>
+
+
+
+                <strong id="mintAuthorityStatus">
+
+                  Checking...
+
+                </strong>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <!-- FREEZE AUTHORITY -->
+
+
+
+            <div
+
+              id="freezeAuthorityCard"
+
+              class="security-card"
+
+            >
+
+
+
+              <div class="security-icon">
+
+                ✓
+
+              </div>
+
+
+
+              <div>
+
+
+
+                <span class="security-title">
+
+                  Freeze Authority
+
+                </span>
+
+
+
+                <strong id="freezeAuthorityStatus">
+
+                  Checking...
+
+                </strong>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <!-- METADATA -->
+
+
+
+            <div
+
+              id="metadataCard"
+
+              class="security-card"
+
+            >
+
+
+
+              <div class="security-icon">
+
+                i
+
+              </div>
+
+
+
+              <div>
+
+
+
+                <span class="security-title">
+
+                  Metadata
+
+                </span>
+
+
+
+                <strong id="metadataStatus">
+
+                  Checking...
+
+                </strong>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- HOLDERS -->
+
+        <!-- =============================================== -->
+
+
+
+        <section class="result-block">
+
+
+
+          <div class="section-heading">
+
+
+
+            <div>
+
+
+
+              <span class="section-number">
+
+                02
+
+              </span>
+
+
+
+              <h3>
+
+                Holder Analysis
+
+              </h3>
+
+
+
+            </div>
+
+
+
+            <span class="section-description">
+
+              Token concentration
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="concentration-grid">
+
+
+
+            <div class="concentration-card">
+
+
+
+              <span>
+
+                Top 10 concentration
+
+              </span>
+
+
+
+              <strong id="holderTop10">
+
+                ---
+
+              </strong>
+
+
+
+              <div class="progress-track">
+
+
+
+                <div
+
+                  id="top10Progress"
+
+                  class="progress-bar"
+
+                ></div>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <div class="concentration-card">
+
+
+
+              <span>
+
+                Top 20 concentration
+
+              </span>
+
+
+
+              <strong id="holderTop20">
+
+                ---
+
+              </strong>
+
+
+
+              <div class="progress-track">
+
+
+
+                <div
+
+                  id="top20Progress"
+
+                  class="progress-bar"
+
+                ></div>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+          <!-- HOLDER TABLE TOGGLE -->
+
+          <button
+            id="toggleHoldersButton"
+            class="secondary-button holder-toggle-button"
+            type="button"
+            aria-expanded="false"
+          >
+            VIEW TOP 20 HOLDERS
+            <span id="holdersToggleArrow">↓</span>
+          </button>
+
+          <!-- HOLDER TABLE -->
+
+          <div
+            id="holdersTableSection"
+            class="table-wrapper hidden"
+          >
+
+
+
+            <table class="holder-table">
+
+
+
+              <thead>
+
+
+
+                <tr>
+
+                  <th>#</th>
+
+                  <th>WALLET</th>
+
+                  <th>BALANCE</th>
+
+                  <th>SUPPLY</th>
+
+                  <th>TYPE</th>
+
+                </tr>
+
+
+
+              </thead>
+
+
+
+
+
+              <tbody id="holdersTableBody">
+
+
+
+                <!-- Generated by app.js -->
+
+
+
+              </tbody>
+
+
+
+            </table>
+
+
+
+          </div>
+
+
+
+
+
+          <p
+
+            id="holderMethodology"
+
+            class="data-note"
+
+          >
+
+            Holder data is being analyzed.
+
+          </p>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- CREATOR / DEV -->
+
+        <!-- =============================================== -->
+        <!-- EXIT / RUG ANALYSIS -->
+        <!-- =============================================== -->
+
+        <section id="exitAnalysisSection" class="result-block">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">04</span>
+              <h3>Exit / Rug Analysis</h3>
+            </div>
+            <span class="section-description">Creator sells and market exit activity</span>
+          </div>
+
+          <div class="exit-analysis-card">
+            <div class="exit-analysis-grid">
+              <div class="exit-analysis-item"><span>MAJOR EXIT EVENT</span><strong id="exitMajorEvent" class="exit-value">---</strong></div>
+              <div class="exit-analysis-item"><span>CREATOR SELL</span><strong id="exitCreatorSell" class="exit-value">---</strong></div>
+              <div class="exit-analysis-item"><span>CREATOR SOLD</span><strong id="exitCreatorSold" class="exit-value">---</strong></div>
+              <div class="exit-analysis-item"><span>MARKET COLLAPSE</span><strong id="exitMarketCollapse" class="exit-value">---</strong></div>
+              <div class="exit-analysis-item"><span>LIQUIDITY</span><strong id="exitLiquidity" class="exit-value">---</strong></div>
+            </div>
+            <div class="exit-status-box">
+              <span>STATUS</span>
+              <strong id="exitStatus">ANALYSIS NOT LOADED</strong>
+            </div>
+            <p id="exitAnalysisNote" class="data-note">
+              Exit analysis is based on observable creator swap activity, market movement and current liquidity. Detected activity does not by itself establish fraudulent intent.
+            </p>
+          </div>
+        </section>
+
+
+        <!-- =============================================== -->
+
+
+
+        <section class="result-block">
+
+
+
+          <div class="section-heading">
+
+
+
+            <div>
+
+
+
+              <span class="section-number">
+
+                03
+
+              </span>
+
+
+
+              <h3>
+
+                Creator Analysis
+
+              </h3>
+
+
+
+            </div>
+
+
+
+            <div class="creator-heading-actions">
+              <span class="section-description">
+                Creator wallet and current position
+              </span>
+              <button id="refreshCreatorButton" class="secondary-button creator-refresh-button" type="button">
+                REFRESH ↻
+              </button>
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="creator-card compact-creator-card">
+
+
+
+            <div class="creator-primary-row">
+
+
+
+              <div class="creator-wallet-block">
+
+
+
+                <span class="creator-label">
+
+                  CREATOR WALLET
+
+                </span>
+
+
+
+                <div class="creator-wallet-row">
+
+
+
+                  <strong
+
+                    id="creatorWallet"
+
+                    class="wallet-value"
+
+                  >
+
+                    ---
+
+                  </strong>
+
+
+
+                </div>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="creator-highlight">
+
+
+
+                <span>
+
+                  CURRENT HOLDING
+
+                </span>
+
+
+
+                <strong id="creatorHolding">
+
+                  ---
+
+                </strong>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="creator-highlight">
+
+
+
+                <span>
+
+                  SUPPLY OWNED
+
+                </span>
+
+
+
+                <strong id="creatorPercentage">
+
+                  ---
+
+                </strong>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="creator-highlight">
+
+
+
+                <span>
+
+                  SOL BALANCE
+
+                </span>
+
+
+
+                <strong id="creatorSolBalance">
+
+                  ---
+
+                </strong>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <div class="creator-secondary-row">
+
+
+
+              <div class="creator-mini-stat">
+
+
+
+                <span>
+
+                  DETECTION
+
+                </span>
+
+
+
+                <strong id="creatorConfidence">
+
+                  ---
+
+                </strong>
+
+
+
+              </div>
+
+
+
+
+
+              <div class="creator-mini-stat">
+
+
+
+                <span>
+
+                  TOP HOLDER
+
+                </span>
+
+
+
+                <strong id="creatorTopHolder">
+
+                  ---
+
+                </strong>
+
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+
+            <div
+
+              id="creatorDetectionNote"
+
+              class="creator-note"
+
+            >
+
+              Creator detection is heuristic.
+
+            </div>
+
+
+
+
+
+            <button
+
+              id="loadTransactionsButton"
+
+              class="secondary-button"
+
+              type="button"
+
+              disabled
+
+            >
+
+              VIEW LAST 50 WALLET TRANSACTIONS
+
+              <span>↓</span>
+
+            </button>
+
+
+
+
+
+            <!-- TRANSACTIONS -->
+
+
+
+            <div
+
+              id="transactionsSection"
+
+              class="transactions-section hidden"
+
+            >
+
+
+
+              <div class="subsection-header">
+
+
+
+                <h4>
+
+                  Last Wallet Transactions
+
+                </h4>
+
+
+
+                <span id="transactionCount">
+
+                  0 transactions
+
+                </span>
+
+
+
+              </div>
+
+
+
+
+
+              <div
+
+                id="transactionsLoading"
+
+                class="small-loading hidden"
+
+              >
+
+                Loading transactions...
+
+              </div>
+
+
+
+
+
+              <div
+
+                id="transactionsList"
+
+                class="transactions-list"
+
+              ></div>
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+        </section>
+
+
+
+
+
+
+
+ <!-- =============================================== -->
+
+<!-- CREATOR CONNECTIONS -->
+
+<!-- =============================================== -->
+
+
+
+<section class="result-block">
+
+
+
+  <div class="section-heading">
+
+
+
+    <div>
+
+
+
+      <span class="section-number">
+
+        05
+
+      </span>
+
+
+
+      <h3>
+
+        Creator Connections
+
+      </h3>
+
+
+
+    </div>
+
+
+
+    <span class="section-description">
+
+      Direct creator funding relationships
+
+    </span>
+
+
+
+  </div>
+
+
+
+
+
+  <div class="creator-connections-card">
+
+
+
+    <div class="creator-connections-intro">
+
+
+
+      <div>
+
+
+
+        <strong>
+
+          Creator-funded wallets
+
+        </strong>
+
+
+
+        <p>
+
+          Check wallets that received SOL directly from the
+
+          detected creator and see if they currently hold this token.
+
+        </p>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+    <!-- ANALYZE BUTTON -->
+
+
+
+    <button
+
+      id="analyzeCreatorConnectionsButton"
+
+      class="secondary-button"
+
+      type="button"
+
+      disabled
+
+    >
+
+      ANALYZE CREATOR CONNECTIONS
+
+      <span>→</span>
+
+    </button>
+
+
+
+
+
+    <!-- LOADING -->
+
+
+
+    <div
+
+      id="creatorConnectionsLoading"
+
+      class="small-loading hidden"
+
+    >
+
+      Analyzing creator connections...
+
+    </div>
+
+
+
+
+
+    <!-- RESULTS -->
+
+
+
+    <div
+
+      id="creatorConnectionsResults"
+
+      class="creator-connections-results hidden"
+
+    >
+
+
+
+
+
+      <!-- SUMMARY -->
+
+
+
+      <div class="creator-connections-summary">
+
+
+
+
+
+        <div class="creator-connection-stat">
+
+
+
+          <span>
+
+            TRANSACTIONS CHECKED
+
+          </span>
+
+
+
+          <strong id="creatorConnectionsTransactions">
+
+            ---
+
+          </strong>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="creator-connection-stat">
+
+
+
+          <span>
+
+            FUNDED WALLETS
+
+          </span>
+
+
+
+          <strong id="creatorConnectionsFundedWallets">
+
+            ---
+
+          </strong>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="creator-connection-stat">
+
+
+
+          <span>
+
+            TOKEN HOLDERS
+
+          </span>
+
+
+
+          <strong id="creatorConnectionsTokenHolders">
+
+            ---
+
+          </strong>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="creator-connection-stat">
+
+
+
+          <span>
+
+            COMBINED HOLDING
+
+          </span>
+
+
+
+          <strong id="creatorConnectionsCombinedHolding">
+
+            ---
+
+          </strong>
+
+
+
+        </div>
+
+
+
+
+
+        <div class="creator-connection-stat">
+
+
+
+          <span>
+
+            COMBINED SUPPLY
+
+          </span>
+
+
+
+          <strong id="creatorConnectionsCombinedSupply">
+
+            ---
+
+          </strong>
+
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+
+
+
+      <!-- WALLET LIST HEADER -->
+
+
+
+      <div class="subsection-header">
+
+
+
+        <h4>
+
+          FUNDING DESTINATIONS
+
+        </h4>
+
+
+
+        <span id="creatorConnectionsCount">
+
+          0 wallets
+
+        </span>
+
+
+
+      </div>
+
+
+
+
+
+      <!-- WALLET TABLE -->
+
+
+
+      <div class="table-wrapper">
+
+
+
+        <table class="holder-table creator-connections-table">
+
+
+
+          <thead>
+
+
+
+            <tr>
+
+
+
+              <th>
+
+                #
+
+              </th>
+
+
+
+              <th>
+
+                WALLET
+
+              </th>
+
+
+
+              <th>
+
+                SOL RECEIVED
+
+              </th>
+
+
+
+              <th>
+
+                TOKEN HOLDING
+
+              </th>
+
+
+
+              <th>
+
+                SUPPLY
+
+              </th>
+
+
+
+              <th>
+
+                TRANSACTIONS
+
+              </th>
+
+
+
+            </tr>
+
+
+
+          </thead>
+
+
+
+
+
+          <tbody id="creatorConnectionsTableBody">
+
+
+
+            <!-- Generated by app.js -->
+
+
+
+          </tbody>
+
+
+
+        </table>
+
+
+
+      </div>
+
+
+
+
+
+      <!-- EMPTY RESULT -->
+
+
+
+      <div
+
+        id="creatorConnectionsEmpty"
+
+        class="empty-state hidden"
+
+      >
+
+        No creator-funded wallets were detected.
+
+      </div>
+
+
+
+
+
+      <!-- NOTE -->
+
+
+
+      <p
+
+        id="creatorConnectionsNote"
+
+        class="data-note"
+
+      >
+
+        These wallets received SOL directly from the detected
+
+        creator. This on-chain relationship does not prove
+
+        common ownership.
+
+      </p>
+
+
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+  <!-- EXISTING CONNECTION SIGNALS -->
+
+
+
+  <div
+
+    id="connectionSignals"
+
+    class="signals-list creator-existing-signals"
+
+  >
+
+
+
+    <div class="empty-state">
+
+      No confirmed wallet connections detected.
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+  <p class="data-note">
+
+    BagVyr does not label wallets as creator-controlled
+
+    or bundled without supporting on-chain evidence.
+
+  </p>
+
+
+
+</section>
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- EARLY ACTIVITY -->
+
+        <!-- =============================================== -->
+
+
+
+        <section class="result-block">
+
+
+
+          <div class="section-heading">
+
+
+
+            <div>
+
+
+
+              <span class="section-number">
+
+                06
+
+              </span>
+
+
+
+              <h3>
+
+                Early Activity
+
+              </h3>
+
+
+
+            </div>
+
+
+
+            <span class="section-description">
+
+              Early transaction timing signals
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div class="early-card">
+
+
+
+            <p>
+
+              Analyze early mint-related activity for unusual
+
+              timing clusters and wallet patterns.
+
+            </p>
+
+
+
+
+
+            <button
+
+              id="analyzeEarlyButton"
+
+              class="secondary-button"
+
+              type="button"
+
+            >
+
+              ANALYZE EARLY ACTIVITY
+
+              <span>→</span>
+
+            </button>
+
+
+
+
+
+            <div
+
+              id="earlyLoading"
+
+              class="small-loading hidden"
+
+            >
+
+              Reading early transactions...
+
+            </div>
+
+
+
+
+
+            <div
+
+              id="earlyResults"
+
+              class="early-results hidden"
+
+            ></div>
+
+
+
+          </div>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- RISK SIGNALS -->
+
+        <!-- =============================================== -->
+
+
+
+        <section class="result-block">
+
+
+
+          <div class="section-heading">
+
+
+
+            <div>
+
+
+
+              <span class="section-number">
+
+                07
+
+              </span>
+
+
+
+              <h3>
+
+                Risk Signals
+
+              </h3>
+
+
+
+            </div>
+
+
+
+            <span
+
+              id="riskSignalCount"
+
+              class="section-description"
+
+            >
+
+              0 signals detected
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+          <div
+
+            id="riskSignalsList"
+
+            class="risk-signals-list"
+
+          ></div>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <!-- =============================================== -->
+
+        <!-- DISCLAIMER -->
+
+        <!-- =============================================== -->
+
+
+
+        <div class="analysis-disclaimer">
+
+
+
+          <strong>
+
+            Important
+
+          </strong>
+
+
+
+          <p>
+
+            BagVyr provides analytical on-chain signals,
+
+            not financial advice. A high score does not mean
+
+            a token is safe and a low score does not prove
+
+            malicious intent. Always verify important data
+
+            independently before making a decision.
+
+          </p>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+    <!-- =================================================== -->
+
+    <!-- HOW IT WORKS -->
+
+    <!-- =================================================== -->
+
+
+
+    <section
+
+      id="how-it-works"
+
+      class="how-section"
+
+    >
+
+
+
+      <div class="how-container">
+
+
+
+        <span class="eyebrow">
+
+          HOW IT WORKS
+
+        </span>
+
+
+
+        <h2>
+
+          Check the data.
+
+          <br>
+
+          Make your decision.
+
+        </h2>
+
+
+
+
+
+        <div class="how-grid">
+
+
+
+
+
+          <article class="how-card">
+
+
+
+            <span class="how-number">
+
+              01
+
+            </span>
+
+
+
+            <h3>
+
+              Paste the CA
+
+            </h3>
+
+
+
+            <p>
+
+              Enter a supported Solana token contract address.
+
+            </p>
+
+
+
+          </article>
+
+
+
+
+
+          <article class="how-card">
+
+
+
+            <span class="how-number">
+
+              02
+
+            </span>
+
+
+
+            <h3>
+
+              BagVyr scans
+
+            </h3>
+
+
+
+            <p>
+
+              We analyze token data, holders, creator activity
+
+              and available on-chain signals.
+
+            </p>
+
+
+
+          </article>
+
+
+
+
+
+          <article class="how-card">
+
+
+
+            <span class="how-number">
+
+              03
+
+            </span>
+
+
+
+            <h3>
+
+              You decide
+
+            </h3>
+
+
+
+            <p>
+
+              Review the results and make your own decision
+
+              before buying a token.
+
+            </p>
+
+
+
+          </article>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </section>
+
+
+
+  </main>
+
+
+
+
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- FOOTER -->
+
+  <!-- ===================================================== -->
+
+
+
+  <footer class="site-footer">
+
+
+
+    <div class="footer-inner">
+
+
+
+      <div>
+
+
+
+        <div class="footer-brand-row">
+
+
+
+          <img
+
+            src="logo.png"
+
+            alt="BagVyr"
+
+            class="footer-logo"
+
+          >
+
+
+
+          <div class="footer-brand">
+
+            BAGVYR
+
+          </div>
+
+
+
+        </div>
+
+
+
+        <p>
+
+          Don't pay for hype. Pay for results.
+
+        </p>
+
+
+
+      </div>
+
+
+
+
+
+      <div class="footer-right">
+
+
+
+        <span>
+
+          Solana Mainnet
+
+        </span>
+
+
+
+        <a
+
+          href="https://x.com/BagVyr"
+
+          target="_blank"
+
+          rel="noopener noreferrer"
+
+        >
+
+          X / Twitter
+
+        </a>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  </footer>
+
+
+
+
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- TOAST -->
+
+  <!-- ===================================================== -->
+
+
+
+  <div
+
+    id="toast"
+
+    class="toast hidden"
+
+  >
+
+    Contract address copied
+
+  </div>
+
+
+
+
+
+
+
+  <!-- ===================================================== -->
+
+  <!-- JAVASCRIPT -->
+
+  <!-- ===================================================== -->
+
+
+
+  <script src="app.js"></script>
+
+
+
+</body>
+
+
+
+</html>
