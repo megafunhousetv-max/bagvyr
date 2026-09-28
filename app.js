@@ -36,7 +36,7 @@ exitAnalysis: "/api/exit-analysis"
 
   REQUEST_TIMEOUT: 30000,
   MARKET_TIMEOUT: 7000,
-  MARKET_REFRESH_MS: 1000
+  MARKET_REFRESH_MS: 5000
 };
 
 
@@ -98,6 +98,22 @@ const elements = {
   riskLevel: document.getElementById("riskLevel"),
 
   marketCap: document.getElementById("marketCap"),
+
+  livePrice:
+    document.getElementById("livePrice"),
+
+  liveLiquidity:
+    document.getElementById("liveLiquidity"),
+
+  peakMarketCap:
+    document.getElementById("peakMarketCap"),
+
+  dropFromPeak:
+    document.getElementById("dropFromPeak"),
+
+  marketStatus:
+    document.getElementById("marketStatus"),
+
   holderCount: document.getElementById("holderCount"),
 
   tokenSupply: document.getElementById("tokenSupply"),
@@ -157,10 +173,16 @@ const elements = {
     document.getElementById("creatorConfidence"),
 
   creatorHolding:
-    document.getElementById("creatorHolding"),
+    document.getElementById("creatorCurrentHolding"),
 
   creatorPercentage:
-    document.getElementById("creatorPercentage"),
+    document.getElementById("creatorCurrentSupply"),
+
+creatorSold:
+  document.getElementById("creatorSoldAmount"),
+
+creatorSupplySold:
+  document.getElementById("creatorSoldSupply"),
 
   creatorSolBalance:
     document.getElementById("creatorSolBalance"),
@@ -172,19 +194,19 @@ const elements = {
     document.getElementById("creatorDetectionNote"),
 
   loadTransactionsButton:
-    document.getElementById("loadTransactionsButton"),
+    document.getElementById("loadCreatorTransactionsButton"),
 
   transactionsSection:
-    document.getElementById("transactionsSection"),
+    document.getElementById("creatorTransactionsSection"),
 
   transactionsLoading:
-    document.getElementById("transactionsLoading"),
+    document.getElementById("creatorTransactionsLoading"),
 
   transactionsList:
-    document.getElementById("transactionsList"),
+    document.getElementById("creatorTransactionsTableBody"),
 
   transactionCount:
-    document.getElementById("transactionCount"),
+    document.getElementById("creatorTransactionsCount"),
 
 analyzeCreatorConnectionsButton:
 
@@ -328,6 +350,29 @@ exitStatus:
 
 exitAnalysisNote:
   document.getElementById("exitAnalysisNote"),
+
+/* Full Analysis - Exit / Rug Analysis */
+
+exitCreatorSellDetail:
+  document.getElementById("exitCreatorSellDetail"),
+
+exitMajorEventDetail:
+  document.getElementById("exitMajorEventDetail"),
+
+exitMarketCollapseDetail:
+  document.getElementById("exitMarketCollapseDetail"),
+
+exitCreatorSoldDetail:
+  document.getElementById("exitCreatorSoldDetail"),
+
+exitLiquidityDetail:
+  document.getElementById("exitLiquidityDetail"),
+
+exitStatusDetail:
+  document.getElementById("exitStatusDetail"),
+
+exitAnalysisDetailNote:
+  document.getElementById("exitAnalysisDetailNote"),
 
 toast:
   document.getElementById("toast")
@@ -537,7 +582,7 @@ async function analyzeToken(contract) {
 
 renderAnalysis(data);
 
-loadExitAnalysis(contract);
+await loadExitAnalysis(contract);
 
 updateBrowserURL(contract);
 
@@ -653,6 +698,94 @@ function renderAnalysis(data) {
     risks,
     data
   );
+
+  renderInsiderAnalysis(data);
+  }
+
+
+function renderInsiderAnalysis(data) {
+  const analysis = data?.insiderAnalysis;
+
+  const detectedEl =
+    document.getElementById("insidersDetected");
+
+  const networksEl =
+    document.getElementById("insiderNetworks");
+
+  if (!detectedEl || !networksEl) return;
+
+  if (!analysis) {
+    detectedEl.textContent = "---";
+
+    networksEl.innerHTML = `
+      <div class="insider-empty">
+        Insider data unavailable
+      </div>
+    `;
+
+    return;
+  }
+
+  detectedEl.textContent =
+    analysis.insidersDetected ?? "0";
+
+  const networks =
+    Array.isArray(analysis.networks)
+      ? analysis.networks
+      : [];
+
+  if (!networks.length) {
+    networksEl.innerHTML = `
+      <div class="insider-empty">
+        No insider networks detected
+      </div>
+    `;
+
+    return;
+  }
+
+  networksEl.innerHTML = networks
+    .map((network, index) => {
+      const holding =
+        typeof network.currentHolding === "number"
+          ? formatNumber(network.currentHolding)
+          : "---";
+
+      const accounts =
+        network.accounts ?? "---";
+
+      const type =
+        network.type
+          ? String(network.type)
+              .replaceAll("_", " ")
+              .toUpperCase()
+          : "NETWORK";
+
+      return `
+        <div class="insider-network">
+
+          <div class="insider-network-number">
+            ${String(index + 1).padStart(2, "0")}
+          </div>
+
+          <div class="insider-network-holding">
+            <strong>${holding}</strong>
+            <span>CURRENT HOLDING</span>
+          </div>
+
+          <div class="insider-network-accounts">
+            <strong>${accounts}</strong>
+            <span>ACCOUNTS</span>
+          </div>
+
+          <div class="insider-network-type">
+             ${type}
+          </div>
+
+        </div>
+      `;
+    })
+    .join("");
 }
 
 
@@ -2125,9 +2258,14 @@ function renderExitAnalysis(
     CONFIRMED CREATOR SELL
   */
 
-  const creatorSell =
-    exit.confirmedCreatorSell ===
-    true;
+const creatorSell =
+  exit.confirmedCreatorSell === true ||
+  firstNumber([
+    exit.creatorTokensSold
+  ]) > 0 ||
+  firstNumber([
+    exit.creatorSellPercentageOfSupply
+  ]) > 0;
 
   setText(
     elements.exitCreatorSell,
@@ -2145,13 +2283,92 @@ function renderExitAnalysis(
 
 
   /*
-    % OF TOTAL SUPPLY SOLD
+    CREATOR SOLD
   */
 
-  const supplySold =
+  const creatorTokensSold =
     firstNumber([
-      exit.creatorSellPercentageOfSupply
+      exit.creatorTokensSold
     ]);
+
+const supplySold =
+  firstNumber([
+    exit.creatorSellPercentageOfSupply
+  ]);
+
+
+/*
+  MERGE CREATOR DATA
+
+  /api/analyze provides the normal creator balance.
+  /api/exit-analysis can provide creatorCurrentHolding too.
+
+  Only use exit-analysis holding as a fallback.
+  Never replace a valid value with unavailable data.
+*/
+
+const exitCreatorHolding =
+  firstNumber([
+    exit.creatorCurrentHolding
+  ]);
+
+const totalSupply =
+  firstNumber([
+    state.currentAnalysis?.token?.supplyFormatted,
+    state.currentAnalysis?.supplyFormatted
+  ]);
+
+if (
+  exitCreatorHolding !== null &&
+  (
+    !elements.creatorHolding?.textContent ||
+    elements.creatorHolding.textContent.trim() === "---"
+  )
+) {
+  setText(
+    elements.creatorHolding,
+    formatTokenAmount(exitCreatorHolding)
+  );
+
+  if (
+    totalSupply !== null &&
+    totalSupply > 0
+  ) {
+    const exitCreatorSupply =
+      (exitCreatorHolding / totalSupply) * 100;
+
+    setText(
+      elements.creatorPercentage,
+      formatPercentage(exitCreatorSupply)
+    );
+  }
+}
+
+
+/*
+  Creator Analysis cards
+*/
+
+  setText(
+    elements.creatorSold,
+
+    creatorTokensSold !== null
+      ? formatTokenAmount(creatorTokensSold)
+      : "---"
+  );
+
+  setText(
+    elements.creatorSupplySold,
+
+    supplySold !== null
+      ? formatPercentage(supplySold)
+      : "---"
+  );
+
+
+  /*
+    Exit / Rug Analysis
+  */
 
   setText(
     elements.exitCreatorSold,
@@ -2243,36 +2460,53 @@ function renderExitAnalysis(
   );
 
 
-  /*
+/*
     FINAL STATUS
   */
 
-  setText(
-    elements.exitStatus,
-    humanizeExitStatus(status)
-  );
+let displayStatus =
+  humanizeExitStatus(status);
 
-  let statusClass =
-    "safe";
+let statusClass =
+  "safe";
 
-  if (
-    status ===
-      "SEVERE_EXIT_ACTIVITY" ||
-    status ===
-      "MAJOR_EXIT_ACTIVITY"
-  ) {
-    statusClass =
-      "danger";
+/*
+  Severe / major confirmed exit pattern
+*/
+if (
+  status === "SEVERE_EXIT_ACTIVITY" ||
+  status === "MAJOR_EXIT_ACTIVITY"
+) {
+  statusClass = "danger";
+}
 
-  } else if (
-    status ===
-      "CREATOR_SELL_ACTIVITY_DETECTED" ||
-    status ===
-      "INSUFFICIENT_DATA"
-  ) {
-    statusClass =
-      "warning";
-  }
+/*
+  Creator sold tokens but the combined
+  analysis does not qualify as a major exit.
+*/
+else if (
+  creatorSell ||
+  (supplySold !== null && supplySold > 0)
+) {
+  displayStatus =
+    "CREATOR SELL ACTIVITY DETECTED";
+
+  statusClass =
+    "warning";
+}
+
+/*
+  Analysis could not be completed.
+*/
+else if (
+  status === "INSUFFICIENT_DATA"
+) {
+  displayStatus =
+    "INSUFFICIENT DATA";
+
+  statusClass =
+    "warning";
+}
 
   setExitClass(
     elements.exitStatus,
@@ -2286,8 +2520,115 @@ function renderExitAnalysis(
     exit.note ||
     "Detected exit activity is based on observable on-chain transactions and market data. It does not by itself establish fraudulent intent."
   );
-}
 
+/*
+  FULL ANALYSIS - SECTION 04
+*/
+
+setText(
+  elements.exitCreatorSellDetail,
+  creatorSell
+    ? "DETECTED"
+    : "NOT DETECTED"
+);
+
+setExitClass(
+  elements.exitCreatorSellDetail,
+  creatorSell
+    ? "warning"
+    : "safe"
+);
+
+
+setText(
+  elements.exitMajorEventDetail,
+  majorExitDetected
+    ? "DETECTED"
+    : status === "INSUFFICIENT_DATA"
+      ? "---"
+      : "NOT DETECTED"
+);
+
+setExitClass(
+  elements.exitMajorEventDetail,
+  majorExitDetected
+    ? "danger"
+    : status === "INSUFFICIENT_DATA"
+      ? "warning"
+      : "safe"
+);
+
+
+setText(
+  elements.exitMarketCollapseDetail,
+  !market.available && !marketStatus
+    ? "---"
+    : marketCollapse
+      ? "DETECTED"
+      : "NOT DETECTED"
+);
+
+setExitClass(
+  elements.exitMarketCollapseDetail,
+  marketCollapse
+    ? "danger"
+    : !market.available && !marketStatus
+      ? "warning"
+      : "safe"
+);
+
+
+setText(
+  elements.exitCreatorSoldDetail,
+  supplySold !== null
+    ? `${formatPercentage(supplySold)} Supply`
+    : "---"
+);
+
+setExitClass(
+  elements.exitCreatorSoldDetail,
+  supplySold !== null && supplySold >= 5
+    ? "danger"
+    : supplySold !== null && supplySold > 0
+      ? "warning"
+      : "safe"
+);
+
+
+setText(
+  elements.exitLiquidityDetail,
+  currentLiquidity !== null
+    ? formatCurrencyCompact(currentLiquidity)
+    : "---"
+);
+
+setExitClass(
+  elements.exitLiquidityDetail,
+  currentLiquidity !== null && currentLiquidity < 2500
+    ? "danger"
+    : currentLiquidity !== null && currentLiquidity < 5000
+      ? "warning"
+      : "safe"
+);
+
+
+setText(
+  elements.exitStatusDetail,
+  displayStatus
+);
+
+setExitClass(
+  elements.exitStatusDetail,
+  statusClass
+);
+
+
+setText(
+  elements.exitAnalysisDetailNote,
+  exit.note ||
+  "Detected exit activity is based on observable on-chain transactions and market data. It does not by itself establish fraudulent intent."
+);
+}
 
 function humanizeExitStatus(
   status
@@ -2341,13 +2682,19 @@ function setExitClass(
 
 
 function resetExitAnalysisDisplay() {
-  const fields = [
-    elements.exitMajorEvent,
-    elements.exitCreatorSell,
-    elements.exitCreatorSold,
-    elements.exitMarketCollapse,
-    elements.exitLiquidity
-  ];
+const fields = [
+  elements.exitMajorEvent,
+  elements.exitCreatorSell,
+  elements.exitCreatorSold,
+  elements.exitMarketCollapse,
+  elements.exitLiquidity,
+
+  elements.exitMajorEventDetail,
+  elements.exitCreatorSellDetail,
+  elements.exitCreatorSoldDetail,
+  elements.exitMarketCollapseDetail,
+  elements.exitLiquidityDetail
+];
 
   fields.forEach(
     element => {
@@ -2368,15 +2715,30 @@ function resetExitAnalysisDisplay() {
     "ANALYZING..."
   );
 
-  setExitClass(
-    elements.exitStatus,
-    null
-  );
+setExitClass(
+  elements.exitStatus,
+  null
+);
 
-  setText(
-    elements.exitAnalysisNote,
-    "Analyzing creator sell activity, market movement and current liquidity..."
-  );
+setText(
+  elements.exitStatusDetail,
+  "ANALYZING..."
+);
+
+setExitClass(
+  elements.exitStatusDetail,
+  null
+);
+
+setText(
+  elements.exitAnalysisNote,
+  "Analyzing creator sell activity, market movement and current liquidity..."
+);
+
+setText(
+  elements.exitAnalysisDetailNote,
+  "Analyzing creator sell activity, market movement and current liquidity..."
+);
 }
 
 
@@ -2579,7 +2941,7 @@ const excludedDestinations =
 setText(
   elements.creatorConnectionsFundedWallets,
   formatNumber(
-    fundedDestinations,
+    analyzedDestinations,
     0
   )
 );
@@ -2693,9 +3055,30 @@ setText(
         0;
 
 
-      const currentlyHolds =
-        wallet.currentlyHoldsToken ===
-        true;
+const holdingStatus =
+  wallet.currentlyHoldsToken;
+
+const currentlyHolds =
+  holdingStatus === true;
+
+const holdingStatusText =
+  holdingStatus === true
+    ? "HOLDS TOKEN"
+    : holdingStatus === false
+      ? "DOES NOT HOLD"
+      : "UNKNOWN";
+
+const holdingStatusClass =
+  holdingStatus === true
+    ? "wallet-status-holds"
+    : holdingStatus === false
+      ? "wallet-status-empty"
+      : "wallet-status-unknown";
+
+const signatures =
+  Array.isArray(wallet.signatures)
+    ? wallet.signatures.filter(Boolean)
+    : [];
 
 
       const row =
@@ -2713,88 +3096,225 @@ setText(
         );
 
 
-      row.innerHTML = `
+row.innerHTML = `
 
-        <td>
-          ${index + 1}
-        </td>
+  <td>
+    ${index + 1}
+  </td>
 
 
-        <td class="connection-wallet">
+  <td class="connection-wallet">
 
-          <span
-            class="connection-wallet-address"
-            title="${escapeHTML(address)}"
+    <span
+      class="connection-wallet-address"
+      title="${escapeHTML(address)}"
+    >
+      ${escapeHTML(
+        shortenWalletAddress(address)
+      )}
+    </span>
+
+    ${
+      address
+        ? `
+          <a
+            href="${escapeHTML(solscanUrl)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="connection-wallet-link"
           >
-            ${escapeHTML(
-              shortenWalletAddress(
-                address
-              )
-            )}
+            SOLSCAN ↗
+          </a>
+        `
+        : ""
+    }
+
+  </td>
+
+
+  <td>
+    ${formatNumber(solFunded, 6)} SOL
+  </td>
+
+
+  <td>
+    <span class="wallet-holding-status ${holdingStatusClass}">
+      <span class="wallet-status-dot"></span>
+      ${holdingStatusText}
+    </span>
+  </td>
+
+
+  <td class="${
+    currentlyHolds
+      ? "connection-holding-positive"
+      : "connection-holding-zero"
+  }">
+    ${
+      holdingStatus === null ||
+      holdingStatus === undefined
+        ? "---"
+        : formatTokenAmount(tokenHolding)
+    }
+  </td>
+
+
+  <td class="${
+    currentlyHolds
+      ? "connection-holding-positive"
+      : "connection-holding-zero"
+  }">
+    ${
+      holdingStatus === null ||
+      holdingStatus === undefined
+        ? "---"
+        : formatPercentage(supplyPercentage)
+    }
+  </td>
+
+
+  <td>
+    <div class="connection-transfer-cell">
+
+      <strong>
+        ${formatNumber(transferCount, 0)}
+      </strong>
+
+      ${
+        signatures.length
+          ? `
+            <button
+              type="button"
+              class="connection-transactions-toggle"
+            >
+              VIEW ${signatures.length}
+              <span>↓</span>
+            </button>
+          `
+          : ""
+      }
+
+    </div>
+  </td>
+
+`;
+
+
+const transactionRow =
+  document.createElement("tr");
+
+transactionRow.className =
+  "connection-transactions-row hidden";
+
+transactionRow.innerHTML = `
+
+  <td colspan="7">
+
+    <div class="connection-transactions-panel">
+
+      <div class="connection-transactions-title">
+
+        <div>
+          <strong>
+            FUNDING TRANSACTIONS
+          </strong>
+
+          <span>
+            Direct SOL transfers detected from creator
           </span>
+        </div>
+
+        <span>
+          ${signatures.length} shown
+        </span>
+
+      </div>
 
 
-          ${
-            address
-              ? `
-                <a
-                  href="${escapeHTML(solscanUrl)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="connection-wallet-link"
-                >
-                  SOLSCAN ↗
-                </a>
-              `
-              : ""
-          }
+      <div class="connection-transaction-list">
 
-        </td>
+        ${
+          signatures.length
+            ? signatures.map(
+                (signature, transactionIndex) => `
+
+                  <a
+                    href="https://solscan.io/tx/${encodeURIComponent(signature)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="connection-transaction-item"
+                  >
+
+                    <span class="connection-transaction-number">
+                      ${transactionIndex + 1}
+                    </span>
+
+                    <code>
+                      ${escapeHTML(
+                        signature.slice(0, 10) +
+                        "..." +
+                        signature.slice(-8)
+                      )}
+                    </code>
+
+                    <span class="connection-transaction-link">
+                      VIEW ON SOLSCAN ↗
+                    </span>
+
+                  </a>
+
+                `
+              ).join("")
+            : `
+              <div class="connection-no-transactions">
+                No transaction signatures available.
+              </div>
+            `
+        }
+
+      </div>
+
+    </div>
+
+  </td>
+
+`;
 
 
-        <td>
-          ${formatNumber(
-            solFunded,
-            6
-          )} SOL
-        </td>
+const transactionsButton =
+  row.querySelector(
+    ".connection-transactions-toggle"
+  );
 
+transactionsButton?.addEventListener(
+  "click",
+  () => {
 
-        <td class="${
-          currentlyHolds
-            ? "connection-holding-positive"
-            : "connection-holding-zero"
-        }">
-          ${formatTokenAmount(
-            tokenHolding
-          )}
-        </td>
+    const isHidden =
+      transactionRow.classList.contains(
+        "hidden"
+      );
 
+    transactionRow.classList.toggle(
+      "hidden"
+    );
 
-        <td class="${
-          currentlyHolds
-            ? "connection-holding-positive"
-            : "connection-holding-zero"
-        }">
-          ${formatPercentage(
-            supplyPercentage
-          )}
-        </td>
+    transactionsButton.innerHTML =
+      isHidden
+        ? `HIDE <span>↑</span>`
+        : `VIEW ${signatures.length} <span>↓</span>`;
 
-
-        <td>
-          ${formatNumber(
-            transferCount,
-            0
-          )}
-        </td>
-
-      `;
+  }
+);
 
 
       elements.creatorConnectionsTableBody.appendChild(
         row
       );
+
+elements.creatorConnectionsTableBody.appendChild(
+  transactionRow
+);
 
     }
 
@@ -2875,29 +3395,107 @@ function renderConnections(
           "div"
         );
 
-      item.className =
-        "signal-item";
+const title =
+  connection.title ||
+  connection.type ||
+  "Connection signal";
 
-      const title =
-        connection.title ||
-        connection.type ||
-        "Wallet relationship";
+const description =
+  connection.description ||
+  connection.explanation ||
+  connection.message ||
+  "";
 
-      const description =
-        connection.description ||
-        connection.explanation ||
-        connection.message ||
-        "";
+const isProtocolInfrastructure =
+  String(connection.type || "")
+    .toLowerCase()
+    .includes("protocol") ||
+  String(title || "")
+    .toLowerCase()
+    .includes("protocol infrastructure");
 
-      item.innerHTML = `
-        <strong>
-          ${escapeHTML(title)}
-        </strong>
+if (isProtocolInfrastructure) {
 
-        <p>
-          ${escapeHTML(description)}
-        </p>
-      `;
+  item.className =
+    "signal-item protocol-infrastructure-card";
+
+  item.innerHTML = `
+    <div class="protocol-infrastructure-icon">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+        <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+        <rect x="9" y="14" width="6" height="6" rx="1"></rect>
+        <path d="M7 10v2h10v-2"></path>
+        <path d="M12 12v2"></path>
+      </svg>
+    </div>
+
+    <div class="protocol-infrastructure-content">
+
+      <div class="protocol-infrastructure-top">
+        <span class="protocol-infrastructure-label">
+          INFRASTRUCTURE SIGNAL
+        </span>
+
+        <span class="protocol-infrastructure-status">
+          <i></i>
+          IDENTIFIED
+        </span>
+      </div>
+
+      <strong class="protocol-infrastructure-title">
+        ${escapeHTML(title)}
+      </strong>
+
+      <p class="protocol-infrastructure-description">
+        ${escapeHTML(description)}
+      </p>
+
+      <div class="protocol-infrastructure-note">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 10v6"></path>
+          <path d="M12 7h.01"></path>
+        </svg>
+
+        <span>
+          Infrastructure accounts are not treated as creator-controlled
+          without supporting on-chain evidence.
+        </span>
+      </div>
+
+    </div>
+  `;
+
+} else {
+
+  item.className =
+    "signal-item";
+
+  item.innerHTML = `
+    <strong>
+      ${escapeHTML(title)}
+    </strong>
+
+    <p>
+      ${escapeHTML(description)}
+    </p>
+  `;
+}
 
       elements.connectionSignals.appendChild(
         item
@@ -2990,29 +3588,58 @@ function renderRiskSignals(
           ? "!"
           : "i";
 
-      const title =
-        signal.title ||
-        signal.code ||
-        "Risk signal";
+let title =
+  signal.title ||
+  signal.code ||
+  "Risk signal";
 
-      const description =
-        signal.explanation ||
-        signal.description ||
-        signal.message ||
-        "";
+let description =
+  signal.explanation ||
+  signal.description ||
+  signal.message ||
+  "";
+
+const signalCode =
+  String(signal.code || signal.type || "")
+    .toLowerCase();
+
+const isMutableMetadata =
+  signalCode.includes("metadata") &&
+  signalCode.includes("mutable") ||
+  String(title)
+    .toLowerCase()
+    .includes("metadata is mutable");
+
+if (isMutableMetadata) {
+  title = "Metadata can be updated";
+
+  description =
+    "The token creator can still update metadata such as the name, symbol or image. This is informational and does not by itself indicate malicious activity.";
+}
 
       const item =
         document.createElement(
           "div"
         );
 
-      item.className =
-        `risk-signal ${className}`;
+item.className =
+  `risk-signal ${isMutableMetadata ? "metadata-info" : className}`;
 
       item.innerHTML = `
-        <div class="risk-signal-icon">
-          ${icon}
-        </div>
+<div class="risk-signal-icon">
+  ${
+    isMutableMetadata
+      ? `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l7 4v5c0 4.5-2.8 7.5-7 9-4.2-1.5-7-4.5-7-9V7l7-4z"></path>
+          <path d="M9 12h6"></path>
+          <path d="M12 9v6"></path>
+        </svg>
+      `
+      : icon
+  }
+</div>
 
         <div>
           <strong>
@@ -3143,6 +3770,243 @@ async function refreshMarket() {
     }
 
     /*
+      LIVE PRICE
+    */
+
+    const priceUsd =
+      firstNumber([
+        data.priceUsd
+      ]);
+
+    if (
+      priceUsd !== null
+    ) {
+      setText(
+        elements.livePrice,
+        `$${formatNumber(priceUsd, 10)}`
+      );
+    }
+
+    /*
+      LIVE LIQUIDITY
+    */
+
+    const liquidityUsd =
+      firstNumber([
+        data.liquidityUsd
+      ]);
+
+    if (
+      liquidityUsd !== null
+    ) {
+      setText(
+        elements.liveLiquidity,
+        formatCurrencyCompact(
+          liquidityUsd
+        )
+      );
+
+      /*
+        Keep existing Exit / Rug
+        liquidity display live too.
+      */
+
+      setText(
+        elements.exitLiquidity,
+        formatCurrencyCompact(
+          liquidityUsd
+        )
+      );
+
+      setExitClass(
+        elements.exitLiquidity,
+
+        liquidityUsd < 2500
+          ? "danger"
+          : liquidityUsd < 5000
+            ? "warning"
+            : "safe"
+      );
+    }
+
+    /*
+      HISTORICAL PEAK MC
+    */
+
+    const peakMarketCap =
+      firstNumber([
+        data.peakMarketCap
+      ]);
+
+    if (
+      peakMarketCap !== null
+    ) {
+      setText(
+        elements.peakMarketCap,
+        formatCurrencyCompact(
+          peakMarketCap
+        )
+      );
+    }
+
+    /*
+      DROP FROM PEAK
+    */
+
+    const dropFromPeak =
+      firstNumber([
+        data.dropFromPeakPercent
+      ]);
+
+    if (
+      dropFromPeak !== null
+    ) {
+      setText(
+        elements.dropFromPeak,
+        formatPercentage(
+          dropFromPeak
+        )
+      );
+    }
+
+    /*
+      MARKET STATUS
+    */
+
+    if (
+      data.marketStatus
+    ) {
+      const marketStatus =
+        String(data.marketStatus)
+          .replaceAll("_", " ")
+          .toUpperCase();
+
+      setText(
+        elements.marketStatus,
+        marketStatus
+      );
+
+      if (elements.marketStatus) {
+
+        elements.marketStatus.classList.remove(
+          "market-normal",
+          "market-pullback",
+          "market-heavy",
+          "market-severe",
+          "market-collapse"
+        );
+
+        if (
+          marketStatus ===
+          "NORMAL MARKET MOVEMENT"
+        ) {
+          elements.marketStatus.classList.add(
+            "market-normal"
+          );
+
+        } else if (
+          marketStatus ===
+          "SIGNIFICANT PULLBACK"
+        ) {
+          elements.marketStatus.classList.add(
+            "market-pullback"
+          );
+
+        } else if (
+          marketStatus ===
+          "HEAVY DECLINE DETECTED"
+        ) {
+          elements.marketStatus.classList.add(
+            "market-heavy"
+          );
+
+        } else if (
+          marketStatus ===
+          "SEVERE MARKET DECLINE"
+        ) {
+          elements.marketStatus.classList.add(
+            "market-severe"
+          );
+
+        } else if (
+          marketStatus ===
+          "MAJOR COLLAPSE DETECTED"
+        ) {
+          elements.marketStatus.classList.add(
+            "market-collapse"
+          );
+        }
+      }
+
+
+      /*
+        Keep MARKET COLLAPSE
+        in the summary live too.
+      */
+
+if (
+  marketStatus ===
+  "MAJOR COLLAPSE DETECTED"
+) {
+  setText(
+    elements.exitMarketCollapse,
+    "DETECTED"
+  );
+
+  setExitClass(
+    elements.exitMarketCollapse,
+    "danger"
+  );
+
+  /*
+    Keep main Analysis Status
+    visually consistent with the
+    detected major market collapse.
+  */
+
+  setText(
+    elements.exitStatus,
+    "MAJOR MARKET COLLAPSE DETECTED"
+  );
+
+  setExitClass(
+    elements.exitStatus,
+    "danger"
+  );
+
+  setText(
+    elements.exitAnalysisNote,
+    "The token has experienced a major decline from its historical peak market cap. This market movement alone does not prove creator exit activity or fraudulent intent."
+  );
+
+      } else if (
+        marketStatus ===
+        "HISTORICAL DATA UNAVAILABLE"
+      ) {
+        setText(
+          elements.exitMarketCollapse,
+          "---"
+        );
+
+        setExitClass(
+          elements.exitMarketCollapse,
+          "warning"
+        );
+
+      } else {
+        setText(
+          elements.exitMarketCollapse,
+          "NOT DETECTED"
+        );
+
+        setExitClass(
+          elements.exitMarketCollapse,
+          "safe"
+        );
+      }
+    }
+
+    /*
       If initial image failed but
       market endpoint returns one,
       try it.
@@ -3248,10 +4112,38 @@ async function marketRequest(
    ========================================================= */
 
 async function loadCreatorTransactions() {
-  if (
-    !state.creatorWallet ||
-    state.transactionsLoaded
-  ) {
+  if (!state.creatorWallet) {
+    return;
+  }
+
+  /*
+    Ak už boli transakcie načítané,
+    tlačidlo iba otvára / zatvára sekciu.
+  */
+  if (state.transactionsLoaded) {
+
+    const isHidden =
+      elements.transactionsSection?.classList.contains(
+        "hidden"
+      );
+
+    if (isHidden) {
+      elements.transactionsSection?.classList.remove(
+        "hidden"
+      );
+
+      elements.loadTransactionsButton.innerHTML =
+        "HIDE CREATOR TRANSACTIONS ↑";
+
+    } else {
+      elements.transactionsSection?.classList.add(
+        "hidden"
+      );
+
+      elements.loadTransactionsButton.innerHTML =
+        "LOAD CREATOR TRANSACTIONS →";
+    }
+
     return;
   }
 
@@ -3271,10 +4163,13 @@ async function loadCreatorTransactions() {
   );
 
   try {
-    const data =
-      await apiRequest(
-        `${CONFIG.ENDPOINTS.walletTransactions}?wallet=${encodeURIComponent(state.creatorWallet)}&limit=${CONFIG.TRANSACTION_LIMIT}`
-      );
+const data =
+  await apiRequest(
+    `${CONFIG.ENDPOINTS.walletTransactions}` +
+    `?wallet=${encodeURIComponent(state.creatorWallet)}` +
+    `&ca=${encodeURIComponent(state.currentContract)}` +
+    `&limit=${CONFIG.TRANSACTION_LIMIT}`
+  );
 
     const transactions =
       Array.isArray(data)
@@ -3289,6 +4184,14 @@ async function loadCreatorTransactions() {
 
     state.transactionsLoaded =
       true;
+
+if (elements.loadTransactionsButton) {
+  elements.loadTransactionsButton.disabled =
+    false;
+
+  elements.loadTransactionsButton.innerHTML =
+    "HIDE CREATOR TRANSACTIONS ↑";
+}
 
   } catch (error) {
     if (
@@ -3341,16 +4244,21 @@ function renderTransactions(
     !transactions.length
   ) {
     elements.transactionsList.innerHTML = `
-      <div class="empty-state">
-        No recent transactions found.
-      </div>
+      <tr>
+        <td colspan="8">
+          <div class="empty-state">
+            No recent transactions found.
+          </div>
+        </td>
+      </tr>
     `;
 
     return;
   }
 
   transactions.forEach(
-    transaction => {
+    (transaction, index) => {
+
       const signature =
         transaction.signature ||
         transaction.txHash ||
@@ -3367,6 +4275,12 @@ function renderTransactions(
         transaction.blockTime ||
         transaction.time;
 
+      const amount =
+        transaction.amount ??
+        transaction.tokenAmount ??
+        transaction.value ??
+        "---";
+
       const solscan =
         transaction.solscan ||
         (
@@ -3375,42 +4289,164 @@ function renderTransactions(
             : null
         );
 
-      const item =
+      const destination =
+        Array.isArray(
+          transaction.destinationHoldings
+        )
+          ? transaction.destinationHoldings[0]
+          : null;
+
+      const destinationWallet =
+        destination?.wallet ||
+        null;
+
+      const currentlyHoldsToken =
+        destination?.currentlyHoldsToken;
+
+      const currentHolding =
+        destination?.currentHolding;
+
+      const supplyPercentage =
+        destination?.supplyPercentage;
+
+
+      let holdingStatus =
+        "---";
+
+      if (
+        currentlyHoldsToken === true
+      ) {
+        holdingStatus =
+          "YES";
+      } else if (
+        currentlyHoldsToken === false
+      ) {
+        holdingStatus =
+          "NO";
+      } else if (
+        destinationWallet
+      ) {
+        holdingStatus =
+          "UNKNOWN";
+      }
+
+
+      const row =
         document.createElement(
-          "div"
+          "tr"
         );
 
-      item.className =
-        "transaction-item";
+      row.innerHTML = `
+        <td>
+          ${index + 1}
+        </td>
 
-      item.innerHTML = `
-        <div>
+        <td>
           <strong>
             ${escapeHTML(String(type))}
           </strong>
+        </td>
 
-          <p>
-            ${escapeHTML(formatTimestamp(timestamp))}
-          </p>
-        </div>
+        <td>
+          ${escapeHTML(String(amount))}
+        </td>
 
-        ${
-          solscan
-            ? `
-              <a
-                href="${escapeAttribute(solscan)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ${escapeHTML(shortenAddress(signature, 8, 7))}
-              </a>
-            `
-            : ""
-        }
+        <td>
+          ${escapeHTML(
+            formatTimestamp(timestamp)
+          )}
+        </td>
+
+        <td>
+          ${
+            solscan
+              ? `
+                <a
+                  href="${escapeAttribute(solscan)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ${escapeHTML(
+                    shortenAddress(
+                      signature,
+                      7,
+                      6
+                    )
+                  )}
+                </a>
+              `
+              : "---"
+          }
+        </td>
+
+        <td>
+          ${
+            destinationWallet
+              ? `
+                <a
+                  href="${escapeAttribute(
+                    destination?.solscan ||
+                    `https://solscan.io/account/${destinationWallet}`
+                  )}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ${escapeHTML(
+                    shortenAddress(
+                      destinationWallet,
+                      6,
+                      5
+                    )
+                  )}
+                </a>
+              `
+              : "---"
+          }
+        </td>
+
+        <td>
+          ${
+            destinationWallet
+              ? `
+                <strong>
+                  ${escapeHTML(holdingStatus)}
+                </strong>
+
+                ${
+                  currentHolding !== null &&
+                  currentHolding !== undefined
+                    ? `
+                      <div>
+                        ${escapeHTML(
+                          formatNumber(
+  destination.currentHolding
+)
+                        )}
+                      </div>
+                    `
+                    : ""
+                }
+              `
+              : "---"
+          }
+        </td>
+
+        <td>
+          ${
+            supplyPercentage !== null &&
+            supplyPercentage !== undefined
+              ? `${escapeHTML(
+                  Number(
+                    supplyPercentage
+                  ).toFixed(4)
+                )}%`
+              : "---"
+          }
+        </td>
       `;
 
       elements.transactionsList.appendChild(
-        item
+        row
       );
     }
   );
@@ -3944,7 +4980,42 @@ function resetAnalysisState() {
   }
 
 
-  
+  /*
+    RESET LIVE MARKET DATA
+  */
+
+  setText(
+    elements.marketCap,
+    "---"
+  );
+
+  setText(
+    elements.livePrice,
+    "---"
+  );
+
+  setText(
+    elements.liveLiquidity,
+    "---"
+  );
+
+  setText(
+    elements.peakMarketCap,
+    "---"
+  );
+
+  setText(
+    elements.dropFromPeak,
+    "---"
+  );
+
+  setText(
+    elements.marketStatus,
+    "---"
+  );
+
+
+  resetExitAnalysisDisplay();
 }
 
 /* =========================================================
