@@ -594,9 +594,10 @@ updateBrowserURL(contract);
       Full token analysis is NOT repeated.
     */
 
-    startMarketRefresh(
-      contract
-    );
+refreshMarket();
+startMarketRefresh(
+  contract
+);
 
     window.setTimeout(() => {
       elements.resultsSection?.scrollIntoView({
