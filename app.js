@@ -27,7 +27,9 @@ ENDPOINTS: {
 
 creatorConnections: "/api/creator-connections",
 
-exitAnalysis: "/api/exit-analysis"
+exitAnalysis: "/api/exit-analysis",
+
+platform: "/api/platform"
 
 },
 
@@ -581,6 +583,8 @@ async function analyzeToken(contract) {
       data;
 
 renderAnalysis(data);
+
+loadLaunchPlatform(contract);
 
 await loadExitAnalysis(contract);
 
@@ -1297,20 +1301,9 @@ function renderQuickStats(
     )
   );
 
-  const platform =
-    typeof data.platform ===
-      "string"
-      ? data.platform
-      : data.platform?.detected ||
-        token.platform ||
-        data.launchPlatform ||
-        detectPlatform(
-          state.currentContract
-        );
-
   setText(
     elements.launchPlatform,
-    platform || "Unknown"
+    "Detecting..."
   );
 }
 
@@ -5185,28 +5178,77 @@ function setProgress(
     `${Math.min(Math.max(percentage, 0), 100)}%`;
 }
 
+async function loadLaunchPlatform(contract) {
+  if (!contract) {
+    return;
+  }
+
+  try {
+    setText(
+      elements.launchPlatform,
+      "Detecting..."
+    );
+
+    const url =
+      CONFIG.API_BASE +
+      CONFIG.ENDPOINTS.platform +
+      "?ca=" +
+      encodeURIComponent(contract);
+
+    const response =
+      await fetchWithTimeout(
+        url,
+        {},
+        CONFIG.REQUEST_TIMEOUT
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        `Platform HTTP ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      state.currentContract !==
+      contract
+    ) {
+      return;
+    }
+
+    const platform =
+      data?.platform?.detected ||
+      "Unknown";
+
+    setText(
+      elements.launchPlatform,
+      platform
+    );
+  } catch (error) {
+    console.warn(
+      "Platform detection failed:",
+      error
+    );
+
+    if (
+      state.currentContract ===
+      contract
+    ) {
+      setText(
+        elements.launchPlatform,
+        "Unknown"
+      );
+    }
+  }
+}
+
 
 /* =========================================================
    PLATFORM
    ========================================================= */
 
-function detectPlatform(
-  contract
-) {
-  if (!contract) {
-    return "Unknown";
-  }
-
-  if (
-    String(contract)
-      .toLowerCase()
-      .endsWith("pump")
-  ) {
-    return "Pump.fun";
-  }
-
-  return "Solana";
-}
 
 
 /* =========================================================
