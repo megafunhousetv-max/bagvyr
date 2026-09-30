@@ -824,6 +824,120 @@ function renderInsiderAnalysis(data) {
    TOKEN IDENTITY
    ========================================================= */
 
+const dexTokenImageCache = new Map();
+let tokenImageRequestVersion = 0;
+
+async function getDexTokenImage(contract) {
+  if (dexTokenImageCache.has(contract)) {
+    return dexTokenImageCache.get(contract);
+  }
+
+  const request = (async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      8000
+    );
+
+    try {
+      const response = await fetch(
+        "https://api.dexscreener.com/token-pairs/v1/solana/" +
+          encodeURIComponent(contract),
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error("Dex image HTTP " + response.status);
+      }
+
+      const pairs = await response.json();
+
+      if (!Array.isArray(pairs)) {
+        throw new Error("Invalid Dex response");
+      }
+
+      const matchingPairs = pairs
+        .filter(pair =>
+          pair?.chainId === "solana" &&
+          pair?.baseToken?.address === contract
+        )
+        .sort((a, b) =>
+          Number(b?.liquidity?.usd || 0) -
+          Number(a?.liquidity?.usd || 0)
+        );
+
+      for (const pair of matchingPairs) {
+        const image = normalizeImageURL(
+          pair?.info?.imageUrl
+        );
+
+        if (image) return image;
+      }
+
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
+
+  dexTokenImageCache.set(contract, request);
+
+  try {
+    return await request;
+  } catch {
+    dexTokenImageCache.delete(contract);
+    return null;
+  }
+}
+
+async function addDexTokenImage(
+  contract,
+  originalCandidates,
+  fallbackText
+) {
+  const requestVersion = ++tokenImageRequestVersion;
+
+  if (!contract) return;
+
+  const dexImage = await getDexTokenImage(contract);
+
+  // Ignore results belonging to an older token analysis.
+  if (
+    requestVersion !== tokenImageRequestVersion ||
+    state.currentContract !== contract ||
+    !dexImage
+  ) {
+    return;
+  }
+
+  const candidates = [
+    ...new Set(
+      originalCandidates
+        .filter(Boolean)
+        .map(normalizeImageURL)
+        .filter(Boolean)
+    )
+  ];
+
+  if (candidates.includes(dexImage)) return;
+
+  // Keep the current image if it loaded successfully.
+  if (
+    elements.tokenImage &&
+    !elements.tokenImage.classList.contains("hidden") &&
+    elements.tokenImage.complete &&
+    elements.tokenImage.naturalWidth > 0
+  ) {
+    return;
+  }
+
+  // Existing image loading handles errors and tries the next URL.
+  renderTokenImage(
+    [...candidates, dexImage],
+    fallbackText
+  );
+}
+
 function renderTokenIdentity(
   token,
   data
@@ -870,22 +984,28 @@ function renderTokenIdentity(
     5. market image
   */
 
-  const imageCandidates = [
-    token.image,
-    data.pumpfun?.image,
-    data.metadata?.image,
-    data.metadata?.content?.links?.image,
-    data.content?.links?.image,
-    data.market?.image,
-    data.market?.imageUrl,
-    data.image,
-    data.logo
-  ];
+const imageCandidates = [
+  data.pumpfun?.image,
+  token.image,
+  data.metadata?.image,
+  data.metadata?.content?.links?.image,
+  data.content?.links?.image,
+  data.market?.image,
+  data.market?.imageUrl,
+  data.image,
+  data.logo
+];
 
-  renderTokenImage(
-    imageCandidates,
-    symbol || name
-  );
+renderTokenImage(
+  imageCandidates,
+  symbol || name
+);
+
+void addDexTokenImage(
+  contract,
+  imageCandidates,
+  symbol || name
+);
 
   const links =
     data.explorerLinks ||
