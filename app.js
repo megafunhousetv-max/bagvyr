@@ -102,6 +102,9 @@ const elements = {
   livePrice:
     document.getElementById("livePrice"),
 
+  liveVolume24h:
+    document.getElementById("liveVolume24h"),
+
   liveLiquidity:
     document.getElementById("liveLiquidity"),
 
@@ -3904,6 +3907,23 @@ async function refreshMarket() {
     }
 
     /*
+      LIVE VOLUME 24H
+    */
+
+    const volume24hUsd =
+      firstNumber([
+        data.volume24hUsd
+      ]);
+
+    setText(
+      elements.liveVolume24h,
+      volume24hUsd !== null && volume24hUsd >= 0
+        ? formatCurrencyCompact(volume24hUsd)
+        : "---"
+    );
+
+
+    /*
       HISTORICAL PEAK MC
     */
 
@@ -5067,6 +5087,11 @@ function resetAnalysisState() {
 
   setText(
     elements.livePrice,
+    "---"
+  );
+
+  setText(
+    elements.liveVolume24h,
     "---"
   );
 
