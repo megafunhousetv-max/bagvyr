@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>RugInspect | Admin</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #080d0b;
+      --panel: #101914;
+      --border: #26382c;
+      --muted: #9bad9f;
+      --green: #71f2a0;
+      --text: #f0f6f2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          ellipse at top,
+          rgba(21, 50, 35, 0.45),
+          transparent 65%
+        ),
+        var(--background);
+      color: var(--text);
+      font: 15px/1.6 system-ui, sans-serif;
+    }
+
+    main {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 70px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .brand span {
+      color: var(--green);
+    }
+
+    .admin-label {
+      margin-left: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--green);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0 0 20px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    #startup {
+      margin-top: 40px;
+      color: var(--muted);
+    }
+
+    #loginPanel {
+      max-width: 440px;
+      margin: 70px auto 0;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.2);
+    }
+
+    label {
+      display: block;
+      margin: 20px 0 7px;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #080e0a;
+      color: white;
+      font: inherit;
+    }
+
+    input:focus {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    button {
+      padding: 11px 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #14241b;
+      color: white;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      transition:
+        border-color 0.2s,
+        background 0.2s;
+    }
+
+    button:hover {
+      border-color: var(--green);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 3px;
+    }
+
+    .primary {
+      width: 100%;
+      margin-top: 24px;
+      border-color: var(--green);
+      background: var(--green);
+      color: #07140c;
+    }
+
+    .primary:hover {
+      background: #93ffb9;
+    }
+
+    .message {
+      min-height: 24px;
+      margin: 16px 0 0;
+      color: #ffb19c;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    #dashboard {
+      margin-top: 42px;
+    }
+
+    .dashboard-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .card-label {
+      min-height: 44px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .value {
+      display: block;
+      margin: 14px 0;
+      color: var(--green);
+      font-size: 42px;
+      font-weight: 750;
+      line-height: 1.2;
+      letter-spacing: -2px;
+      overflow-wrap: anywhere;
+    }
+
+    .card small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #updated {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footnote {
+      max-width: 850px;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 850px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dashboard-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      header {
+        gap: 12px;
+      }
+
+      .brand {
+        font-size: 21px;
+      }
+
+      .admin-label {
+        display: block;
+        margin-left: 0;
+      }
+
+      header a {
+        font-size: 13px;
+      }
+
+      #loginPanel {
+        margin-top: 40px;
+        padding: 24px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      .actions button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="brand">
+        Rug<span>Inspect</span>
+        <small class="admin-label">ADMIN PANEL</small>
+      </div>
+
+      <a href="index.html">← Späť na web</a>
+    </header>
+
+    <p id="startup" role="status">
+      Pripravujem prihlásenie…
+    </p>
+
+    <section
+      id="loginPanel"
+      aria-labelledby="loginTitle"
+      hidden
+    >
+      <p class="eyebrow">Admin prístup</p>
+
+      <h1 id="loginTitle">Prihlásenie</h1>
+
+      <p class="muted">
+        Prihlás sa a pozri si návštevnosť a vyhľadania tokenov.
+      </p>
+
+      <form id="loginForm">
+        <label for="username">Meno</label>
+
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          value="Admin"
+          required
+        >
+
+        <label for="password">Heslo</label>
+
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          id="loginButton"
+          class="primary"
+          type="submit"
+        >
+          Prihlásiť sa
+        </button>
+      </form>
+
+      <p
+        id="loginMessage"
+        class="message"
+        role="alert"
+      ></p>
+    </section>
+
+    <section
+      id="dashboard"
+      aria-labelledby="dashboardTitle"
+      hidden
+    >
+      <div class="dashboard-top">
+        <div>
+          <p class="eyebrow">Prehľad webu</p>
+
+          <h1 id="dashboardTitle">Štatistiky</h1>
+
+          <span class="muted">
+            Prihlásený ako Admin
+          </span>
+        </div>
+
+        <div class="actions">
+          <button id="refreshButton" type="button">
+            Obnoviť údaje
+          </button>
+
+          <button id="logoutButton" type="button">
+            Odhlásiť sa
+          </button>
+        </div>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-label">
+            Návštevníci · posledných 24 hodín
+          </div>
+
+          <strong id="visitors24" class="value">—</strong>
+
+          <small>Unikátne prehliadače</small>
+        </article>
+
+        <article class="card">
+          <div class="card-label">
+            Návštevníci · posledných 7 dní
+          </div>
+
+          <strong id="visitors7" class="value">—</strong>
+
+          <small>Unikátne prehliadače</small>
+        </article>
+
+        <article class="card">
+          <div class="card-label">
+            Návštevníci · tento mesiac
+          </div>
+
+          <strong id="visitorsMonth" class="value">—</strong>
+
+          <small id="monthLabel">
+            Od začiatku mesiaca
+          </small>
+        </article>
+
+        <article class="card">
+          <div class="card-label">
+            Vyhľadania tokenov · posledných 24 hodín
+          </div>
+
+          <strong id="searches24" class="value">—</strong>
+
+          <small id="uniqueTokens">
+            Úspešne načítané analýzy
+          </small>
+        </article>
+      </div>
+
+      <p id="updated" role="status">
+        Načítavam štatistiky…
+      </p>
+
+      <p
+        id="statsMessage"
+        class="message"
+        role="alert"
+      ></p>
+
+      <p class="footnote">
+        Návštevník je anonymný prehliadač.
+        Viac zariadení alebo vymazanie úložiska môže jednu
+        osobu započítať viackrát. Opakované vyhľadanie rovnakého
+        tokenu sa počíta znova. Automatické aktualizácie cien
+        sa nepočítajú. Štatistiky sa obnovujú každých 30 sekúnd.
+      </p>
+    </section>
+
+    <noscript>
+      Na prihlásenie je potrebný JavaScript.
+    </noscript>
+  </main>
+
+  <script src="supabase-config.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = id => document.getElementById(id);
+      const config = window.BAGVYR_SUPABASE;
+
+      if (
+        !config ||
+        !/^https:\/\/.+\.supabase\.co\/?$/.test(config.url) ||
+        !config.publishableKey ||
+        config.publishableKey.includes("_HERE") ||
+        !config.adminEmail ||
+        config.adminEmail.includes("_HERE")
+      ) {
+        $("startup").textContent =
+          "Chýba nastavenie v supabase-config.js. " +
+          "Skontroluj URL projektu, verejný kľúč a admin e-mail.";
+
+        return;
+      }
+
+      if (!window.supabase?.createClient) {
+        $("startup").textContent =
+          "Prihlasovanie sa nenačítalo. " +
+          "Skontroluj pripojenie a obnov stránku.";
+
+        return;
+      }
+
+      let client;
+
+      try {
+        client = window.supabase.createClient(
+          config.url,
+          config.publishableKey,
+          {
+            auth: {
+              storage: window.sessionStorage,
+              storageKey: "bagvyr_admin_auth",
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: false
+            }
+          }
+        );
+      } catch {
+        $("startup").textContent =
+          "Prihlásenie sa nedá pripraviť. " +
+          "Skontroluj nastavenie a povoľ úložisko prehliadača.";
+
+        return;
+      }
+
+      let session = null;
+      let loading = false;
+      let requestVersion = 0;
+      let timer = null;
+
+      function clearStats() {
+        const ids = [
+          "visitors24",
+          "visitors7",
+          "visitorsMonth",
+          "searches24"
+        ];
+
+        for (const id of ids) {
+          $(id).textContent = "—";
+        }
+
+        $("uniqueTokens").textContent =
+          "Úspešne načítané analýzy";
+
+        $("updated").textContent =
+          "Načítavam štatistiky…";
+
+        $("statsMessage").textContent = "";
+      }
+
+      function showLogin(message = "") {
+        session = null;
+        requestVersion++;
+
+        clearInterval(timer);
+        timer = null;
+
+        $("dashboard").hidden = true;
+        $("loginPanel").hidden = false;
+        $("startup").hidden = true;
+
+        $("password").value = "";
+        $("loginMessage").textContent = message;
+
+        clearStats();
+      }
+
+      async function loadStats() {
+        if (!session || loading) {
+          return;
+        }
+
+        const currentVersion = requestVersion;
+        const activeSession = session;
+
+        loading = true;
+        $("refreshButton").disabled = true;
+
+        const controller = new AbortController();
+
+        const timeout = setTimeout(
+          () => controller.abort(),
+          12000
+        );
+
+        try {
+          const response = await fetch(
+            config.url.replace(/\/$/, "") +
+              "/rest/v1/rpc/bagvyr_admin_stats",
+            {
+              method: "POST",
+
+              headers: {
+                apikey: config.publishableKey,
+                Authorization:
+                  "Bearer " + activeSession.access_token,
+                "Content-Type": "application/json"
+              },
+
+              body: "{}",
+              signal: controller.signal
+            }
+          );
+
+          if (
+            currentVersion !== requestVersion ||
+            !session
+          ) {
+            return;
+          }
+
+          if (
+            response.status === 401 ||
+            response.status === 403
+          ) {
+            const message =
+              "Účet nemá admin prístup alebo prihlásenie " +
+              "vypršalo. Skontroluj admin účet v Supabase.";
+
+            showLogin(message);
+
+            await client.auth.signOut({
+              scope: "local"
+            });
+
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+
+          const data = await response.json();
+
+          if (
+            currentVersion !== requestVersion ||
+            !session
+          ) {
+            return;
+          }
+
+          const fields = {
+            visitors24: "visitors_24h",
+            visitors7: "visitors_7d",
+            visitorsMonth: "visitors_month",
+            searches24: "searches_24h"
+          };
+
+          const values = {};
+
+          for (const [id, key] of Object.entries(fields)) {
+            const rawValue = data[key];
+
+            if (
+              rawValue === null ||
+              rawValue === undefined
+            ) {
+              throw new Error("Chýbajúce údaje");
+            }
+
+            const value = Number(rawValue);
+
+            if (
+              !Number.isSafeInteger(value) ||
+              value < 0
+            ) {
+              throw new Error("Neplatné údaje");
+            }
+
+            values[id] = value;
+          }
+
+          for (const [id, value] of Object.entries(values)) {
+            $(id).textContent =
+              value.toLocaleString("sk-SK");
+          }
+
+          const distinct = Number(data.unique_tokens_24h);
+
+          $("uniqueTokens").textContent =
+            Number.isSafeInteger(distinct) && distinct >= 0
+              ? "Z toho " +
+                distinct.toLocaleString("sk-SK") +
+                " rôznych tokenov"
+              : "Úspešne načítané analýzy";
+
+          $("monthLabel").textContent =
+            "Od " +
+            new Date(
+              data.month_started_at
+            ).toLocaleDateString(
+              "sk-SK",
+              {
+                timeZone: "Europe/Bratislava",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              }
+            );
+
+          $("updated").textContent =
+            "Aktualizované: " +
+            new Date(
+              data.updated_at
+            ).toLocaleString(
+              "sk-SK",
+              {
+                timeZone: "Europe/Bratislava"
+              }
+            );
+
+          $("statsMessage").textContent = "";
+          $("loginMessage").textContent = "";
+
+          $("startup").hidden = true;
+          $("loginPanel").hidden = true;
+          $("dashboard").hidden = false;
+
+          if (!timer) {
+            timer = setInterval(() => {
+              if (!document.hidden) {
+                void loadStats();
+              }
+            }, 30000);
+          }
+        } catch {
+          if (
+            currentVersion !== requestVersion ||
+            !session
+          ) {
+            return;
+          }
+
+          if ($("dashboard").hidden) {
+            $("loginMessage").textContent =
+              "Štatistiky sa nenačítali. " +
+              "Skontroluj SQL nastavenie v Supabase " +
+              "a skús prihlásenie znova.";
+
+            $("startup").hidden = true;
+            $("loginPanel").hidden = false;
+          } else {
+            $("statsMessage").textContent =
+              "Údaje sa nepodarilo obnoviť. " +
+              "Zobrazené hodnoty sú z posledného " +
+              "úspešného načítania. " +
+              "Skús Obnoviť údaje.";
+          }
+        } finally {
+          clearTimeout(timeout);
+
+          loading = false;
+          $("refreshButton").disabled = false;
+        }
+      }
+
+      client.auth.onAuthStateChange(
+        (event, nextSession) => {
+          if (
+            event === "INITIAL_SESSION" ||
+            event === "SIGNED_IN" ||
+            event === "SIGNED_OUT"
+          ) {
+            setTimeout(() => {
+              if (!nextSession) {
+                const message =
+                  event === "SIGNED_OUT"
+                    ? $("loginMessage").textContent
+                    : "";
+
+                showLogin(message);
+                return;
+              }
+
+              if (
+                session?.user.id !== nextSession.user.id
+              ) {
+                requestVersion++;
+                clearStats();
+              }
+
+              session = nextSession;
+
+              void loadStats();
+            }, 0);
+          } else if (event === "TOKEN_REFRESHED") {
+            session = nextSession;
+          }
+        }
+      );
+
+      $("loginForm").addEventListener(
+        "submit",
+        async event => {
+          event.preventDefault();
+
+          if ($("loginButton").disabled) {
+            return;
+          }
+
+          $("loginMessage").textContent = "";
+
+          if (
+            $("username").value.trim() !== "Admin"
+          ) {
+            $("loginMessage").textContent =
+              "Nesprávne meno alebo heslo.";
+
+            return;
+          }
+
+          const password = $("password").value;
+
+          $("loginButton").disabled = true;
+          $("loginButton").textContent = "Prihlasujem…";
+
+          try {
+            const { data, error } =
+              await client.auth.signInWithPassword({
+                email: config.adminEmail,
+                password
+              });
+
+            if (error || !data?.session) {
+              throw new Error("Login failed");
+            }
+
+            $("password").value = "";
+
+            session = data.session;
+
+            await loadStats();
+          } catch {
+            $("loginMessage").textContent =
+              "Prihlásenie zlyhalo. " +
+              "Skontroluj meno, heslo a pripojenie.";
+          } finally {
+            $("loginButton").disabled = false;
+            $("loginButton").textContent =
+              "Prihlásiť sa";
+          }
+        }
+      );
+
+      $("refreshButton").addEventListener(
+        "click",
+        () => {
+          void loadStats();
+        }
+      );
+
+      $("logoutButton").addEventListener(
+        "click",
+        async () => {
+          $("logoutButton").disabled = true;
+
+          try {
+            const { error } =
+              await client.auth.signOut({
+                scope: "local"
+              });
+
+            if (error) {
+              throw error;
+            }
+
+            showLogin();
+          } catch {
+            $("statsMessage").textContent =
+              "Odhlásenie sa nepodarilo. " +
+              "Skús to znova.";
+          } finally {
+            $("logoutButton").disabled = false;
+          }
+        }
+      );
+    })();
+  </script>
+</body>
+</html>
