@@ -2648,14 +2648,56 @@ function syncExitAnalysisDetails() {
     if (!source || !target) return;
 
     target.textContent = source.textContent;
-
     target.classList.remove("safe", "warning", "danger");
 
-    ["safe", "warning", "danger"].forEach(className => {
-      if (source.classList.contains(className)) {
-        target.classList.add(className);
+    const status = ["danger", "warning", "safe"].find(
+      className => source.classList.contains(className)
+    );
+
+    if (status) {
+      target.classList.add(status);
+    }
+
+    const card = target.closest(
+      ".exit-modern-primary-card, " +
+      ".exit-modern-detail-card, " +
+      ".exit-modern-status-card"
+    );
+
+    if (!card) return;
+
+    const rgb = {
+      safe: "73, 255, 151",
+      warning: "255, 166, 64",
+      danger: "255, 77, 100"
+    }[status] || "150, 158, 154";
+
+    const applyStyle = (element, property, value) => {
+      if (element) {
+        element.style.setProperty(property, value, "important");
       }
+    };
+
+    applyStyle(target, "color", `rgb(${rgb})`);
+    applyStyle(card, "border-color", `rgba(${rgb}, 0.25)`);
+    applyStyle(card, "background", `rgba(${rgb}, 0.04)`);
+
+    card.querySelectorAll(
+      ".exit-modern-card-icon, .exit-detail-icon, .exit-status-icon"
+    ).forEach(icon => {
+      applyStyle(icon, "background", `rgba(${rgb}, 0.08)`);
+      applyStyle(icon, "border-color", `rgba(${rgb}, 0.3)`);
+
+      icon.querySelectorAll("svg").forEach(svg => {
+        applyStyle(svg, "stroke", `rgb(${rgb})`);
+      });
     });
+
+    const badge = card.querySelector(".exit-status-source");
+
+    applyStyle(badge, "color", `rgb(${rgb})`);
+    applyStyle(badge, "border-color", `rgba(${rgb}, 0.25)`);
+    applyStyle(badge, "background", `rgba(${rgb}, 0.06)`);
   });
 }
 
