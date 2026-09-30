@@ -3910,14 +3910,20 @@ async function refreshMarket() {
       LIVE VOLUME 24H
     */
 
+    const rawVolume24h = data.volume24hUsd;
+
     const volume24hUsd =
-      firstNumber([
-        data.volume24hUsd
-      ]);
+      rawVolume24h === null ||
+      rawVolume24h === undefined ||
+      rawVolume24h === ""
+        ? null
+        : Number(rawVolume24h);
 
     setText(
-      elements.liveVolume24h,
-      volume24hUsd !== null && volume24hUsd >= 0
+      document.getElementById("liveVolume24h"),
+      volume24hUsd !== null &&
+      Number.isFinite(volume24hUsd) &&
+      volume24hUsd >= 0
         ? formatCurrencyCompact(volume24hUsd)
         : "---"
     );
