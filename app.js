@@ -1044,6 +1044,91 @@ function renderScore(
   scoreObject,
   data
 ) {
+  const scoreElement = elements.riskScore;
+
+  if (scoreElement) {
+    const showBreakdown = () => {
+      if (!Array.isArray(scoreObject?.breakdown)) {
+        alert("Score breakdown is unavailable. Run a new analysis.");
+        return;
+      }
+
+      const lines = [
+        "SCORE BREAKDOWN",
+        "Starting score: 100",
+        ""
+      ];
+
+      scoreObject.breakdown.forEach(row => {
+        const value = typeof row.value === "number"
+          ? row.value.toLocaleString("en-US", {
+              maximumFractionDigits: 2
+            })
+          : row.value;
+
+        lines.push(
+          `${row.metric}: ${value} → -${row.deduction}`
+        );
+      });
+
+      if (scoreObject.concentrationAdjustment > 0) {
+        lines.push(
+          "",
+          `Ownership overlap adjustment: +${scoreObject.concentrationAdjustment}`,
+          "Combined ownership deduction limited to 45."
+        );
+      }
+
+      lines.push(
+        "",
+        `Total deduction: ${scoreObject.totalDeduction}`,
+        `Score before ceilings: ${scoreObject.beforeCaps}`
+      );
+
+      if (scoreObject.caps?.length) {
+        lines.push("", "SCORE CEILINGS");
+
+        scoreObject.caps.forEach(item => {
+          lines.push(`${item.reason} → maximum ${item.maximum}`);
+        });
+
+        lines.push("The lowest ceiling applies.");
+      }
+
+      if (scoreObject.missing?.length) {
+        lines.push(
+          "",
+          "MISSING DATA",
+          ...scoreObject.missing
+        );
+      }
+
+      lines.push(
+        "",
+        `Final score: ${scoreObject.score ?? "Unavailable"}`,
+        "",
+        "Higher score means fewer detected risks.",
+        "It is not a probability of safety or fraud."
+      );
+
+      alert(lines.join("\n"));
+    };
+
+    scoreElement.style.cursor = "pointer";
+    scoreElement.setAttribute("role", "button");
+    scoreElement.setAttribute("tabindex", "0");
+    scoreElement.setAttribute("aria-label", "Show score breakdown");
+
+    scoreElement.onclick = showBreakdown;
+
+    scoreElement.onkeydown = event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showBreakdown();
+      }
+    };
+  }
+
   let score;
 
   if (
