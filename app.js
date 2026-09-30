@@ -884,10 +884,11 @@ async function getDexTokenImage(contract) {
 
   try {
     return await request;
-  } catch {
-    dexTokenImageCache.delete(contract);
-    return null;
-  }
+} catch (error) {
+  console.warn("DexScreener logo loading failed:", error);
+  dexTokenImageCache.delete(contract);
+  return null;
+}
 }
 
 async function addDexTokenImage(
