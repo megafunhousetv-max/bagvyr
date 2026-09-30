@@ -485,29 +485,70 @@
 
                   <div class="contract-row">
 
-                    <code id="tokenContract">
-                      ---
-                    </code>
+  <code id="tokenContract">
+    ---
+  </code>
 
-                    <button
-                      id="copyContractButton"
-                      class="icon-button"
-                      type="button"
-                      title="Copy contract address"
-                    >
-                      COPY
-                    </button>
+  <button
+    id="caCopyButton"
+    class="icon-button"
+    type="button"
+    title="Copy contract address"
+    onclick="
+      const button = this;
+      const ca = document.getElementById('tokenContract').textContent.trim();
 
-                    <button
-                      id="refreshAnalysisButton"
-                      class="icon-button"
-                      type="button"
-                      title="Reload analysis if data is missing"
-                    >
-                      REFRESH
-                    </button>
+      if (!ca || ca === '---') {
+        alert('CA ešte nie je načítaná.');
+        return;
+      }
 
-                  </div>
+      const copied = () => {
+        button.textContent = 'COPIED!';
+        setTimeout(() => button.textContent = 'COPY', 1500);
+      };
+
+      const fallback = () => {
+        const field = document.createElement('textarea');
+        field.value = ca;
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.focus();
+        field.select();
+
+        let success = false;
+        try {
+          success = document.execCommand('copy');
+        } catch {}
+
+        field.remove();
+
+        if (success) copied();
+        else window.prompt('Skopíruj CA pomocou Ctrl+C:', ca);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(ca).then(copied).catch(fallback);
+      } else {
+        fallback();
+      }
+    "
+  >
+    COPY
+  </button>
+
+  <button
+    id="pageRefreshButton"
+    class="icon-button"
+    type="button"
+    title="Refresh entire page"
+    onclick="window.location.reload()"
+  >
+    REFRESH
+  </button>
+
+</div>
 
 
                   <div class="token-links">
@@ -3464,6 +3505,8 @@
 
   <!-- MAIN APPLICATION -->
 
+  <script src="supabase-config.js"></script>
+  <script src="analytics.js"></script>
   <script src="app.js"></script>
 
 </body>

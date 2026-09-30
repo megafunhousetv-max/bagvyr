@@ -322,7 +322,7 @@
     </header>
 
     <p id="startup" role="status">
-      Pripravujem prihlásenie…
+      Preparing login…
     </p>
 
     <section
@@ -330,16 +330,16 @@
       aria-labelledby="loginTitle"
       hidden
     >
-      <p class="eyebrow">Admin prístup</p>
+      <p class="eyebrow">Admin access</p>
 
-      <h1 id="loginTitle">Prihlásenie</h1>
+      <h1 id="loginTitle">Login</h1>
 
       <p class="muted">
-        Prihlás sa a pozri si návštevnosť a vyhľadania tokenov.
+        Sign in to view website traffic and token searches.
       </p>
 
       <form id="loginForm">
-        <label for="username">Meno</label>
+        <label for="username">Username</label>
 
         <input
           id="username"
@@ -350,7 +350,7 @@
           required
         >
 
-        <label for="password">Heslo</label>
+        <label for="password">Password</label>
 
         <input
           id="password"
@@ -365,7 +365,7 @@
           class="primary"
           type="submit"
         >
-          Prihlásiť sa
+          Sign in
         </button>
       </form>
 
@@ -383,22 +383,22 @@
     >
       <div class="dashboard-top">
         <div>
-          <p class="eyebrow">Prehľad webu</p>
+          <p class="eyebrow">Website overview</p>
 
-          <h1 id="dashboardTitle">Štatistiky</h1>
+          <h1 id="dashboardTitle">Statistics</h1>
 
           <span class="muted">
-            Prihlásený ako Admin
+            Logged in as Admin
           </span>
         </div>
 
         <div class="actions">
           <button id="refreshButton" type="button">
-            Obnoviť údaje
+            Refresh data
           </button>
 
           <button id="logoutButton" type="button">
-            Odhlásiť sa
+            Logout
           </button>
         </div>
       </div>
@@ -406,51 +406,51 @@
       <div class="cards">
         <article class="card">
           <div class="card-label">
-            Návštevníci · posledných 24 hodín
+            Visitors · last 24 hours
           </div>
 
           <strong id="visitors24" class="value">—</strong>
 
-          <small>Unikátne prehliadače</small>
+          <small>Unique browsers</small>
         </article>
 
         <article class="card">
           <div class="card-label">
-            Návštevníci · posledných 7 dní
+            Visitors · last 7 days
           </div>
 
           <strong id="visitors7" class="value">—</strong>
 
-          <small>Unikátne prehliadače</small>
+          <small>Unique browsers</small>
         </article>
 
         <article class="card">
           <div class="card-label">
-            Návštevníci · tento mesiac
+            Visitors · this month
           </div>
 
           <strong id="visitorsMonth" class="value">—</strong>
 
           <small id="monthLabel">
-            Od začiatku mesiaca
+            Since the beginning of the month
           </small>
         </article>
 
         <article class="card">
           <div class="card-label">
-            Vyhľadania tokenov · posledných 24 hodín
+            Token searches · last 24 hours
           </div>
 
           <strong id="searches24" class="value">—</strong>
 
           <small id="uniqueTokens">
-            Úspešne načítané analýzy
+            Successfully loaded analyses
           </small>
         </article>
       </div>
 
       <p id="updated" role="status">
-        Načítavam štatistiky…
+        Loading statistics…
       </p>
 
       <p
@@ -460,16 +460,16 @@
       ></p>
 
       <p class="footnote">
-        Návštevník je anonymný prehliadač.
-        Viac zariadení alebo vymazanie úložiska môže jednu
-        osobu započítať viackrát. Opakované vyhľadanie rovnakého
-        tokenu sa počíta znova. Automatické aktualizácie cien
-        sa nepočítajú. Štatistiky sa obnovujú každých 30 sekúnd.
-      </p>
+  Visitors are identified by anonymous browser IDs.
+  Multiple devices or clearing browser storage may count
+  one person more than once. Repeated searches for the same
+  token are counted again. Automatic price updates are not
+  counted. Statistics refresh every 30 seconds.
+</p>
     </section>
 
     <noscript>
-      Na prihlásenie je potrebný JavaScript.
+      JavaScript is required to sign in.
     </noscript>
   </main>
 
@@ -623,8 +623,8 @@
             response.status === 403
           ) {
             const message =
-              "Účet nemá admin prístup alebo prihlásenie " +
-              "vypršalo. Skontroluj admin účet v Supabase.";
+              "Account does not have admin access or login " +
+              "has expired. Please check the admin account in Supabase.";
 
             showLogin(message);
 
@@ -688,17 +688,17 @@
 
           $("uniqueTokens").textContent =
             Number.isSafeInteger(distinct) && distinct >= 0
-              ? "Z toho " +
-                distinct.toLocaleString("sk-SK") +
-                " rôznych tokenov"
-              : "Úspešne načítané analýzy";
+              ? "Since " +
+                distinct.toLocaleString("en-US") +
+                " unique tokens"
+              : "Successfully loaded analyses";
 
           $("monthLabel").textContent =
-            "Od " +
+            "Since " +
             new Date(
               data.month_started_at
             ).toLocaleDateString(
-              "sk-SK",
+              "en-GB",
               {
                 timeZone: "Europe/Bratislava",
                 day: "numeric",
@@ -708,11 +708,11 @@
             );
 
           $("updated").textContent =
-            "Aktualizované: " +
+            "Updated: " +
             new Date(
               data.updated_at
             ).toLocaleString(
-              "sk-SK",
+              "en-GB",
               {
                 timeZone: "Europe/Bratislava"
               }
@@ -742,18 +742,18 @@
 
           if ($("dashboard").hidden) {
             $("loginMessage").textContent =
-              "Štatistiky sa nenačítali. " +
-              "Skontroluj SQL nastavenie v Supabase " +
-              "a skús prihlásenie znova.";
+              "Statistics failed to load. " +
+              "Please check the SQL settings in Supabase " +
+              "and try logging in again.";
 
             $("startup").hidden = true;
             $("loginPanel").hidden = false;
           } else {
             $("statsMessage").textContent =
-              "Údaje sa nepodarilo obnoviť. " +
-              "Zobrazené hodnoty sú z posledného " +
-              "úspešného načítania. " +
-              "Skús Obnoviť údaje.";
+              "Failed to refresh data. " +
+              "Displayed values are from the last " +
+              "successful load. " +
+              "Please try refreshing the data.";
           }
         } finally {
           clearTimeout(timeout);
@@ -813,7 +813,7 @@
             $("username").value.trim() !== "Admin"
           ) {
             $("loginMessage").textContent =
-              "Nesprávne meno alebo heslo.";
+              "Invalid username or password.";
 
             return;
           }
@@ -821,7 +821,7 @@
           const password = $("password").value;
 
           $("loginButton").disabled = true;
-          $("loginButton").textContent = "Prihlasujem…";
+          $("loginButton").textContent = "Signing in…";
 
           try {
             const { data, error } =
@@ -841,12 +841,12 @@
             await loadStats();
           } catch {
             $("loginMessage").textContent =
-              "Prihlásenie zlyhalo. " +
-              "Skontroluj meno, heslo a pripojenie.";
+              "Login failed. " +
+              "Please check your username, password, and connection.";
           } finally {
             $("loginButton").disabled = false;
             $("loginButton").textContent =
-              "Prihlásiť sa";
+              "Sign in";
           }
         }
       );
@@ -876,8 +876,8 @@
             showLogin();
           } catch {
             $("statsMessage").textContent =
-              "Odhlásenie sa nepodarilo. " +
-              "Skús to znova.";
+              "Failed to sign out. " +
+              "Please try again.";
           } finally {
             $("logoutButton").disabled = false;
           }

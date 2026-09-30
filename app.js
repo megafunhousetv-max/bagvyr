@@ -610,6 +610,7 @@ async function analyzeToken(contract) {
       data;
 
 renderAnalysis(data);
+window.BagVyrAnalytics?.tokenSearch(contract);
 
 await loadExitAnalysis(contract);
 
