@@ -422,6 +422,32 @@ window.addEventListener(
    ========================================================= */
 
 function initializeEvents() {
+    elements.copyContractButton?.addEventListener(
+    "click",
+    copyContract
+  );
+
+  const refreshButton =
+    document.getElementById("refreshAnalysisButton");
+
+  refreshButton?.addEventListener("click", async () => {
+    if (state.analyzing || !state.currentContract) {
+      return;
+    }
+
+    const contract = state.currentContract;
+
+    refreshButton.disabled = true;
+    refreshButton.textContent = "REFRESHING...";
+
+    try {
+      await analyzeToken(contract);
+    } finally {
+      refreshButton.disabled = false;
+      refreshButton.textContent = "REFRESH";
+    }
+  });
+  
   elements.analyzeButton?.addEventListener(
     "click",
     handleAnalyze
