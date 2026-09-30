@@ -8648,3 +8648,114 @@ code {
 .hero-tags {
   justify-content: center !important;
 }
+
+/* =========================
+   GLOBAL WALL BACKGROUND
+   ========================= */
+
+html,
+body {
+  background:
+    linear-gradient(
+      rgba(0, 10, 7, 0.58),
+      rgba(0, 10, 7, 0.72)
+    ),
+    url("wall.png") center top / cover fixed no-repeat !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+
+  background:
+    radial-gradient(
+      circle at 50% 25%,
+      rgba(0, 255, 145, 0.05),
+      transparent 45%
+    );
+}
+
+
+/* SECTION 04 — COLORS BASED ON ANALYSIS */
+
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+) {
+  --exit-rgb: 150, 158, 154;
+
+  border-color: rgba(var(--exit-rgb), 0.22);
+  background: rgba(var(--exit-rgb), 0.035);
+
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* GREEN */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+):has(strong.safe) {
+  --exit-rgb: 73, 255, 151;
+}
+
+/* ORANGE */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+):has(strong.warning) {
+  --exit-rgb: 255, 166, 64;
+}
+
+/* RED */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+):has(strong.danger) {
+  --exit-rgb: 255, 77, 100;
+}
+
+/* RESULT TEXT */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+) strong {
+  color: rgb(var(--exit-rgb));
+}
+
+/* ICON BACKGROUND AND BORDER */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+) :is(
+  .exit-modern-card-icon,
+  .exit-detail-icon,
+  .exit-status-icon
+) {
+  background: rgba(var(--exit-rgb), 0.08);
+  border-color: rgba(var(--exit-rgb), 0.25);
+}
+
+/* ICON COLOR */
+:is(
+  .exit-modern-primary-card,
+  .exit-modern-detail-card,
+  .exit-modern-status-card
+) svg {
+  stroke: rgb(var(--exit-rgb));
+}
+
+/* ANALYSIS BADGE */
+.exit-modern-status-card .exit-status-source {
+  color: rgb(var(--exit-rgb));
+  border-color: rgba(var(--exit-rgb), 0.25);
+  background: rgba(var(--exit-rgb), 0.06);
+}
