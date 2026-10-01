@@ -1,0 +1,518 @@
+(() => {
+  "use strict";
+
+  const root = document.getElementById("trendingRoot");
+  if (!root) return;
+
+  const API =
+    "https://bagvyr-api.megafunhousetv.workers.dev/api/trending";
+
+  let activeBoard = "trending";
+  let data = null;
+  let loading = false;
+
+  const style = document.createElement("style");
+
+  style.textContent = `
+    #trendingRoot {
+      color: inherit;
+      padding-bottom: 32px;
+    }
+
+    #trendingRoot button,
+    #trendingRoot a {
+      font: inherit;
+    }
+
+    .ri-trend-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 24px 0 16px;
+    }
+
+    .ri-trend-tab {
+      padding: 11px 20px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .ri-trend-tab[aria-selected="true"] {
+      background: rgba(60,230,145,.12);
+      border-color: #3ce691;
+      color: #3ce691;
+    }
+
+    .ri-trend-status {
+      margin: 12px 0;
+      font-size: 13px;
+      opacity: .7;
+    }
+
+    .ri-trend-scroll {
+      overflow-x: auto;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      background: rgba(8,18,14,.65);
+    }
+
+    .ri-trend-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .ri-trend-table th,
+    .ri-trend-table td {
+      padding: 15px 14px;
+      text-align: right;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      white-space: nowrap;
+    }
+
+    .ri-trend-table th {
+      font-size: 12px;
+      opacity: .65;
+    }
+
+    .ri-trend-table th:nth-child(2),
+    .ri-trend-table td:nth-child(2) {
+      text-align: left;
+    }
+
+    .ri-trend-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .ri-trend-token {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .ri-trend-token:hover {
+      color: #3ce691;
+    }
+
+    .ri-trend-icon {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      object-fit: cover;
+      background: rgba(60,230,145,.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ri-trend-name {
+      display: block;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 600;
+    }
+
+    .ri-trend-symbol {
+      display: block;
+      font-size: 12px;
+      opacity: .6;
+      margin-top: 3px;
+    }
+
+    .ri-trend-badge {
+      display: inline-block;
+      margin-left: 7px;
+      font-size: 10px;
+      color: #ffd783;
+    }
+
+    .ri-trend-ads {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .ri-trend-ad {
+      display: block;
+      padding: 18px;
+      border: 1px solid rgba(255,205,105,.55);
+      border-radius: 16px;
+      background: rgba(255,205,105,.05);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .ri-trend-ad-label {
+      display: block;
+      color: #ffd783;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+    }
+
+    .ri-trend-empty {
+      padding: 36px 20px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      text-align: center;
+      opacity: .75;
+    }
+
+    @media (max-width: 700px) {
+      .ri-trend-ads {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function validContract(value) {
+    return (
+      typeof value === "string" &&
+      /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value)
+    );
+  }
+
+  function numeric(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      typeof value === "boolean" ||
+      String(value).trim() === ""
+    ) return null;
+
+    const number = Number(value);
+    return Number.isFinite(number) && number >= 0
+      ? number
+      : null;
+  }
+
+  function money(value) {
+    const number = numeric(value);
+    if (number === null) return "—";
+
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: "compact",
+      maximumFractionDigits: 2
+    }).format(number);
+  }
+
+  function holders(value) {
+    const number = numeric(value);
+    return number === null
+      ? "—"
+      : new Intl.NumberFormat("en-US").format(number);
+  }
+
+  function age(value) {
+    const timestamp = Date.parse(value);
+    if (!Number.isFinite(timestamp)) return "—";
+
+    const minutes = Math.max(
+      0,
+      Math.floor((Date.now() - timestamp) / 60000)
+    );
+
+    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
+
+    return `${Math.floor(minutes / 1440)}d`;
+  }
+
+  function tokenIcon(item) {
+    const fallback = element(
+      "span",
+      "ri-trend-icon",
+      (item.symbol || item.name || "?").slice(0, 1)
+    );
+
+    let url;
+    try {
+      url = new URL(item.image_url);
+      if (url.protocol !== "https:") return fallback;
+    } catch {
+      return fallback;
+    }
+
+    const image = element("img", "ri-trend-icon");
+    image.src = url.href;
+    image.alt = "";
+    image.loading = "lazy";
+    image.referrerPolicy = "no-referrer";
+
+    image.addEventListener(
+      "error",
+      () => image.replaceWith(fallback),
+      { once: true }
+    );
+
+    return image;
+  }
+
+  function tokenContent(item) {
+    const content = element("span", "ri-trend-token");
+    content.append(tokenIcon(item));
+
+    const details = element("span");
+    details.append(
+      element(
+        "span",
+        "ri-trend-name",
+        item.name || item.symbol || "Unknown token"
+      ),
+      element(
+        "span",
+        "ri-trend-symbol",
+        item.symbol || `${item.contract.slice(0, 6)}…`
+      )
+    );
+
+    if (item.featured) {
+      details.append(
+        element("span", "ri-trend-badge", "FEATURED")
+      );
+    }
+
+    content.append(details);
+    return content;
+  }
+
+  function scannerLink(item, className) {
+    const link = element("a", className);
+    link.href = "#scanner";
+
+    link.addEventListener("click", () => {
+      const input = document.getElementById("contractInput");
+      if (input) input.value = item.contract;
+
+      // Spustí existujúci scanner po prepnutí stránky.
+      setTimeout(() => {
+        if (typeof analyzeToken === "function") {
+          analyzeToken(item.contract);
+        }
+      }, 0);
+    });
+
+    return link;
+  }
+
+  function notExpired(item) {
+    if (!item.expires_at) return true;
+
+    const expiry = Date.parse(item.expires_at);
+    return Number.isFinite(expiry) && expiry > Date.now();
+  }
+
+  function render() {
+    root.replaceChildren();
+
+    const ads = (Array.isArray(data?.ads) ? data.ads : [])
+      .filter(item =>
+        validContract(item.contract) && notExpired(item)
+      )
+      .slice(0, 3);
+
+    if (ads.length) {
+      const adGrid = element("div", "ri-trend-ads");
+
+      for (const item of ads) {
+        const ad = scannerLink(item, "ri-trend-ad");
+
+        ad.append(
+          element(
+            "span",
+            "ri-trend-ad-label",
+            "ADVERTISEMENT"
+          ),
+          tokenContent({ ...item, featured: false })
+        );
+
+        adGrid.append(ad);
+      }
+
+      root.append(adGrid);
+    }
+
+    const tabs = element("div", "ri-trend-tabs");
+
+    for (const [board, label] of [
+      ["trending", "Trending"],
+      ["new_coins", "New Coins"]
+    ]) {
+      const button = element("button", "ri-trend-tab", label);
+      button.type = "button";
+      button.setAttribute(
+        "aria-selected",
+        String(activeBoard === board)
+      );
+
+      button.addEventListener("click", () => {
+        activeBoard = board;
+        render();
+      });
+
+      tabs.append(button);
+    }
+
+    root.append(tabs);
+
+    const board = data?.boards?.[activeBoard];
+
+    const items = (
+      Array.isArray(board?.items) ? board.items : []
+    ).filter(item =>
+      validContract(item.contract) && notExpired(item)
+    ).slice(0, 15);
+
+    const updated = Date.parse(board?.updated_at);
+
+    root.append(
+      element(
+        "div",
+        "ri-trend-status",
+        Number.isFinite(updated)
+          ? `Updated ${new Date(updated).toLocaleTimeString(
+              [],
+              { hour: "2-digit", minute: "2-digit" }
+            )} · Lists refresh every 3 minutes`
+          : "Lists refresh every 3 minutes"
+      )
+    );
+
+    if (!items.length) {
+      root.append(
+        element(
+          "div",
+          "ri-trend-empty",
+          data
+            ? "No tokens currently match this list."
+            : "Loading tokens…"
+        )
+      );
+      return;
+    }
+
+    const scroll = element("div", "ri-trend-scroll");
+    const table = element("table", "ri-trend-table");
+    const head = element("thead");
+    const heading = element("tr");
+
+    for (const label of [
+      "#", "Token", "Market Cap", "Liquidity",
+      "24h Volume", "Holders", "Age"
+    ]) {
+      const cell = element("th", "", label);
+      cell.scope = "col";
+      heading.append(cell);
+    }
+
+    head.append(heading);
+    table.append(head);
+
+    const body = element("tbody");
+
+    items.forEach((item, index) => {
+      const row = element("tr");
+      row.append(element("td", "", String(index + 1)));
+
+      const tokenCell = element("td");
+      const link = scannerLink(item, "ri-trend-token");
+      link.append(tokenContent(item));
+      tokenCell.append(link);
+      row.append(tokenCell);
+
+      for (const value of [
+        money(item.market_cap_usd),
+        money(item.liquidity_usd),
+        money(item.volume_24h_usd),
+        holders(item.holder_count),
+        age(item.token_created_at)
+      ]) {
+        row.append(element("td", "", value));
+      }
+
+      body.append(row);
+    });
+
+    table.append(body);
+    scroll.append(table);
+    root.append(scroll);
+  }
+
+  async function refresh() {
+    if (loading) return;
+    loading = true;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      15000
+    );
+
+    try {
+      const response = await fetch(API, {
+        cache: "no-store",
+        signal: controller.signal
+      });
+
+      if (!response.ok) throw new Error("Trending HTTP error");
+
+      const result = await response.json();
+      if (result.success !== true || !result.boards) {
+        throw new Error("Invalid trending response");
+      }
+
+      data = result;
+      render();
+    } catch {
+      const status = root.querySelector(".ri-trend-status");
+      if (status) {
+        status.textContent = data
+          ? "Refresh failed. Showing the last loaded results."
+          : "Unable to load tokens. Retrying automatically.";
+      }
+
+      if (!data) {
+        const empty = root.querySelector(".ri-trend-empty");
+        if (empty) empty.textContent = "Tokens are unavailable.";
+      }
+    } finally {
+      clearTimeout(timeout);
+      loading = false;
+    }
+  }
+
+  render();
+  refresh();
+
+  setInterval(() => {
+    if (!document.hidden) refresh();
+  }, 180000);
+
+  // Odstráni expirované reklamy a Featured coiny.
+  setInterval(() => {
+    if (!document.hidden && data) render();
+  }, 15000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refresh();
+  });
+})();
