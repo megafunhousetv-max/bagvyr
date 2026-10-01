@@ -237,34 +237,149 @@
     return `${Math.floor(minutes / 1440)}d`;
   }
 
-  function tokenIcon(item) {
-    const fallback = element(
-      "span",
-      "ri-trend-icon",
-      (item.symbol || item.name || "?").slice(0, 1)
-    );
+  const trendingImageCache = new Map();
 
-    let url;
-    try {
-      url = new URL(item.image_url);
-      if (url.protocol !== "https:") return fallback;
-    } catch {
-      return fallback;
+  function normalizeTrendingImage(value) {
+    if (typeof value !== "string" || !value.trim()) {
+      return null;
     }
 
-    const image = element("img", "ri-trend-icon");
-    image.src = url.href;
+    let url = value.trim();
+
+    if (url.startsWith("ipfs://")) {
+      url = "https://ipfs.io/ipfs/" +
+        url.slice(7).replace(/^ipfs\//, "");
+    }
+
+    if (url.startsWith("ar://")) {
+      url = "https://arweave.net/" + url.slice(5);
+    }
+
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" ? parsed.href : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function getTrendingDexImages(contract) {
+    if (!contract) return [];
+
+    if (trendingImageCache.has(contract)) {
+      return trendingImageCache.get(contract);
+    }
+
+    const request = (async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(
+        () => controller.abort(),
+        8000
+      );
+
+      try {
+        const response = await fetch(
+          "https://api.dexscreener.com/token-pairs/v1/solana/" +
+            encodeURIComponent(contract),
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Dex image HTTP " + response.status);
+        }
+
+        const pairs = await response.json();
+
+        if (!Array.isArray(pairs)) {
+          throw new Error("Invalid Dex image response");
+        }
+
+        return [...new Set(
+          pairs
+            .filter(pair =>
+              pair?.chainId === "solana" &&
+              pair?.baseToken?.address === contract
+            )
+            .sort((a, b) =>
+              Number(b?.liquidity?.usd || 0) -
+              Number(a?.liquidity?.usd || 0)
+            )
+            .map(pair =>
+              normalizeTrendingImage(pair?.info?.imageUrl)
+            )
+            .filter(Boolean)
+        )];
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
+
+    trendingImageCache.set(contract, request);
+
+    try {
+      return await request;
+    } catch {
+      trendingImageCache.delete(contract);
+      return [];
+    }
+  }
+
+  function tokenIcon(item) {
+    const container = element("span", "ri-trend-icon");
+    const letter = (item.symbol || item.name || "?")
+      .slice(0, 1);
+
+    container.textContent = letter;
+
+    const image = document.createElement("img");
     image.alt = "";
     image.loading = "lazy";
-    image.referrerPolicy = "no-referrer";
+    image.style.cssText =
+      "width:100%;height:100%;object-fit:cover;border-radius:inherit;";
 
-    image.addEventListener(
-      "error",
-      () => image.replaceWith(fallback),
-      { once: true }
-    );
+    const tried = new Set();
+    let dexRequested = false;
+    let candidates = [
+      normalizeTrendingImage(item.image_url)
+    ].filter(Boolean);
 
-    return image;
+    async function loadNext() {
+      let next = candidates.shift();
+
+      while (next && tried.has(next)) {
+        next = candidates.shift();
+      }
+
+      if (!next && !dexRequested) {
+        dexRequested = true;
+
+        candidates = await getTrendingDexImages(
+          item.contract
+        );
+
+        return loadNext();
+      }
+
+      if (!next) {
+        container.textContent = letter;
+        return;
+      }
+
+      tried.add(next);
+      image.src = next;
+    }
+
+    image.onload = () => {
+      container.replaceChildren(image);
+    };
+
+    image.onerror = () => {
+      void loadNext();
+    };
+
+    void loadNext();
+
+    return container;
   }
 
   function tokenContent(item) {
