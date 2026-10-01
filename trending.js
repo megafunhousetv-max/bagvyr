@@ -174,6 +174,190 @@
   `;
 
   document.head.appendChild(style);
+const designStyle = document.createElement("style");
+
+designStyle.textContent = `
+  #trending {
+    min-height: 100vh;
+    background-color: #020806;
+    background-image:
+      linear-gradient(
+        rgba(2, 8, 6, 0.12),
+        rgba(2, 8, 6, 0.4)
+      ),
+      url("./trending-bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  #trending .page-container {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding: 28px 24px 64px;
+  }
+
+  #trending .page-section-heading {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  #trending .page-section-heading h2 {
+    color: #f3fff9;
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    margin: 14px 0;
+  }
+
+  #trending .page-section-heading p {
+    color: #a6bdb3;
+  }
+
+  #trending .eyebrow {
+    color: #25ffc0;
+    letter-spacing: 3px;
+  }
+
+  #trendingRoot .ri-trend-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0;
+    margin-bottom: 12px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  #trendingRoot .ri-trend-tab {
+    display: block;
+    width: 210px;
+    height: 70px;
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    background: transparent center / contain no-repeat;
+    font-size: 0;
+    color: transparent;
+    box-shadow: none;
+    opacity: 0.65;
+    cursor: pointer;
+    transition:
+      opacity 180ms ease,
+      filter 180ms ease,
+      transform 180ms ease;
+  }
+
+  #trendingRoot .ri-trend-tab::before {
+    content: none;
+    display: none;
+  }
+
+  #trendingRoot .ri-trend-tab:first-child {
+    background-image: url("./trending-button.png");
+  }
+
+  #trendingRoot .ri-trend-tab:nth-child(2) {
+    background-image: url("./new-coins-button.png");
+  }
+
+  #trendingRoot .ri-trend-tab[aria-selected="true"] {
+    opacity: 1;
+    filter: drop-shadow(
+      0 0 7px rgba(37, 255, 192, 0.25)
+    );
+  }
+
+  #trendingRoot .ri-trend-tab:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+
+  #trendingRoot .ri-trend-tab:focus-visible {
+    outline: 2px solid #35ffc0;
+    outline-offset: 4px;
+  }
+
+#trendingRoot .ri-trend-status {
+  display: none;
+}
+
+  #trendingRoot .ri-trend-scroll {
+    background: rgba(3, 13, 10, 0.92);
+    border: 1px solid rgba(159, 209, 187, 0.25);
+    border-radius: 18px;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+  }
+
+  #trendingRoot .ri-trend-table {
+    background: transparent;
+  }
+
+  #trendingRoot .ri-trend-table th {
+    background: rgba(8, 23, 17, 0.95);
+    color: #adc4b8;
+    padding-block: 18px;
+  }
+
+  #trendingRoot .ri-trend-table td {
+    padding-block: 18px;
+    border-bottom-color: rgba(159, 209, 187, 0.1);
+  }
+
+  #trendingRoot .ri-trend-table tbody tr:hover {
+    background: rgba(37, 255, 192, 0.045);
+  }
+
+  #trendingRoot .ri-trend-ads {
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  #trendingRoot .ri-trend-ad {
+    background: rgba(3, 16, 11, 0.92);
+    border: 1px solid rgba(37, 255, 192, 0.6);
+    border-radius: 14px;
+    padding: 20px;
+    min-height: 120px;
+    box-sizing: border-box;
+  }
+
+  #trendingRoot .ri-trend-ad-label {
+    color: #25ffc0;
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  @media (max-width: 640px) {
+    #trending {
+      background-attachment: scroll;
+      background-size: auto 100vh;
+      background-position: center top;
+    }
+
+    #trending .page-container {
+      padding: 28px 14px 48px;
+    }
+
+    #trendingRoot .ri-trend-tabs {
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+
+    #trendingRoot .ri-trend-tab {
+      flex: 1;
+      min-width: 0;
+      width: auto;
+      height: auto;
+      aspect-ratio: 3 / 1;
+    }
+  }
+`;
+
+document.head.appendChild(designStyle);
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
