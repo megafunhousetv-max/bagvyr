@@ -785,6 +785,8 @@
             }
           }
         );
+        window.BAGVYR_ADMIN_CLIENT = client;
+window.dispatchEvent(new Event("bagvyr-admin-ready"));
       } catch {
         $("startup").textContent =
           "Prihlásenie sa nedá pripraviť. " +
@@ -1208,5 +1210,6 @@ selectAdminSection("overview");
       );
     })();
   </script>
+  <script src="trend.js"></script>
 </body>
 </html>
