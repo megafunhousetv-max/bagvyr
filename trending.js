@@ -324,63 +324,117 @@
     }
   }
 
-  function tokenIcon(item) {
-    const container = element("span", "ri-trend-icon");
-    const letter = (item.symbol || item.name || "?")
-      .slice(0, 1);
+function tokenIcon(item) {
+  const container = element("span", "ri-trend-icon");
+  const letter = (item.symbol || item.name || "?").slice(0, 1);
+  container.textContent = letter;
 
-    container.textContent = letter;
+  const image = document.createElement("img");
+  image.alt = "";
+  image.loading = "eager";
+  image.style.cssText =
+    "width:100%;height:100%;object-fit:cover;border-radius:inherit;";
 
-    const image = document.createElement("img");
-    image.alt = "";
-    image.loading = "eager";
-    image.style.cssText =
-      "width:100%;height:100%;object-fit:cover;border-radius:inherit;";
+  function normalizeImage(value) {
+    if (typeof value !== "string" || !value.trim()) return null;
 
-    const tried = new Set();
-    let dexRequested = false;
-    let candidates = [
-      normalizeTrendingImage(item.image_url)
-    ].filter(Boolean);
+    let url = value.trim();
 
-    async function loadNext() {
-      let next = candidates.shift();
-
-      while (next && tried.has(next)) {
-        next = candidates.shift();
-      }
-
-      if (!next && !dexRequested) {
-        dexRequested = true;
-
-        candidates = await getTrendingDexImages(
-          item.contract
-        );
-
-        return loadNext();
-      }
-
-      if (!next) {
-        container.textContent = letter;
-        return;
-      }
-
-      tried.add(next);
-      image.src = next;
+    if (url.startsWith("ipfs://")) {
+      url =
+        "https://ipfs.io/ipfs/" +
+        url.slice(7).replace(/^ipfs\//, "");
+    } else if (url.startsWith("ar://")) {
+      url = "https://arweave.net/" + url.slice(5);
     }
 
-    image.onload = () => {
-      container.replaceChildren(image);
-    };
-
-    image.onerror = () => {
-      void loadNext();
-    };
-
-    void loadNext();
-
-    return container;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" ? parsed.href : null;
+    } catch {
+      return null;
+    }
   }
+
+  const tried = new Set();
+  const candidates = [];
+  let dexRequested = false;
+
+  const savedImage = normalizeImage(item.image_url);
+  if (savedImage) candidates.push(savedImage);
+
+  async function loadNext() {
+    let url = candidates.shift();
+
+    while (url && tried.has(url)) {
+      url = candidates.shift();
+    }
+
+    if (!url && !dexRequested && item.contract) {
+      dexRequested = true;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const response = await fetch(
+          "https://api.dexscreener.com/token-pairs/v1/solana/" +
+            encodeURIComponent(item.contract),
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Dex image HTTP " + response.status);
+        }
+
+        const pairs = await response.json();
+
+        if (Array.isArray(pairs)) {
+          candidates.push(
+            ...pairs
+              .filter(
+                (pair) =>
+                  pair?.chainId === "solana" &&
+                  pair?.baseToken?.address === item.contract
+              )
+              .sort(
+                (a, b) =>
+                  Number(b?.liquidity?.usd || 0) -
+                  Number(a?.liquidity?.usd || 0)
+              )
+              .map((pair) => normalizeImage(pair?.info?.imageUrl))
+              .filter(Boolean)
+          );
+        }
+      } catch (error) {
+        console.warn("Trending image:", item.contract, error);
+      } finally {
+        clearTimeout(timeout);
+      }
+
+      return loadNext();
+    }
+
+    if (!url) {
+      container.textContent = letter;
+      return;
+    }
+
+    tried.add(url);
+
+    // Obrázok vložíme do stránky pred začatím načítania.
+    container.replaceChildren(image);
+    image.src = url;
+  }
+
+  image.onerror = () => {
+    container.textContent = letter;
+    void loadNext();
+  };
+
+  void loadNext();
+  return container;
+}
 
   function tokenContent(item) {
     const content = element("span", "ri-trend-token");
