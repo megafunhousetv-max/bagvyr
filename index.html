@@ -155,44 +155,52 @@
       </a>
 
 
-      <nav class="header-nav">
+      <nav class="header-nav" aria-label="Main navigation">
 
-        <a
-          href="#home"
-          class="nav-link active"
-        >
-          Home
-        </a>
+  <div class="header-menu">
 
-        <a
-          href="#scanner"
-          class="nav-link"
-        >
-          Scanner
-        </a>
+    <a href="#home" class="nav-link active">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m3 10 9-7 9 7"/>
+        <path d="M5 9v12h5v-7h4v7h5V9"/>
+      </svg>
+      <span>Home</span>
+    </a>
 
-        <a
-          href="#trending"
-          class="nav-link"
-        >
-          Trending
-        </a>
+    <a href="#scanner" class="nav-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="7"/>
+        <path d="m16 16 5 5"/>
+      </svg>
+      <span>Scanner</span>
+    </a>
 
-        <a
-          href="#about"
-          class="nav-link"
-        >
-          About
-        </a>
+    <a href="#trending" class="nav-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M13 3c1 5-4 6-4 10-2-1-3-3-3-3-3 5-1 11 6 11 6 0 9-5 6-10-1 2-2 3-3 3 1-4 0-8-2-11Z"/>
+      </svg>
+      <span>Trending</span>
+    </a>
 
-        <a
-          href="#scanner"
-          class="header-scan-button"
-        >
-          Scan Token
-        </a>
+    <a href="#about" class="nav-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 11v6"/>
+        <path d="M12 7h.01"/>
+      </svg>
+      <span>About</span>
+    </a>
 
-      </nav>
+  </div>
+
+  <a href="#scanner" class="header-scan-button">
+    <span>Scan Token</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 12h16m-6-6 6 6-6 6"/>
+    </svg>
+  </a>
+
+</nav>
 
     </div>
 
@@ -2965,126 +2973,204 @@
 
     <!-- ABOUT -->
 
-    <section
-      id="about"
-      class="content-page-section about-section app-page"
-    >
+<section
+  id="about"
+  class="content-page-section about-section app-page"
+>
+  <div class="page-container">
 
-      <div class="page-container">
+    <div class="ri-about-heading">
+      <span class="ri-about-eyebrow">ABOUT RUGINSPECT</span>
 
-        <div class="page-section-heading">
+      <h2>
+        Understand the token.
+        <span>Make an informed decision.</span>
+      </h2>
 
-          <span class="eyebrow">
-            ABOUT RUGINSPECT
-          </span>
+      <p>
+        Important Solana token data, brought together
+        in one clear analysis.
+      </p>
+    </div>
 
-          <h2>
-            Understand the token before making your decision.
-          </h2>
+    <div class="ri-about-grid">
 
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Token Security</h3>
           <p>
-            RugInspect brings important Solana token data
-            together in one place and presents it in a simple way.
+            Mint and freeze authority, metadata
+            and token settings.
           </p>
-
         </div>
+      </article>
 
-
-        <div class="about-grid">
-
-
-          <article class="about-card">
-
-            <span class="about-number">
-              01
-            </span>
-
-            <h3>
-              Token Security
-            </h3>
-
-            <p>
-              Review mint authority, freeze authority,
-              metadata and other available token-level signals.
-            </p>
-
-          </article>
-
-
-          <article class="about-card">
-
-            <span class="about-number">
-              02
-            </span>
-
-            <h3>
-              Holder Analysis
-            </h3>
-
-            <p>
-              Understand holder concentration and inspect
-              the largest token accounts.
-            </p>
-
-          </article>
-
-
-          <article class="about-card">
-
-            <span class="about-number">
-              03
-            </span>
-
-            <h3>
-              Creator Activity
-            </h3>
-
-            <p>
-              Review the detected creator wallet,
-              current holdings and observable activity.
-            </p>
-
-          </article>
-
-
-          <article class="about-card">
-
-            <span class="about-number">
-              04
-            </span>
-
-            <h3>
-              Risk Signals
-            </h3>
-
-            <p>
-              RugInspect combines available on-chain
-              information into clear analytical signals.
-            </p>
-
-          </article>
-
-        </div>
-
-
-        <div class="about-warning">
-
-          <strong>
-            RugInspect does not tell you what to buy.
-          </strong>
-
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="7" r="3"/>
+            <path d="M3 21v-3a6 6 0 0 1 12 0v3"/>
+            <path d="M17 4a3 3 0 0 1 0 6m1 5a5 5 0 0 1 3 5"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Holder Analysis</h3>
           <p>
-            The scanner provides analytical information
-            and detected signals. Results should not be
-            treated as financial advice or a guarantee
-            that a token is safe.
+            Holder concentration and the
+            largest token accounts.
           </p>
-
         </div>
+      </article>
 
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21v-2a8 8 0 0 1 16 0v2"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Creator Activity</h3>
+          <p>
+            Detected creator wallet, holdings
+            and observable activity.
+          </p>
+        </div>
+      </article>
+
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 20v-5m5 5V9m5 11V4m5 16V7"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Market Overview</h3>
+          <p>
+            Market cap, liquidity, price
+            and trading volume.
+          </p>
+        </div>
+      </article>
+
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m12 3 10 18H2Z"/>
+            <path d="M12 9v5m0 3h.01"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Risk Signals &amp; Score</h3>
+          <p>
+            Available on-chain signals with
+            a clear score breakdown.
+          </p>
+        </div>
+      </article>
+
+      <article class="ri-about-card">
+        <span class="ri-about-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13 3c1 5-4 6-4 10-2-1-3-3-3-3-3 5-1 11 6 11 6 0 9-5 6-10-1 2-2 3-3 3 1-4 0-8-2-11Z"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Trending &amp; New Coins</h3>
+          <p>
+            Discover Solana tokens that
+            meet our listing criteria.
+          </p>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="ri-about-how">
+      <h3>How it works</h3>
+
+
+<ol class="ri-about-steps">
+
+  <li>
+    <span class="ri-about-step-number">1</span>
+
+    <span class="ri-about-step-icon">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M10 13a5 5 0 0 0 7 .5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/>
+    <path d="M14 11a5 5 0 0 0-7-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>
+  </svg>
+</span>
+
+    <div class="ri-about-step-copy">
+      <h4>Paste a Solana address</h4>
+      <p>Enter any token address to begin.</p>
+    </div>
+  </li>
+
+  <li>
+    <span class="ri-about-step-number">2</span>
+
+    <span class="ri-about-step-icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14 3H5v18h14V8Z"/>
+        <path d="M14 3v5h5M8 12h8m-8 4h8"/>
+      </svg>
+    </span>
+
+    <div class="ri-about-step-copy">
+      <h4>Review the analysis</h4>
+      <p>See key data and signals in one place.</p>
+    </div>
+  </li>
+
+  <li>
+    <span class="ri-about-step-number">3</span>
+
+    <span class="ri-about-step-icon">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20v-6m5 6V9m5 11V4m5 16V7"/>
+      </svg>
+    </span>
+
+    <div class="ri-about-step-copy">
+      <h4>Explore the score breakdown</h4>
+      <p>Understand the signals behind the score.</p>
+    </div>
+  </li>
+
+</ol>
+    </div>
+
+    <div class="ri-about-warning">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 11v6m0-10h.01"/>
+      </svg>
+
+      <div>
+        <strong>Information, not a guarantee.</strong>
+        <p>
+          Data may be delayed or incomplete.
+          Scores do not guarantee safety.
+          RugInspect does not provide financial advice.
+        </p>
       </div>
+    </div>
 
-    </section>
+    <div class="ri-about-action">
+      <a href="#scanner" class="ri-about-cta">
+        Scan a Token <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+  </div>
+</section>
 
   </main>
 
