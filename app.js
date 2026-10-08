@@ -5148,9 +5148,14 @@ function hideLoading() {
 
 
 function showResults() {
+  prepareResultsLayout();
+
   elements.resultsSection?.classList.remove(
     "hidden"
   );
+
+  document.getElementById("scannerPage")
+    ?.classList.add("ri-results-mode");
 }
 
 
@@ -5158,6 +5163,11 @@ function hideResults() {
   elements.resultsSection?.classList.add(
     "hidden"
   );
+
+  document.getElementById("scannerPage")
+    ?.classList.remove("ri-results-mode");
+
+  riTokenInfoController?.abort();
 }
 
 
@@ -6083,4 +6093,320 @@ function friendlyErrorMessage(
     message ||
     "Something went wrong. Please try again."
   );
+}
+
+
+/* =========================================================
+   RESULTS LAYOUT + SECTION 09
+   ========================================================= */
+
+let riTokenInfoController = null;
+let riTokenInfoLoadedContract = null;
+let riLayoutContract = null;
+
+function prepareResultsLayout() {
+  const root = document.getElementById("resultsSection");
+  const container = root?.querySelector(".results-container");
+  const quick = root?.querySelector(".quick-result-card");
+  const analysis = document.getElementById("allInfoSection");
+
+  if (!root || !container || !quick || !analysis) return;
+
+  if (!root.dataset.riLayoutReady) {
+    const layout = document.createElement("div");
+    layout.className = "ri-analysis-layout";
+
+    const sidebar = document.createElement("aside");
+    sidebar.className = "ri-overview-sidebar";
+
+    const overview = document.createElement("details");
+    overview.className = "ri-overview-panel";
+    overview.open = window.innerWidth > 900;
+
+    const overviewHeading = document.createElement("summary");
+    overviewHeading.textContent = "Token Overview";
+    overview.append(overviewHeading);
+
+    const overviewBody = document.createElement("div");
+    overviewBody.className = "ri-overview-body";
+    overview.append(overviewBody);
+
+    const distribution = quick.querySelector(".result-group-token");
+
+    if (distribution) {
+      overviewBody.append(distribution);
+    }
+
+    ["peakMarketCap", "dropFromPeak"].forEach(id => {
+      const card = document.getElementById(id)
+        ?.closest(".metric-card");
+
+      if (card) overviewBody.append(card);
+    });
+
+    sidebar.append(overview);
+
+    const marketGroup = quick.querySelector(".result-group-market");
+    const marketGrid = marketGroup?.querySelector(".metric-card")
+      ?.parentElement;
+
+    if (marketGrid) {
+      marketGrid.classList.add("ri-market-strip");
+
+      const holdersCard = document.getElementById("holderCount")
+        ?.closest(".token-metric-card");
+
+      if (holdersCard) {
+        holdersCard.classList.add("ri-holder-stat");
+        marketGrid.append(holdersCard);
+      }
+    }
+
+    const statusCard = document.getElementById("marketStatus")
+      ?.closest(".metric-card");
+
+    if (statusCard) {
+      statusCard.classList.add("ri-market-alert");
+      quick.append(statusCard);
+    }
+
+    const blocks = [...analysis.children].filter(node =>
+      node.matches("section.result-block, section.analysis-section")
+    );
+
+    blocks.forEach((section, index) => {
+      const heading = section.querySelector(
+        ":scope > .section-heading, " +
+        ":scope > .analysis-section-header"
+      );
+
+      if (!heading) return;
+
+      const details = document.createElement("details");
+      details.className = "ri-analysis-accordion";
+      details.dataset.sectionNumber = String(index + 1);
+
+      const summary = document.createElement("summary");
+      summary.className = "ri-accordion-heading";
+
+      const body = document.createElement("div");
+      body.className = "ri-accordion-body";
+
+      section.before(details);
+      details.append(summary, body);
+
+      summary.append(heading);
+      body.append(section);
+
+      details.addEventListener("toggle", () => {
+        if (
+          details.open &&
+          details.querySelector("#tokenInfoSection")
+        ) {
+          loadWebsiteTokenInfo();
+        }
+      });
+    });
+
+    const disclaimer = analysis.querySelector(
+      ":scope > .analysis-disclaimer"
+    );
+
+    container.append(layout);
+    layout.append(analysis, sidebar);
+
+    if (disclaimer) {
+      container.append(disclaimer);
+    }
+
+    document.getElementById("tokenInfoReload")
+      ?.addEventListener("click", () => {
+        loadWebsiteTokenInfo(true);
+      });
+
+    root.dataset.riLayoutReady = "true";
+  }
+
+  analysis.classList.remove("hidden");
+
+  const contract = state.currentContract;
+
+  if (riLayoutContract !== contract) {
+    riTokenInfoController?.abort();
+    riTokenInfoController = null;
+    riTokenInfoLoadedContract = null;
+    riLayoutContract = contract;
+
+    document.getElementById("tokenInfoGrid")?.replaceChildren();
+
+    const status = document.getElementById("tokenInfoStatus");
+
+    if (status) {
+      status.textContent =
+        "Open this section to load token information.";
+    }
+
+    analysis.querySelectorAll(".ri-analysis-accordion")
+      .forEach(details => {
+        details.open = false;
+      });
+  }
+}
+
+async function loadWebsiteTokenInfo(force = false) {
+  const contract = state.currentContract;
+  const status = document.getElementById("tokenInfoStatus");
+  const grid = document.getElementById("tokenInfoGrid");
+  const button = document.getElementById("tokenInfoReload");
+
+  if (!contract || !status || !grid) return;
+
+  if (!force && riTokenInfoLoadedContract === contract) return;
+  if (riTokenInfoController && !force) return;
+
+  riTokenInfoController?.abort();
+
+  const controller = new AbortController();
+  riTokenInfoController = controller;
+
+  const timer = setTimeout(() => controller.abort(), 12000);
+
+  status.textContent = "Loading token information…";
+  grid.replaceChildren();
+
+  if (button) button.disabled = true;
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/token-info?ca=${
+        encodeURIComponent(contract)
+      }`,
+      {
+        headers: { Accept: "application/json" },
+        signal: controller.signal
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result?.success !== true) {
+      throw new Error("Token information is currently unavailable.");
+    }
+
+    if (result.contract !== contract) {
+      throw new Error("The returned token does not match.");
+    }
+
+    if (
+      state.currentContract !== contract ||
+      riTokenInfoController !== controller
+    ) {
+      return;
+    }
+
+    const info = result.token_info || {};
+
+    const readNumber = value => {
+      if (
+        value === null ||
+        value === undefined ||
+        (typeof value !== "number" && typeof value !== "string") ||
+        String(value).trim() === ""
+      ) {
+        return null;
+      }
+
+      const number = Number(value);
+
+      return Number.isFinite(number) && number >= 0
+        ? number
+        : null;
+    };
+
+    const count = value => {
+      const number = readNumber(value);
+
+      return number === null
+        ? "Unavailable"
+        : new Intl.NumberFormat("en-US", {
+            maximumFractionDigits: 0
+          }).format(number);
+    };
+
+    const percent = value => {
+      const number = readNumber(value);
+
+      if (number === null) return "Unavailable";
+      if (number > 0 && number < 0.01) return "<0.01%";
+
+      return `${new Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 2
+      }).format(number)}%`;
+    };
+
+    const supply = readNumber(info.total_supply);
+
+    const rows = [
+      ["Holders", count(info.holders)],
+      ["Pro Holders", count(info.pro_holders)],
+      ["New Wallets", count(info.new_wallets)],
+      [
+        "Total Supply",
+        supply === null
+          ? "Unavailable"
+          : new Intl.NumberFormat("en-US", {
+              notation: "compact",
+              maximumFractionDigits: 2
+            }).format(supply)
+      ],
+      ["Dev Holdings", percent(info.dev_holding_percent)],
+      [
+        "Smart Money Holdings",
+        percent(info.smart_money_holding_percent)
+      ],
+      ["KOL Holdings", percent(info.kol_holding_percent)],
+      ["Sniper Holdings", percent(info.sniper_holding_percent)],
+      ["Insider Holdings", percent(info.insider_holding_percent)],
+      ["Bundler Holdings", percent(info.bundler_holding_percent)],
+      ["Token Creator", info.token_creator || "Unavailable"]
+    ];
+
+    rows.forEach(([label, value]) => {
+      const card = document.createElement("div");
+      card.className = "ri-info-card";
+
+      if (label === "Token Creator") {
+        card.classList.add("ri-info-card-wide");
+      }
+
+      const caption = document.createElement("span");
+      caption.textContent = label;
+
+      const content = document.createElement("strong");
+      content.textContent = value;
+
+      card.append(caption, content);
+      grid.append(card);
+    });
+
+    riTokenInfoLoadedContract = contract;
+    status.textContent = "Token information loaded.";
+  } catch (error) {
+    if (
+      state.currentContract === contract &&
+      riTokenInfoController === controller
+    ) {
+      status.textContent = controller.signal.aborted
+        ? "Loading timed out. Click Refresh token info to try again."
+        : "Token information is unavailable. Click Refresh token info to try again.";
+    }
+  } finally {
+    clearTimeout(timer);
+
+    if (riTokenInfoController === controller) {
+      riTokenInfoController = null;
+
+      if (button) button.disabled = false;
+    }
+  }
 }
