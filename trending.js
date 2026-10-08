@@ -692,13 +692,35 @@ function tokenIcon(item) {
       for (const item of ads) {
         const ad = scannerLink(item, "ri-trend-ad");
 
+        const footer = element("span", "ri-trend-ad-footer");
+        const metric = element("span", "ri-trend-ad-metric");
+
+        metric.append(
+          element(
+            "span",
+            "ri-trend-ad-metric-label",
+            "Market cap"
+          ),
+          element(
+            "span",
+            "ri-trend-ad-metric-value",
+            money(item.market_cap_usd)
+          )
+        );
+
+        footer.append(
+          metric,
+          element("span", "ri-trend-analyze", "Analyze →")
+        );
+
         ad.append(
           element(
             "span",
             "ri-trend-ad-label",
-            "ADVERTISEMENT"
+            "Advertisement"
           ),
-          tokenContent({ ...item, featured: false })
+          tokenContent({ ...item, featured: false }),
+          footer
         );
 
         adGrid.append(ad);
