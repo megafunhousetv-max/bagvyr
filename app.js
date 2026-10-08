@@ -6238,7 +6238,12 @@ function prepareResultsLayout() {
     riTokenInfoController = null;
     riTokenInfoLoadedContract = null;
     riLayoutContract = contract;
+    const ageElement = document.getElementById("tokenAge");
 
+    if (ageElement) {
+      ageElement.textContent = "Age: Loading…";
+      ageElement.removeAttribute("title");
+    }
     {
       const xLink = document.getElementById("tokenXLink");
 
@@ -6316,6 +6321,47 @@ async function loadWebsiteTokenInfo(force = false) {
     }
 
     const info = result.token_info || {};
+
+    const tokenAge = document.getElementById("tokenAge");
+
+    if (tokenAge) {
+      const createdAt = result.token_created_at;
+      const timestamp = typeof createdAt === "string"
+        ? Date.parse(createdAt)
+        : NaN;
+
+      const elapsed = Date.now() - timestamp;
+
+      if (
+        Number.isFinite(timestamp) &&
+        timestamp > 0 &&
+        elapsed >= 0
+      ) {
+        const minutes = Math.floor(elapsed / 60000);
+        const hours = Math.floor(elapsed / 3600000);
+        const days = Math.floor(elapsed / 86400000);
+        const years = Math.floor(days / 365.2425);
+
+        let age;
+
+        if (years >= 1) {
+          age = `${years} ${years === 1 ? "year" : "years"}`;
+        } else if (days >= 1) {
+          age = `${days} ${days === 1 ? "day" : "days"}`;
+        } else if (hours >= 1) {
+          age = `${hours} ${hours === 1 ? "hour" : "hours"}`;
+        } else {
+          age = minutes < 1 ? "<1 min" : `${minutes} min`;
+        }
+
+        tokenAge.textContent = `Age: ${age}`;
+        tokenAge.title =
+          `Created: ${new Date(timestamp).toLocaleString()}`;
+      } else {
+        tokenAge.textContent = "Age: Unavailable";
+        tokenAge.removeAttribute("title");
+      }
+    }
 
     {
       const xLink = document.getElementById("tokenXLink");
