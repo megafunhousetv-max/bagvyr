@@ -5156,6 +5156,8 @@ function showResults() {
 
   document.getElementById("scannerPage")
     ?.classList.add("ri-results-mode");
+
+  loadWebsiteTokenInfo();
 }
 
 
@@ -6237,6 +6239,8 @@ function prepareResultsLayout() {
     riTokenInfoLoadedContract = null;
     riLayoutContract = contract;
 
+    document.getElementById("tokenXLink")?.remove();
+
     document.getElementById("tokenInfoGrid")?.replaceChildren();
 
     const status = document.getElementById("tokenInfoStatus");
@@ -6305,6 +6309,60 @@ async function loadWebsiteTokenInfo(force = false) {
     }
 
     const info = result.token_info || {};
+
+    document.getElementById("tokenXLink")?.remove();
+
+    let xUrl = null;
+
+    try {
+      const value = result.social_links?.x;
+
+      if (typeof value === "string" && value.trim()) {
+        const parsed = new URL(value.trim());
+
+        const allowedHosts = [
+          "x.com",
+          "www.x.com",
+          "twitter.com",
+          "www.twitter.com"
+        ];
+
+        if (
+          parsed.protocol === "https:" &&
+          allowedHosts.includes(parsed.hostname.toLowerCase()) &&
+          !parsed.username &&
+          !parsed.password &&
+          parsed.pathname !== "/"
+        ) {
+          xUrl = parsed.href;
+        }
+      }
+    } catch {
+      xUrl = null;
+    }
+
+    if (xUrl) {
+      const referenceLink =
+        elements.pumpFunLink ||
+        elements.solscanTokenLink;
+
+      if (referenceLink?.parentElement) {
+        const xLink = document.createElement("a");
+
+        xLink.id = "tokenXLink";
+        xLink.className = referenceLink.className;
+        xLink.href = xUrl;
+        xLink.target = "_blank";
+        xLink.rel = "noopener noreferrer";
+        xLink.textContent = "X ↗";
+        xLink.style.marginLeft = "12px";
+
+        referenceLink.insertAdjacentElement(
+          "afterend",
+          xLink
+        );
+      }
+    }
 
     const readNumber = value => {
       if (
