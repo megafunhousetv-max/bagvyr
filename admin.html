@@ -646,6 +646,15 @@
             Successfully loaded analyses
           </small>
         </article>
+        <article class="card">
+  <div class="card-label">
+    Telegram Bot Users · All time
+  </div>
+
+  <strong id="telegramUsersTotal" class="value">—</strong>
+
+  <small>Unique users who submitted a valid CA</small>
+</article>
       </div>
 
       <p id="updated" role="status">
@@ -973,12 +982,13 @@ selectAdminSection("overview");
             return;
           }
 
-          const fields = {
-            visitors24: "visitors_24h",
-            visitors7: "visitors_7d",
-            visitorsMonth: "visitors_month",
-            searches24: "searches_24h"
-          };
+const fields = {
+  visitors24: "visitors_24h",
+  visitors7: "visitors_7d",
+  visitorsMonth: "visitors_month",
+  searches24: "searches_24h",
+  telegramUsersTotal: "telegram_users_total"
+};
 
           const values = {};
 
