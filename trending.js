@@ -389,7 +389,10 @@ document.head.appendChild(designStyle);
 
   function money(value) {
     const number = numeric(value);
+
     if (number === null) return "—";
+    if (number === 0) return "$0";
+    if (number < 0.01) return "<$0.01";
 
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -731,9 +734,25 @@ function tokenIcon(item) {
 
     const items = (
       Array.isArray(board?.items) ? board.items : []
-    ).filter(item =>
-      validContract(item.contract) && notExpired(item)
-    ).slice(0, 15);
+    ).filter(item => {
+      if (!validContract(item.contract) || !notExpired(item)) {
+        return false;
+      }
+
+      if (activeBoard === "new_coins") {
+        const marketCap = numeric(item.market_cap_usd);
+        const liquidity = numeric(item.liquidity_usd);
+
+        return (
+          marketCap !== null &&
+          marketCap > 0 &&
+          liquidity !== null &&
+          liquidity > 0
+        );
+      }
+
+      return true;
+    }).slice(0, 15);
 
     const updated = Date.parse(board?.updated_at);
 
