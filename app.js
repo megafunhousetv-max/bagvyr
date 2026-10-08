@@ -6239,7 +6239,14 @@ function prepareResultsLayout() {
     riTokenInfoLoadedContract = null;
     riLayoutContract = contract;
 
-    document.getElementById("tokenXLink")?.remove();
+    {
+      const xLink = document.getElementById("tokenXLink");
+
+      if (xLink) {
+        xLink.style.display = "none";
+        xLink.removeAttribute("href");
+      }
+    }
 
     document.getElementById("tokenInfoGrid")?.replaceChildren();
 
@@ -6310,7 +6317,14 @@ async function loadWebsiteTokenInfo(force = false) {
 
     const info = result.token_info || {};
 
-    document.getElementById("tokenXLink")?.remove();
+    {
+      const xLink = document.getElementById("tokenXLink");
+
+      if (xLink) {
+        xLink.style.display = "none";
+        xLink.removeAttribute("href");
+      }
+    }
 
     let xUrl = null;
 
@@ -6341,27 +6355,11 @@ async function loadWebsiteTokenInfo(force = false) {
       xUrl = null;
     }
 
-    if (xUrl) {
-      const referenceLink =
-        elements.pumpFunLink ||
-        elements.solscanTokenLink;
+    const tokenXLink = document.getElementById("tokenXLink");
 
-      if (referenceLink?.parentElement) {
-        const xLink = document.createElement("a");
-
-        xLink.id = "tokenXLink";
-        xLink.className = referenceLink.className;
-        xLink.href = xUrl;
-        xLink.target = "_blank";
-        xLink.rel = "noopener noreferrer";
-        xLink.textContent = "X ↗";
-        xLink.style.marginLeft = "12px";
-
-        referenceLink.insertAdjacentElement(
-          "afterend",
-          xLink
-        );
-      }
+    if (tokenXLink && xUrl) {
+      tokenXLink.href = xUrl;
+      tokenXLink.style.display = "inline-flex";
     }
 
     const readNumber = value => {
