@@ -811,7 +811,7 @@ function tokenIcon(item) {
 
     for (const label of [
       "#", "Token", "Market Cap", "Liquidity",
-      "24h Volume", "Holders", "Age"
+      "24h Volume", "Holders", "Age", ""
     ]) {
       const cell = element("th", "", label);
       cell.scope = "col";
@@ -842,6 +842,18 @@ function tokenIcon(item) {
       ]) {
         row.append(element("td", "", value));
       }
+
+      const actionCell = element("td");
+      const analyzeLink = scannerLink(item, "ri-trend-row-analyze");
+
+      analyzeLink.textContent = "Analyze";
+      analyzeLink.setAttribute(
+        "aria-label",
+        `Analyze ${item.name || item.symbol || item.contract}`
+      );
+
+      actionCell.append(analyzeLink);
+      row.append(actionCell);
 
       body.append(row);
     });
