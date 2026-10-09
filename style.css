@@ -10181,3 +10181,24 @@ body::before {
   outline: 2px solid #9abd9f;
   outline-offset: 3px;
 }
+
+/* Neon border around advertisements */
+
+#trending #trendingRoot .ri-trend-ad {
+  border: 1px solid rgba(66, 245, 166, 0.85);
+  box-shadow:
+    0 0 8px rgba(66, 245, 166, 0.18),
+    0 0 22px rgba(66, 245, 166, 0.1),
+    inset 0 0 8px rgba(66, 245, 166, 0.04);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+#trending #trendingRoot .ri-trend-ad:hover {
+  border-color: #67ffb8;
+  box-shadow:
+    0 0 12px rgba(66, 245, 166, 0.3),
+    0 0 30px rgba(66, 245, 166, 0.16),
+    inset 0 0 10px rgba(66, 245, 166, 0.06);
+}
