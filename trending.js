@@ -623,33 +623,183 @@ function tokenIcon(item) {
   return container;
 }
 
-  function tokenContent(item) {
-    const content = element("span", "ri-trend-token");
-    content.append(tokenIcon(item));
+const trendingScoreCache = new Map();
+const trendingScoreQueue = [];
 
-    const details = element("span");
-    details.append(
-      element(
-        "span",
-        "ri-trend-name",
-        item.name || item.symbol || "Unknown token"
-      ),
-      element(
-        "span",
-        "ri-trend-symbol",
-        item.symbol || `${item.contract.slice(0, 6)}…`
-      )
+let trendingScoreActive = 0;
+
+function runTrendingScoreQueue() {
+  while (
+    trendingScoreActive < 2 &&
+    trendingScoreQueue.length > 0
+  ) {
+    const job = trendingScoreQueue.shift();
+
+    trendingScoreActive++;
+
+    Promise.resolve()
+      .then(job.run)
+      .then(job.resolve, job.reject)
+      .finally(() => {
+        trendingScoreActive--;
+        runTrendingScoreQueue();
+      });
+  }
+}
+
+function queueTrendingScore(run) {
+  return new Promise((resolve, reject) => {
+    trendingScoreQueue.push({
+      run,
+      resolve,
+      reject
+    });
+
+    runTrendingScoreQueue();
+  });
+}
+
+function getTrendingScore(contract) {
+  const previous = trendingScoreCache.get(contract);
+
+  if (previous && previous.expiresAt > Date.now()) {
+    return previous.promise;
+  }
+
+  const entry = {
+    expiresAt: Infinity,
+    promise: null
+  };
+
+  entry.promise = queueTrendingScore(async () => {
+    const controller = new AbortController();
+
+    const timeout = setTimeout(
+      () => controller.abort(),
+      35000
     );
 
-    if (item.featured) {
-      details.append(
-        element("span", "ri-trend-badge", "FEATURED")
+    try {
+      const response = await fetch(
+        "https://bagvyr-api.megafunhousetv.workers.dev" +
+        "/api/trending-score?ca=" +
+        encodeURIComponent(contract),
+        {
+          cache: "no-store",
+          signal: controller.signal
+        }
       );
-    }
 
-    content.append(details);
-    return content;
+      if (!response.ok) {
+        throw new Error("Score HTTP " + response.status);
+      }
+
+      const result = await response.json();
+
+      if (
+        result.success !== true ||
+        result.contract !== contract
+      ) {
+        throw new Error("Invalid score response.");
+      }
+
+      const score = result.score;
+
+      if (
+        typeof score !== "number" ||
+        !Number.isFinite(score) ||
+        score < 0 ||
+        score > 100
+      ) {
+        entry.expiresAt = Date.now() + 30000;
+        return null;
+      }
+
+      entry.expiresAt = Date.now() + 180000;
+
+      return Math.round(score);
+    } catch {
+      entry.expiresAt = Date.now() + 30000;
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  });
+
+  trendingScoreCache.set(contract, entry);
+
+  return entry.promise;
+}
+
+function trendingScoreBadge(item) {
+  const badge = element(
+    "span",
+    "ri-trend-score ri-trend-score--unknown",
+    "—/100"
+  );
+
+  badge.setAttribute("aria-label", "Score unavailable");
+
+  void getTrendingScore(item.contract).then(score => {
+    if (score === null) return;
+
+    const color =
+      score >= 80 ? "green" :
+      score >= 60 ? "yellow" :
+      score >= 40 ? "orange" :
+      "red";
+
+    badge.className =
+      "ri-trend-score ri-trend-score--" + color;
+
+    badge.textContent = score + "/100";
+
+    badge.setAttribute(
+      "aria-label",
+      "Score " + score + " out of 100"
+    );
+  });
+
+  return badge;
+}
+
+function tokenContent(item) {
+  const content = element("span", "ri-trend-token");
+
+  content.append(tokenIcon(item));
+
+  const details = element(
+    "span",
+    "ri-trend-token-details"
+  );
+
+  details.append(
+    element(
+      "span",
+      "ri-trend-name",
+      item.name || item.symbol || "Unknown token"
+    ),
+
+    element(
+      "span",
+      "ri-trend-symbol",
+      item.symbol || `${item.contract.slice(0, 6)}…`
+    )
+  );
+
+  if (item.featured) {
+    details.append(
+      element("span", "ri-trend-badge", "FEATURED")
+    );
   }
+
+  content.append(
+    details,
+    trendingScoreBadge(item)
+  );
+
+  return content;
+}
 
   function scannerLink(item, className) {
     const link = element("a", className);

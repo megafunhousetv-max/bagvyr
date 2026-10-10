@@ -10605,3 +10605,91 @@ body::before {
     white-space: normal;
   }
 }
+
+
+/* Score badges — Trending + Advertisements */
+
+#trendingRoot .ri-trend-token-details {
+  flex: 1;
+  min-width: 0;
+}
+
+#trendingRoot .ri-trend-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 6px 10px;
+
+  border: 1px solid currentColor;
+  border-radius: 9px;
+
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: .1px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#trendingRoot .ri-trend-score--green {
+  color: #46efa4;
+  background: rgba(70, 239, 164, .09);
+  border-color: rgba(70, 239, 164, .28);
+}
+
+#trendingRoot .ri-trend-score--yellow {
+  color: #eed875;
+  background: rgba(238, 216, 117, .09);
+  border-color: rgba(238, 216, 117, .28);
+}
+
+#trendingRoot .ri-trend-score--orange {
+  color: #f5ac68;
+  background: rgba(245, 172, 104, .09);
+  border-color: rgba(245, 172, 104, .28);
+}
+
+#trendingRoot .ri-trend-score--red {
+  color: #ff8585;
+  background: rgba(255, 133, 133, .09);
+  border-color: rgba(255, 133, 133, .28);
+}
+
+#trendingRoot .ri-trend-score--unknown {
+  color: #8da59a;
+  background: rgba(141, 165, 154, .06);
+  border-color: rgba(141, 165, 154, .18);
+}
+
+#trendingRoot .ri-trend-table td:nth-child(2) > a {
+  display: flex;
+  width: 100%;
+}
+
+#trendingRoot .ri-trend-table td:nth-child(2) > a > .ri-trend-token {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+#trendingRoot .ri-trend-ad > .ri-trend-token {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  #trendingRoot .ri-trend-score {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  #trendingRoot .ri-trend-ad .ri-trend-name {
+    max-width: 150px;
+  }
+}
