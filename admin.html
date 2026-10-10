@@ -153,9 +153,9 @@
       font: inherit;
       font-weight: 650;
       cursor: pointer;
-      transition:
-        border-color 0.2s,
-        background 0.2s;
+transition:
+  border-color 0.2s,
+  background 0.2s;
     }
 
     button:hover {
@@ -571,15 +571,15 @@
         <span>Promo requests</span>
       </button>
 
-      <a
-        class="admin-nav-button"
-        href="https://www.spacemail.com/mail/INBOX/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <span class="nav-icon" aria-hidden="true">✉</span>
-        <span>Email</span>
-      </a>
+<button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="email"
+  aria-controls="emailSection"
+>
+  <span class="nav-icon" aria-hidden="true">✉</span>
+  <span>Email</span>
+</button>
     </nav>
   </aside>
 
@@ -745,6 +745,25 @@
         </div>
       </div>
     </section>
+    <section
+  id="emailSection"
+  class="admin-section"
+  aria-labelledby="emailTitle"
+  hidden
+>
+  <div class="section-heading">
+    <p class="eyebrow">Mailbox</p>
+    <h2 id="emailTitle">dev@ruginspect.com</h2>
+    <p class="muted">Load your latest 30 received messages.</p>
+  </div>
+
+  <button id="loadInboxButton" type="button">
+    Load inbox
+  </button>
+
+  <p id="mailStatus" role="status" style="margin-top:16px"></p>
+  <div id="mailList"></div>
+</section>
   </div>
 
     </section>
@@ -822,7 +841,8 @@ window.dispatchEvent(new Event("bagvyr-admin-ready"));
 const adminSections = {
   overview: $("overviewSection"),
   trending: $("trendingSection"),
-  promo: $("promoSection")
+  promo: $("promoSection"),
+  email: $("emailSection")
 };
 
 const adminNavigation = document.querySelectorAll(
@@ -832,7 +852,8 @@ const adminNavigation = document.querySelectorAll(
 const adminTitles = {
   overview: "Dashboard",
   trending: "Trending",
-  promo: "Promo requests"
+  promo: "Promo requests",
+  email: "Email"
 };
 
 function selectAdminSection(sectionName) {
@@ -878,14 +899,126 @@ for (const button of adminNavigation) {
 }
 
 selectAdminSection("overview");
+let mailRequestVersion = 0;
+
+$("loadInboxButton").addEventListener("click", async () => {
+  const button = $("loadInboxButton");
+  const status = $("mailStatus");
+  const list = $("mailList");
+
+  const requestId = ++mailRequestVersion;
+  const { data: authData } = await client.auth.getSession();
+  const userId = authData.session?.user.id;
+
+  if (!userId) {
+    status.textContent = "Please sign in again.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Loading…";
+  status.textContent = "Connecting to your mailbox…";
+  list.replaceChildren();
+
+  try {
+    const { data, error } = await client.functions.invoke(
+      "admin-mail",
+      { body: { action: "inbox" } }
+    );
+
+    const { data: currentAuth } = await client.auth.getSession();
+
+    if (
+      requestId !== mailRequestVersion ||
+      currentAuth.session?.user.id !== userId
+    ) {
+      return;
+    }
+
+    if (error) {
+      let message = error.message || "Could not load inbox.";
+
+      if (error.context instanceof Response) {
+        try {
+          const response = await error.context.clone().json();
+          if (typeof response.error === "string") {
+            message = response.error;
+          }
+        } catch {}
+      }
+
+      throw new Error(message);
+    }
+
+    if (!data?.ok || !Array.isArray(data.messages)) {
+      throw new Error(data?.error || "Invalid mailbox response.");
+    }
+
+    status.textContent =
+      `Connected · ${data.total} messages · ` +
+      `Showing ${data.messages.length} latest`;
+
+    if (!data.messages.length) {
+      status.textContent = "Connected. Your inbox is empty.";
+      return;
+    }
+
+    for (const message of data.messages) {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.style.marginTop = "12px";
+      card.style.overflowWrap = "anywhere";
+
+      const subject = document.createElement("strong");
+      subject.textContent =
+        (message.seen ? "" : "● ") + message.subject;
+
+      const sender = document.createElement("div");
+      sender.className = "muted";
+      sender.textContent = message.from
+        .map(person =>
+          person.name
+            ? `${person.name} <${person.address}>`
+            : person.address
+        )
+        .join(", ") || "Unknown sender";
+
+      const date = document.createElement("small");
+      date.textContent = message.date
+        ? new Date(message.date).toLocaleString("en-GB")
+        : "";
+
+      card.append(subject, sender, date);
+      list.append(card);
+    }
+  } catch (error) {
+    if (requestId === mailRequestVersion) {
+      status.textContent =
+        "Error: " +
+        (error instanceof Error ? error.message : "Could not load inbox.");
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = "Load inbox";
+  }
+});
+
+client.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") {
+    mailRequestVersion++;
+    $("mailList").replaceChildren();
+    $("mailStatus").textContent = "";
+  }
+});
 
       function clearStats() {
-        const ids = [
-          "visitors24",
-          "visitors7",
-          "visitorsMonth",
-          "searches24"
-        ];
+const ids = [
+  "visitors24",
+  "visitors7",
+  "visitorsMonth",
+  "searches24",
+  "telegramUsersTotal"
+];
 
         for (const id of ids) {
           $(id).textContent = "—";
@@ -900,8 +1033,12 @@ selectAdminSection("overview");
         $("statsMessage").textContent = "";
       }
 
-      function showLogin(message = "") {
-        session = null;
+function showLogin(message = "") {
+  session = null;
+
+  mailRequestVersion++;
+  $("mailList").replaceChildren();
+  $("mailStatus").textContent = "";
         selectAdminSection("overview");
         requestVersion++;
 
