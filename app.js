@@ -1730,13 +1730,19 @@ function renderSecurity(
       "good";
   }
 
-  renderSecurityCard(
-    elements.metadataCard,
-    elements.metadataStatus,
-    metadataText,
-    metadataStatus
-  );
-}
+// Metadata status in the top overview.
+setText(
+  elements.metadataStatus,
+  metadataText
+);
+
+// The same result in the detailed security section.
+renderSecurityCard(
+  document.getElementById("metadataCard"),
+  document.getElementById("metadataStatusDetail"),
+  metadataText,
+  metadataStatus
+);
 
 
 function renderSecurityCard(
