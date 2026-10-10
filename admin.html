@@ -731,19 +731,19 @@ transition:
         </p>
       </div>
 
-      <div id="promoAdminRoot">
-        <div class="section-placeholder">
-          <span class="status-badge">Coming soon</span>
+<div id="promoAdminRoot">
+  <button id="loadPromoButton" type="button">
+    Load promo requests
+  </button>
 
-          <h2>Your future promo inbox</h2>
+  <p
+    id="promoMailStatus"
+    role="status"
+    style="margin-top:16px"
+  ></p>
 
-          <p>
-            Project details, requested placements and contact information
-            will appear here. Requests will be organised as new,
-            in review, approved or declined.
-          </p>
-        </div>
-      </div>
+  <div id="promoMailList"></div>
+</div>
     </section>
     <section
   id="emailSection"
@@ -1004,6 +1004,148 @@ $("loadInboxButton").addEventListener("click", async () => {
 });
 
 client.auth.onAuthStateChange((event) => {
+  let promoRequestVersion = 0;
+
+async function loadPromoRequests() {
+  const button = $("loadPromoButton");
+  const status = $("promoMailStatus");
+  const list = $("promoMailList");
+
+  if (button.disabled) return;
+
+  const requestId = ++promoRequestVersion;
+
+  button.disabled = true;
+  button.textContent = "Loading…";
+  status.textContent = "Loading promotion requests…";
+  list.replaceChildren();
+
+  try {
+    const { data: authData, error: authError } =
+      await client.auth.getSession();
+
+    const userId = authData.session?.user.id;
+
+    if (authError || !userId) {
+      throw new Error("Please sign in again.");
+    }
+
+    const { data, error } = await client.functions.invoke(
+      "admin-mail",
+      {
+        body: { action: "promo" }
+      }
+    );
+
+    const { data: currentAuth } =
+      await client.auth.getSession();
+
+    if (
+      requestId !== promoRequestVersion ||
+      currentAuth.session?.user.id !== userId
+    ) {
+      return;
+    }
+
+    if (error) {
+      let message = error.message || "Could not load requests.";
+
+      if (error.context instanceof Response) {
+        try {
+          const details = await error.context.clone().json();
+
+          if (typeof details.error === "string") {
+            message = details.error;
+          }
+        } catch {}
+      }
+
+      throw new Error(message);
+    }
+
+    if (!data?.ok || !Array.isArray(data.messages)) {
+      throw new Error(data?.error || "Invalid mailbox response.");
+    }
+
+    if (!data.messages.length) {
+      status.textContent = "No promotion requests in your inbox yet.";
+      return;
+    }
+
+    status.textContent =
+      `${data.total} promotion requests · ` +
+      `Showing ${data.messages.length} latest`;
+
+    for (const message of data.messages) {
+      const card = document.createElement("article");
+
+      card.className = "card";
+      card.style.marginTop = "12px";
+      card.style.overflowWrap = "anywhere";
+
+      const subject = document.createElement("strong");
+
+      subject.textContent =
+        (message.seen ? "" : "● ") + message.subject;
+
+      const contact = document.createElement("div");
+      contact.className = "muted";
+
+      const addresses = (message.replyTo || [])
+        .map(person => person.address)
+        .filter(Boolean);
+
+      contact.textContent = addresses.length
+        ? "Contact: " + addresses.join(", ")
+        : "Contact email not available";
+
+      const date = document.createElement("div");
+      date.className = "muted";
+
+      date.textContent = message.date
+        ? new Date(message.date).toLocaleString()
+        : "";
+
+      card.append(subject, contact, date);
+      list.append(card);
+    }
+  } catch (error) {
+    if (requestId === promoRequestVersion) {
+      status.textContent =
+        "Error: " +
+        (error instanceof Error
+          ? error.message
+          : "Could not load requests.");
+    }
+  } finally {
+    if (requestId === promoRequestVersion) {
+      button.disabled = false;
+      button.textContent = "Load promo requests";
+    }
+  }
+}
+
+$("loadPromoButton").addEventListener(
+  "click",
+  loadPromoRequests
+);
+
+document.addEventListener("bagvyr:admin-section", (event) => {
+  if (event.detail?.section === "promo") {
+    loadPromoRequests();
+  }
+});
+
+client.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") {
+    promoRequestVersion++;
+
+    $("promoMailList").replaceChildren();
+    $("promoMailStatus").textContent = "";
+    $("loadPromoButton").disabled = false;
+    $("loadPromoButton").textContent = "Load promo requests";
+  }
+});
   if (event === "SIGNED_OUT") {
     mailRequestVersion++;
     $("mailList").replaceChildren();
