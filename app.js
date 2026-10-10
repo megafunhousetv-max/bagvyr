@@ -2106,15 +2106,20 @@ function renderCreator(
     creator.tokenBalance ??
     null;
 
-  setText(
-    elements.creatorHolding,
+setText(
+  elements.creatorHolding,
 
-    holding !== null
-      ? formatTokenAmount(
-          holding
-        )
-      : "---"
-  );
+  holding !== null
+    ? `${creator.currentHoldingEstimated === true ? "≈ " : ""}${formatTokenAmount(holding)}`
+    : "---"
+);
+
+if (elements.creatorHolding) {
+  elements.creatorHolding.title =
+    creator.currentHoldingEstimated === true
+      ? "Estimated from reported total supply and creator holding percentage."
+      : "";
+}
 
   /*
     Worker 1.6 uses supplyOwned.
