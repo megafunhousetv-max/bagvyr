@@ -6572,49 +6572,145 @@ async function loadDexPaidBadge(contract) {
   const controller = new AbortController();
   dexPaidController = controller;
 
-  const timer = setTimeout(
-    () => controller.abort(),
-    10000
-  );
+  const isCurrent = () =>
+    !controller.signal.aborted &&
+    dexPaidController === controller &&
+    state.currentContract === contract;
 
-  try {
-    const response = await fetch(
-      `${CONFIG.API_BASE}/api/dex-paid?ca=` +
-        encodeURIComponent(contract),
-      {
-        cache: "no-store",
-        signal: controller.signal
-      }
-    );
-
-    if (!response.ok) return;
-
-    const result = await response.json();
-
-    if (
-      controller.signal.aborted ||
-      dexPaidController !== controller ||
-      state.currentContract !== contract
-    ) {
+  // Changing the token also cancels the waiting period.
+  const wait = milliseconds => new Promise(resolve => {
+    if (controller.signal.aborted) {
+      resolve();
       return;
     }
 
-    if (
-      result.success === true &&
-      result.contract === contract &&
-      result.paid === true
-    ) {
-      badge.href =
-        "https://dexscreener.com/solana/" +
-        encodeURIComponent(contract);
+    const finish = () => {
+      clearTimeout(timer);
+      controller.signal.removeEventListener("abort", finish);
+      resolve();
+    };
 
-      badge.hidden = false;
+    const timer = setTimeout(finish, milliseconds);
+
+    controller.signal.addEventListener(
+      "abort",
+      finish,
+      { once: true }
+    );
+  });
+
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (!isCurrent()) return;
+
+      const requestController = new AbortController();
+
+      const cancelRequest = () =>
+        requestController.abort();
+
+      controller.signal.addEventListener(
+        "abort",
+        cancelRequest,
+        { once: true }
+      );
+
+      const timeout = setTimeout(
+        () => requestController.abort(),
+        12000
+      );
+
+      let retryDelay = 3000 * (attempt + 1);
+
+      try {
+        const response = await fetch(
+          `${CONFIG.API_BASE}/api/dex-paid?ca=` +
+            encodeURIComponent(contract),
+          {
+            cache: "no-store",
+            signal: requestController.signal
+          }
+        );
+
+        if (!isCurrent()) return;
+
+        if (response.ok) {
+          const result = await response.json();
+
+          if (!isCurrent()) return;
+
+          if (
+            result.success !== true ||
+            result.contract !== contract ||
+            typeof result.paid !== "boolean"
+          ) {
+            throw new Error("Invalid DEX verification response.");
+          }
+
+          if (result.paid) {
+            badge.href =
+              "https://dexscreener.com/solana/" +
+              encodeURIComponent(contract);
+
+            badge.hidden = false;
+          }
+
+          // A confirmed negative result needs no retries.
+          return;
+        }
+
+        if (
+          response.status !== 429 &&
+          response.status < 500
+        ) {
+          console.warn(
+            "DEX verification rejected:",
+            response.status
+          );
+          return;
+        }
+
+        if (response.status === 429) {
+          const retryAfter = response.headers.get(
+            "Retry-After"
+          );
+
+          const seconds = Number(retryAfter);
+
+          retryDelay =
+            retryAfter &&
+            Number.isFinite(seconds) &&
+            seconds > 0
+              ? seconds * 1000
+              : 60000;
+        }
+
+        console.warn(
+          "DEX verification will retry:",
+          response.status,
+          "attempt:",
+          attempt + 1
+        );
+      } catch (error) {
+        if (!isCurrent()) return;
+
+        console.warn(
+          "DEX verification request failed:",
+          error?.message || error
+        );
+      } finally {
+        clearTimeout(timeout);
+
+        controller.signal.removeEventListener(
+          "abort",
+          cancelRequest
+        );
+      }
+
+      if (attempt < 2 && isCurrent()) {
+        await wait(retryDelay);
+      }
     }
-  } catch {
-    // Leave the badge hidden when verification fails.
   } finally {
-    clearTimeout(timer);
-
     if (dexPaidController === controller) {
       dexPaidController = null;
     }
