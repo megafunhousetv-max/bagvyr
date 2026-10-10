@@ -1912,7 +1912,7 @@ function toggleHoldersTable() {
     );
 
     elements.holdersToggleButton.childNodes[0].nodeValue =
-      "HIDE TOP 20 HOLDERS ";
+      "HIDE TOP 10 HOLDERS ";
 
     elements.holdersToggleArrow?.classList.add(
       "open"
@@ -1924,7 +1924,7 @@ function toggleHoldersTable() {
     );
 
     elements.holdersToggleButton.childNodes[0].nodeValue =
-      "VIEW TOP 20 HOLDERS ";
+      "VIEW TOP 10 HOLDERS ";
 
     elements.holdersToggleArrow?.classList.remove(
       "open"
@@ -1971,7 +1971,7 @@ function renderHolderTable(
   }
 
   holders
-    .slice(0, 20)
+    .slice(0, 10)
     .forEach(
       (holder, index) => {
         const wallet =
