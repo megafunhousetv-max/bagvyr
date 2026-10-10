@@ -1480,17 +1480,39 @@ function renderQuickStats(
     infrastructure is excluded.
   */
 
-  const top10 =
-    getAdjustedTop10(
-      holders,
-      data
-    );
+  const top10 = getAdjustedTop10(holders, data);
+  const top20 = getAdjustedTop20(holders, data);
 
-  const top20 =
-    getAdjustedTop20(
-      holders,
-      data
-    );
+  const estimated = holders.concentrationEstimated === true;
+
+  [
+    elements.top10Concentration,
+    elements.adjustedTop10Concentration,
+    elements.top20Concentration
+  ].forEach(element => {
+    if (!element) return;
+
+    element.title = estimated
+      ? "Estimate from a limited holder list. Known pools excluded."
+      : "Holder concentration";
+
+    const card = element.closest(".token-metric-card");
+
+    if (card) {
+      let note = card.querySelector(".ri-concentration-note");
+
+      if (estimated && !note) {
+        note = document.createElement("small");
+        note.className = "ri-concentration-note";
+        note.textContent = "Estimated · limited holder data";
+        note.style.display = "block";
+        note.style.color = "#b5c5be";
+        card.append(note);
+      } else if (!estimated && note) {
+        note.remove();
+      }
+    }
+  });
 
   setText(
     elements.top10Concentration,
