@@ -1743,6 +1743,7 @@ renderSecurityCard(
   metadataText,
   metadataStatus
 );
+}
 
 
 function renderSecurityCard(
