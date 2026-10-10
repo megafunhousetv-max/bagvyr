@@ -545,11 +545,13 @@ async function analyzeToken(contract) {
     stopMarketRefresh();
     resetAnalysisState();
 
-    state.currentContract =
-      contract;
+state.currentContract =
+  contract;
 
-    hideError();
-    hideResults();
+void loadDexPaidBadge(contract);
+
+hideError();
+hideResults();
 
     setAnalyzeButtonLoading(true);
 
@@ -6157,7 +6159,7 @@ function prepareResultsLayout() {
 
     const overview = document.createElement("details");
     overview.className = "ri-overview-panel";
-    overview.open = window.innerWidth > 900;
+overview.open = true;
 
     const overviewHeading = document.createElement("summary");
     overviewHeading.textContent = "Token Overview";
@@ -6543,6 +6545,77 @@ async function loadWebsiteTokenInfo(force = false) {
       riTokenInfoController = null;
 
       if (button) button.disabled = false;
+    }
+  }
+}
+
+
+let dexPaidController = null;
+
+async function loadDexPaidBadge(contract) {
+  dexPaidController?.abort();
+
+  const badge = document.getElementById(
+    "tokenDexPaidBadge"
+  );
+
+  if (!badge) return;
+
+  badge.hidden = true;
+  badge.removeAttribute("href");
+
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(contract)) {
+    return;
+  }
+
+  const controller = new AbortController();
+  dexPaidController = controller;
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    10000
+  );
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/dex-paid?ca=` +
+        encodeURIComponent(contract),
+      {
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    if (
+      controller.signal.aborted ||
+      dexPaidController !== controller ||
+      state.currentContract !== contract
+    ) {
+      return;
+    }
+
+    if (
+      result.success === true &&
+      result.contract === contract &&
+      result.paid === true
+    ) {
+      badge.href =
+        "https://dexscreener.com/solana/" +
+        encodeURIComponent(contract);
+
+      badge.hidden = false;
+    }
+  } catch {
+    // Leave the badge hidden when verification fails.
+  } finally {
+    clearTimeout(timer);
+
+    if (dexPaidController === controller) {
+      dexPaidController = null;
     }
   }
 }
