@@ -305,7 +305,39 @@
   const pct = v =>
     available(v) ? v.toFixed(2) + '%' : 'Unavailable';
 
-  function draw(s, take) {
+  function loadTokenLogo(url) {
+    if (!url) return Promise.resolve(null);
+
+    return new Promise(resolve => {
+      const logo = new Image();
+      let finished = false;
+      let timer;
+
+      function finish(result) {
+        if (finished) return;
+
+        finished = true;
+        clearTimeout(timer);
+        logo.onload = null;
+        logo.onerror = null;
+        resolve(result);
+      }
+
+      logo.crossOrigin = 'anonymous';
+      logo.referrerPolicy = 'no-referrer';
+
+      logo.onload = () => finish(logo);
+      logo.onerror = () => finish(null);
+
+      timer = setTimeout(() => finish(null), 5000);
+
+      logo.src = url;
+    });
+  }
+
+  async function draw(s, take) {
+    const tokenLogo = await loadTokenLogo(s.imageUrl);
+
     return new Promise((resolve, reject) => {
       const image = new Image();
 
@@ -355,8 +387,60 @@
 
           text(
             s.symbol ? '$' + s.symbol : 'Solana',
-            36, 224, 545, 36
+            36, 224, tokenLogo ? 440 : 545, 36
           );
+
+          if (tokenLogo) {
+            const x = 500;
+            const y = 207;
+            const size = 68;
+
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.arc(
+              x + size / 2,
+              y + size / 2,
+              size / 2,
+              0,
+              Math.PI * 2
+            );
+            ctx.clip();
+
+            ctx.fillStyle = '#f3eed7';
+            ctx.fillRect(x, y, size, size);
+
+            const scale = Math.max(
+              size / tokenLogo.naturalWidth,
+              size / tokenLogo.naturalHeight
+            );
+
+            const width = tokenLogo.naturalWidth * scale;
+            const height = tokenLogo.naturalHeight * scale;
+
+            ctx.drawImage(
+              tokenLogo,
+              x + (size - width) / 2,
+              y + (size - height) / 2,
+              width,
+              height
+            );
+
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(
+              x + size / 2,
+              y + size / 2,
+              size / 2,
+              0,
+              Math.PI * 2
+            );
+
+            ctx.strokeStyle = '#164b36';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
 
           text(
             available(s.score)
@@ -366,10 +450,8 @@
           );
 
           text(
-            available(s.ageDays)
-              ? `${s.ageDays} days`
-              : 'Unavailable',
-            505, 463, 163, 20, '#09281e', true
+            s.ageLabel || 'Unavailable',
+            505, 457, 163, 20, '#09281e', true
           );
 
           text(
@@ -455,8 +537,7 @@
             );
           });
 
-          text(s.creatorSell, 209, 1100, 126, 19);
-          text(s.majorExit, 190, 1149, 145, 19);
+          text(s.majorExit, 190, 1100, 145, 19);
           text(s.marketCollapse, 48, 1236, 280, 22);
           text(s.metadata, 503, 1099, 134, 18);
 
