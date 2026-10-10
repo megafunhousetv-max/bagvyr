@@ -1881,6 +1881,108 @@
 
     </article>
 
+    <!-- SUPPLY SOLD -->
+
+    <article class="creator-modern-card">
+
+      <div class="creator-stat-icon creator-stat-icon-sell">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5v14h16"/>
+          <path d="M7 9l4 4 3-3 5 6"/>
+          <path d="M16 16h3v-3"/>
+        </svg>
+      </div>
+
+      <div class="creator-stat-content">
+
+        <span>
+          SUPPLY SOLD
+        </span>
+
+        <strong id="creatorSoldSupply">
+          ---
+        </strong>
+
+        <small>
+          Confirmed share of supply sold
+        </small>
+
+      </div>
+
+    </article>
+
+  </div>
+
+  <div
+    id="creatorTransactionsLoading"
+    class="small-loading hidden"
+  >
+    Reading creator transactions...
+  </div>
+
+
+  <!-- CREATOR TRANSACTIONS -->
+
+  <div
+    id="creatorTransactionsSection"
+    class="creator-transactions-section hidden"
+  >
+
+    <div class="subsection-header">
+
+      <div class="modern-table-title">
+
+        <span class="table-title-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5h16v14H4z"/>
+            <path d="M4 10h16"/>
+            <path d="M9 5v14"/>
+          </svg>
+        </span>
+
+        <div>
+          <h4>
+            Creator Transactions
+          </h4>
+
+          <p>
+            Recent detected creator wallet activity.
+          </p>
+        </div>
+
+      </div>
+
+      <span id="creatorTransactionsCount">
+        0 transactions
+      </span>
+
+    </div>
+
+
+    <div class="table-wrapper modern-holder-table-wrapper">
+
+      <table class="holder-table modern-holder-table">
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>TYPE</th>
+            <th>AMOUNT</th>
+            <th>TIME</th>
+            <th>TRANSACTION</th>
+          </tr>
+        </thead>
+
+        <tbody id="creatorTransactionsTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
 
 <!-- 04 EXIT / RUG ANALYSIS -->
 
