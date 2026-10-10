@@ -1108,6 +1108,133 @@ async function loadPromoRequests() {
 
       card.append(subject, contact, date);
       list.append(card);
+
+const openButton = document.createElement("button");
+
+openButton.type = "button";
+openButton.textContent = "Open request";
+openButton.style.marginTop = "12px";
+
+const content = document.createElement("div");
+
+content.hidden = true;
+content.style.marginTop = "14px";
+content.style.padding = "16px";
+content.style.border = "1px solid rgba(53,255,192,.2)";
+content.style.borderRadius = "12px";
+content.style.background = "rgba(0,0,0,.15)";
+content.style.whiteSpace = "pre-wrap";
+content.style.overflowWrap = "anywhere";
+content.style.lineHeight = "1.6";
+
+let loaded = false;
+let loading = false;
+
+openButton.addEventListener("click", async () => {
+  if (loading) return;
+
+  if (loaded) {
+    content.hidden = !content.hidden;
+
+    openButton.textContent = content.hidden
+      ? "Open request"
+      : "Close request";
+
+    return;
+  }
+
+  loading = true;
+  openButton.disabled = true;
+  openButton.textContent = "Loading…";
+  content.hidden = false;
+  content.textContent = "Loading full request…";
+
+  try {
+    const { data: auth, error: sessionError } =
+      await client.auth.getSession();
+
+    if (
+      sessionError ||
+      auth.session?.user.id !== userId ||
+      requestId !== promoRequestVersion
+    ) {
+      throw new Error("Please sign in again.");
+    }
+
+    const { data: response, error: requestError } =
+      await client.functions.invoke("admin-mail", {
+        body: {
+          action: "promo-message",
+          uid: message.uid,
+        },
+      });
+
+    const { data: currentSession } =
+      await client.auth.getSession();
+
+    if (
+      requestId !== promoRequestVersion ||
+      currentSession.session?.user.id !== userId
+    ) {
+      return;
+    }
+
+    if (requestError) {
+      let errorText =
+        requestError.message || "Could not open request.";
+
+      if (requestError.context instanceof Response) {
+        try {
+          const details =
+            await requestError.context.clone().json();
+
+          if (typeof details.error === "string") {
+            errorText = details.error;
+          }
+        } catch {}
+      }
+
+      throw new Error(errorText);
+    }
+
+    if (
+      response?.ok !== true ||
+      typeof response.message?.text !== "string"
+    ) {
+      throw new Error(
+        response?.error || "Could not load message content."
+      );
+    }
+
+    content.textContent = response.message.text;
+    loaded = true;
+    openButton.textContent = "Close request";
+  } catch (error) {
+    if (requestId !== promoRequestVersion) return;
+
+    content.textContent =
+      "Error: " +
+      (error instanceof Error
+        ? error.message
+        : "Could not open request.");
+
+    openButton.textContent = "Try again";
+  } finally {
+    loading = false;
+    openButton.disabled = false;
+  }
+});
+
+card.append(
+  subject,
+  contact,
+  date,
+  openButton,
+  content
+);
+
+list.append(card);
+
     }
   } catch (error) {
     if (requestId === promoRequestVersion) {
