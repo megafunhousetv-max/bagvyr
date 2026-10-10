@@ -1210,31 +1210,65 @@ function renderScore(
         ""
       ];
 
-      scoreObject.breakdown.forEach(row => {
-        const value = typeof row.value === "number"
-          ? row.value.toLocaleString("en-US", {
+      const formatValue = value =>
+        typeof value === "number"
+          ? value.toLocaleString("en-US", {
               maximumFractionDigits: 2
             })
-          : row.value;
+          : String(value ?? "Unavailable");
 
+      scoreObject.breakdown.forEach(row => {
         lines.push(
-          `${row.metric}: ${value} → -${row.deduction}`
+          `${row.metric}: ${formatValue(row.value)} → -${row.deduction}`
         );
       });
 
-      if (scoreObject.concentrationAdjustment > 0) {
+      if (scoreObject.insiderOverlapAdjustment > 0) {
         lines.push(
           "",
-          `Ownership overlap adjustment: +${scoreObject.concentrationAdjustment}`,
+          `Insider/network overlap adjustment: +${scoreObject.insiderOverlapAdjustment}`,
+          "Only the higher insider/network deduction applies."
+        );
+      }
+
+      if (scoreObject.ownershipCapAdjustment > 0) {
+        lines.push(
+          "",
+          `Ownership deduction limit adjustment: +${scoreObject.ownershipCapAdjustment}`,
           "Combined ownership deduction limited to 45."
         );
       }
 
+      if (scoreObject.bonuses?.length) {
+        lines.push("", "BONUSES");
+
+        scoreObject.bonuses.forEach(row => {
+          const ratio =
+            typeof row.percent === "number"
+              ? ` (${formatValue(row.percent)}% of holders)`
+              : "";
+
+          lines.push(
+            `${row.metric}: ${formatValue(row.value)}${ratio} → +${row.bonus}`
+          );
+        });
+      }
+
       lines.push(
         "",
-        `Total deduction: ${scoreObject.totalDeduction}`,
+        `Total deduction after overlap adjustments: ${scoreObject.totalDeduction}`,
+        `Total bonus: ${scoreObject.totalBonus ?? 0}`,
         `Score before ceilings: ${scoreObject.beforeCaps}`
       );
+
+      if (scoreObject.unavailableBonuses?.length) {
+        lines.push(
+          "",
+          "UNVERIFIED BONUS DATA",
+          ...scoreObject.unavailableBonuses,
+          "No bonus awarded for unavailable data."
+        );
+      }
 
       if (scoreObject.caps?.length) {
         lines.push("", "SCORE CEILINGS");
