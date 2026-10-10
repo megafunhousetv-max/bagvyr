@@ -549,6 +549,7 @@ state.currentContract =
   contract;
 
 void loadDexPaidBadge(contract);
+void loadCoinGeckoBadge(contract);
 
 hideError();
 hideResults();
@@ -6616,6 +6617,79 @@ async function loadDexPaidBadge(contract) {
 
     if (dexPaidController === controller) {
       dexPaidController = null;
+    }
+  }
+}
+
+
+let coinGeckoBadgeController = null;
+
+async function loadCoinGeckoBadge(contract) {
+  coinGeckoBadgeController?.abort();
+
+  const badge = document.getElementById(
+    "tokenCoinGeckoBadge"
+  );
+
+  if (!badge) return;
+
+  badge.hidden = true;
+  badge.removeAttribute("href");
+
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(contract)) {
+    return;
+  }
+
+  const controller = new AbortController();
+  coinGeckoBadgeController = controller;
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    10000
+  );
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/coingecko-listed?ca=` +
+        encodeURIComponent(contract),
+      {
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    if (
+      controller.signal.aborted ||
+      coinGeckoBadgeController !== controller ||
+      state.currentContract !== contract
+    ) {
+      return;
+    }
+
+    if (
+      result.success === true &&
+      result.contract === contract &&
+      result.listed === true &&
+      typeof result.coin_id === "string" &&
+      result.coin_id.trim()
+    ) {
+      badge.href =
+        "https://www.coingecko.com/en/coins/" +
+        encodeURIComponent(result.coin_id.trim());
+
+      badge.hidden = false;
+    }
+  } catch {
+    // Keep the badge hidden when verification fails.
+  } finally {
+    clearTimeout(timeout);
+
+    if (coinGeckoBadgeController === controller) {
+      coinGeckoBadgeController = null;
     }
   }
 }
