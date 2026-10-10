@@ -580,6 +580,18 @@ transition:
   <span class="nav-icon" aria-hidden="true">✉</span>
   <span>Email</span>
 </button>
+
+<p class="sidebar-title">WEB</p>
+
+<button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="ai-template"
+  aria-controls="aiTemplateSection"
+>
+  <span>AI Template</span>
+</button>
+
     </nav>
   </aside>
 
@@ -605,6 +617,15 @@ transition:
           </button>
         </div>
       </div>
+
+<section
+  id="aiTemplateSection"
+  class="admin-section"
+  aria-label="AI Template"
+  hidden
+>
+  <div id="aiTemplateRoot"></div>
+</section>
 
 <section
   id="overviewSection"
@@ -842,7 +863,8 @@ const adminSections = {
   overview: $("overviewSection"),
   trending: $("trendingSection"),
   promo: $("promoSection"),
-  email: $("emailSection")
+  email: $("emailSection"),
+  "ai-template": $("aiTemplateSection")
 };
 
 const adminNavigation = document.querySelectorAll(
@@ -853,7 +875,8 @@ const adminTitles = {
   overview: "Dashboard",
   trending: "Trending",
   promo: "Promo requests",
-  email: "Email"
+  email: "Email",
+  "ai-template": "AI Template"
 };
 
 function selectAdminSection(sectionName) {
@@ -1637,5 +1660,6 @@ const fields = {
     })();
   </script>
   <script src="trend.js"></script>
+  <script src="admin-ai-template.js"></script>
 </body>
 </html>
