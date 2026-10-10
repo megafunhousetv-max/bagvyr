@@ -710,7 +710,7 @@ function tokenIcon(item) {
 
         footer.append(
           metric,
-          element("span", "ri-trend-analyze", "Analyze →")
+          element("span", "ri-trend-analyze", "Analyze")
         );
 
         ad.append(
@@ -731,10 +731,9 @@ function tokenIcon(item) {
 
     const tabs = element("div", "ri-trend-tabs");
 
-    for (const [board, label] of [
-      ["trending", "Trending"],
-      ["new_coins", "New Coins"]
-    ]) {
+for (const [board, label] of [
+  ["trending", "Trending"]
+]) {
       const button = element("button", "ri-trend-tab", label);
       button.type = "button";
       button.setAttribute(
