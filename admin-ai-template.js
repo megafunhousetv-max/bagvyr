@@ -335,12 +335,12 @@
     });
   }
 
-  async function draw(s, take) {
-    const tokenLogo = await loadTokenLogo(
-  s.imageDataUrl || s.imageUrl
-);
+async function draw(s, take) {
+  const tokenLogo = await loadTokenLogo(
+    s.imageDataUrl || s.imageUrl
+  );
 
-    return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
       const image = new Image();
 
       image.onload = () => {
@@ -672,8 +672,15 @@
         );
 
       $('aiResult').hidden = false;
-      $('aiMessage').textContent =
-        'Your post is ready. Review it before publishing.';
+$('aiMessage').textContent =
+  'Your post is ready. Review it before publishing. ' +
+  (
+    data.snapshot.imageLoadStatus === 'loaded'
+      ? 'Token logo loaded by the server.'
+      : data.snapshot.imageLoadStatus === 'missing_url'
+        ? 'The data provider returned no token logo URL.'
+        : 'The server could not download the token logo.'
+  );
     } catch (err) {
       if (own === revision) {
         if (err.state) status(err.state);
