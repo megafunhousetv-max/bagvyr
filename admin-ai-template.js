@@ -336,7 +336,9 @@
   }
 
   async function draw(s, take) {
-    const tokenLogo = await loadTokenLogo(s.imageUrl);
+    const tokenLogo = await loadTokenLogo(
+  s.imageDataUrl || s.imageUrl
+);
 
     return new Promise((resolve, reject) => {
       const image = new Image();
