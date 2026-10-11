@@ -385,7 +385,7 @@ async function draw(s, take) {
             );
           }
 
-          text(s.name, 36, 153, 555, 55);
+          text(s.name, 36, 153, 245, 55);
 
           text(
             s.symbol ? '$' + s.symbol : 'Solana',
@@ -393,9 +393,9 @@ async function draw(s, take) {
           );
 
           if (tokenLogo) {
-            const x = 500;
-            const y = 207;
-            const size = 68;
+const x = 300;
+const y = 150;
+const size = 112;
 
             ctx.save();
 
