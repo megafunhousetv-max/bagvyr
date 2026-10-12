@@ -1202,15 +1202,11 @@ function renderScore(
   if (scoreElement) {
     const showBreakdown = () => {
       if (!Array.isArray(scoreObject?.breakdown)) {
-        alert("Score breakdown is unavailable. Run a new analysis.");
+        alert(
+          "Score breakdown is unavailable. Run a new analysis."
+        );
         return;
       }
-
-      const lines = [
-        "SCORE BREAKDOWN",
-        "Starting score: 100",
-        ""
-      ];
 
       const formatValue = value =>
         typeof value === "number"
@@ -1219,64 +1215,52 @@ function renderScore(
             })
           : String(value ?? "Unavailable");
 
+      const lines = [
+        "SCORE BREAKDOWN",
+        "Starting score: 100",
+        ""
+      ];
+
       scoreObject.breakdown.forEach(row => {
         lines.push(
           `${row.metric}: ${formatValue(row.value)} → -${row.deduction}`
         );
       });
 
-      if (scoreObject.insiderOverlapAdjustment > 0) {
-        lines.push(
-          "",
-          `Insider/network overlap adjustment: +${scoreObject.insiderOverlapAdjustment}`,
-          "Only the higher insider/network deduction applies."
-        );
-      }
+      if (scoreObject.adjustments?.length) {
+        lines.push("", "DEDUCTION ADJUSTMENTS");
 
-      if (scoreObject.ownershipCapAdjustment > 0) {
-        lines.push(
-          "",
-          `Ownership deduction limit adjustment: +${scoreObject.ownershipCapAdjustment}`,
-          "Combined ownership deduction limited to 45."
-        );
+        scoreObject.adjustments.forEach(row => {
+          lines.push(
+            `${row.reason} → +${row.amount}`
+          );
+        });
       }
 
       if (scoreObject.bonuses?.length) {
         lines.push("", "BONUSES");
 
         scoreObject.bonuses.forEach(row => {
-          const ratio =
-            typeof row.percent === "number"
-              ? ` (${formatValue(row.percent)}% of holders)`
-              : "";
-
           lines.push(
-            `${row.metric}: ${formatValue(row.value)}${ratio} → +${row.bonus}`
+            `${row.metric}: ${formatValue(row.value)} → +${row.bonus}`
           );
         });
       }
 
       lines.push(
         "",
-        `Total deduction after overlap adjustments: ${scoreObject.totalDeduction}`,
+        `Total deduction: ${scoreObject.totalDeduction}`,
         `Total bonus: ${scoreObject.totalBonus ?? 0}`,
         `Score before ceilings: ${scoreObject.beforeCaps}`
       );
 
-      if (scoreObject.unavailableBonuses?.length) {
-        lines.push(
-          "",
-          "UNVERIFIED BONUS DATA",
-          ...scoreObject.unavailableBonuses,
-          "No bonus awarded for unavailable data."
-        );
-      }
-
       if (scoreObject.caps?.length) {
         lines.push("", "SCORE CEILINGS");
 
-        scoreObject.caps.forEach(item => {
-          lines.push(`${item.reason} → maximum ${item.maximum}`);
+        scoreObject.caps.forEach(row => {
+          lines.push(
+            `${row.reason} → maximum ${row.maximum}`
+          );
         });
 
         lines.push("The lowest ceiling applies.");
@@ -1286,7 +1270,8 @@ function renderScore(
         lines.push(
           "",
           "MISSING DATA",
-          ...scoreObject.missing
+          ...scoreObject.missing,
+          "Missing values are not treated as zero."
         );
       }
 
@@ -1294,6 +1279,7 @@ function renderScore(
         "",
         `Final score: ${scoreObject.score ?? "Unavailable"}`,
         "",
+        "Transfer fees are scored by rate. A fee cap may reduce the actual cost.",
         "Higher score means fewer detected risks.",
         "It is not a probability of safety or fraud."
       );
