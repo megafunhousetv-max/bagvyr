@@ -12153,3 +12153,196 @@ table.ri-overview-compact-table tbody > tr:hover {
     padding: 10px !important;
   }
 }
+
+
+/* SECTION 07 — FULL WIDTH FIX */
+
+#resultsSection #tokenInfoSection,
+#resultsSection #tokenInfoSection .ri-token-info-content {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+}
+
+#resultsSection #tokenInfoGrid {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  grid-template-columns: none !important;
+}
+
+#resultsSection #tokenInfoGrid > .ri-overview-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  gap: 0;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: 28px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-panel h4 {
+  margin-bottom: 24px;
+  font-size: 26px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-count-rings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto 32px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-count-rings
+.ri-overview-ring {
+  width: 100%;
+  max-width: 210px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-count-rings
+.ri-overview-ring strong {
+  font-size: 34px;
+  white-space: nowrap;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-supply-rings {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-supply-rings
+.ri-overview-ring {
+  width: 100%;
+  max-width: 150px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-supply-rings
+.ri-overview-ring strong {
+  font-size: 25px;
+  white-space: nowrap;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-label {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-metric small {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-totals > div {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 6px 14px;
+  min-width: 0;
+  padding: 18px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-totals svg {
+  display: block;
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-totals span {
+  font-size: 13px;
+}
+
+#resultsSection #tokenInfoGrid .ri-overview-totals strong {
+  font-size: 26px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 800px) {
+  #resultsSection #tokenInfoGrid .ri-overview-panel {
+    padding: 20px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-supply-rings {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  #resultsSection #tokenInfoGrid .ri-overview-panel {
+    padding: 14px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-count-rings {
+    gap: 14px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-count-rings
+  .ri-overview-ring {
+    max-width: 150px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-count-rings
+  .ri-overview-ring strong {
+    font-size: 25px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-supply-rings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 14px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-supply-rings
+  .ri-overview-ring {
+    max-width: 125px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-supply-rings
+  .ri-overview-ring strong {
+    font-size: 23px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-label {
+    font-size: 12px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-metric small {
+    font-size: 11px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-totals > div {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-totals svg {
+    display: none;
+  }
+
+  #resultsSection #tokenInfoGrid .ri-overview-totals strong {
+    font-size: 22px;
+  }
+}

@@ -7716,29 +7716,6 @@ function riRenderHolderOverview(
         </p>
       </article>
 
-      <article class="ri-overview-panel">
-        <div class="ri-overview-holder-heading">
-          <div>
-            <h4>Top holders</h4>
-            <p>
-              Excluding identified pools · estimated
-            </p>
-          </div>
-
-          <div>
-            <strong>
-              ${escapeHTML(
-                riOverviewPercentText(top10)
-              )}
-            </strong>
-
-            <small>TOP 10 SHARE</small>
-          </div>
-        </div>
-
-        ${riOverviewHolderList(list)}
-      </article>
-
     </div>
   `;
 }
