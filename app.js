@@ -5241,6 +5241,8 @@ function showResults() {
     ?.classList.add("ri-results-mode");
 
   loadWebsiteTokenInfo();
+
+  void riLoadTokenFees();
 }
 
 
@@ -5253,6 +5255,10 @@ function hideResults() {
     ?.classList.remove("ri-results-mode");
 
   riTokenInfoController?.abort();
+
+  riFeeController?.abort();
+
+  clearTimeout(riFeeRefreshTimer);
 }
 
 
@@ -7096,4 +7102,319 @@ function riUpdateExitVerification(data = {}) {
   );
 
   syncExitAnalysisDetails();
+}
+
+
+/* =========================================================
+   TOKEN & TRADING FEES
+   ========================================================= */
+
+let riFeeController = null;
+let riFeeRefreshTimer = null;
+let riFeeContract = null;
+
+
+function riFeeText(id, value) {
+  const element =
+    document.getElementById(id);
+
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+
+function riFeePercent(value) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > 100
+  ) {
+    return "—";
+  }
+
+  return (
+    value.toLocaleString(
+      "en-US",
+      {
+        maximumFractionDigits: 4
+      }
+    ) + "%"
+  );
+}
+
+
+function riFeeCapText(transfer) {
+  if (transfer?.percent === 0) {
+    return "Not applicable";
+  }
+
+  if (
+    !/^\d+$/.test(
+      transfer?.maximum_raw || ""
+    ) ||
+    !Number.isInteger(
+      transfer?.decimals
+    ) ||
+    transfer.decimals < 0 ||
+    transfer.decimals > 255
+  ) {
+    return "—";
+  }
+
+  const raw =
+    transfer.maximum_raw.padStart(
+      transfer.decimals + 1,
+      "0"
+    );
+
+  const whole =
+    transfer.decimals
+      ? raw.slice(
+          0,
+          -transfer.decimals
+        )
+      : raw;
+
+  const fraction =
+    transfer.decimals
+      ? raw.slice(
+          -transfer.decimals
+        ).replace(/0+$/, "")
+      : "";
+
+  const formattedWhole =
+    whole.replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      ","
+    );
+
+  return (
+    formattedWhole +
+    (fraction ? "." + fraction : "") +
+    " tokens"
+  );
+}
+
+
+function riRenderTokenFees(data = null) {
+  const transfer = data?.transfer;
+  const trading = data?.trading;
+
+  const values = {
+    riTransferFee:
+      riFeePercent(
+        transfer?.percent
+      ),
+
+    riPoolFee:
+      riFeePercent(
+        trading?.pool_percent
+      ),
+
+    riCreatorFee:
+      trading?.creator_enabled === false &&
+      trading?.creator_percent === 0
+        ? "Disabled · 0%"
+        : riFeePercent(
+            trading?.creator_percent
+          )
+  };
+
+  for (
+    const [id, value] of
+    Object.entries(values)
+  ) {
+    riFeeText(id, value);
+
+    document.getElementById(id)
+      ?.classList.toggle(
+        "ri-fee-unknown",
+        value === "—"
+      );
+  }
+
+  riFeeText(
+    "riFeePlatform",
+    trading?.platform || "—"
+  );
+
+  riFeeText(
+    "riFeeBuy",
+    riFeePercent(
+      trading?.buy_pool_percent
+    )
+  );
+
+  riFeeText(
+    "riFeeSell",
+    riFeePercent(
+      trading?.sell_pool_percent
+    )
+  );
+
+  riFeeText(
+    "riFeeBasis",
+    trading?.creator_enabled === false
+      ? "Not applicable"
+      : trading?.creator_basis || "—"
+  );
+
+  riFeeText(
+    "riFeeCap",
+    riFeeCapText(transfer)
+  );
+
+  riFeeText(
+    "riFeeTransferSource",
+    transfer?.source || "—"
+  );
+
+  riFeeText(
+    "riFeePoolSource",
+    trading?.source || "—"
+  );
+
+  const link =
+    document.getElementById(
+      "riFeePoolLink"
+    );
+
+  const validPool =
+    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(
+      trading?.pool || ""
+    );
+
+  if (link) {
+    link.hidden = !validPool;
+
+    if (validPool) {
+      link.href =
+        `https://solscan.io/account/${trading.pool}`;
+    } else {
+      link.removeAttribute("href");
+    }
+  }
+
+  const noPool =
+    document.getElementById(
+      "riFeeNoPool"
+    );
+
+  if (noPool) {
+    noPool.hidden = validPool;
+  }
+
+  const timestamp =
+    Date.parse(
+      data?.measured_at || ""
+    );
+
+  riFeeText(
+    "riFeeUpdated",
+    Number.isFinite(timestamp)
+      ? "Checked " +
+        new Date(timestamp)
+          .toLocaleTimeString("en-GB")
+      : "—"
+  );
+}
+
+
+async function riLoadTokenFees() {
+  clearTimeout(riFeeRefreshTimer);
+
+  riFeeController?.abort();
+
+  const ca = state.currentContract;
+
+  if (
+    !ca ||
+    !document.getElementById(
+      "riTokenFees"
+    )
+  ) {
+    return;
+  }
+
+  if (riFeeContract !== ca) {
+    riFeeContract = ca;
+
+    riRenderTokenFees();
+
+    const details =
+      document.getElementById(
+        "riFeeDetails"
+      );
+
+    if (details) {
+      details.open = false;
+    }
+  }
+
+  const controller =
+    new AbortController();
+
+  riFeeController = controller;
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    45000
+  );
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/token-fees?ca=${encodeURIComponent(ca)}`,
+      {
+        signal: controller.signal
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Token fees HTTP ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !data.success ||
+      data.contract !== ca
+    ) {
+      throw new Error(
+        "Invalid fee response"
+      );
+    }
+
+    if (
+      state.currentContract === ca &&
+      riFeeController === controller
+    ) {
+      riRenderTokenFees(data);
+    }
+  } catch {
+    if (
+      state.currentContract === ca &&
+      riFeeController === controller
+    ) {
+      riRenderTokenFees();
+    }
+  } finally {
+    clearTimeout(timeout);
+
+    if (
+      state.currentContract === ca &&
+      riFeeController === controller &&
+      !elements.resultsSection
+        ?.classList.contains("hidden")
+    ) {
+      riFeeRefreshTimer = setTimeout(
+        riLoadTokenFees,
+        180000
+      );
+    }
+  }
 }

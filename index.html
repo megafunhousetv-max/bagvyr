@@ -1126,7 +1126,7 @@
                     </strong>
 
                     <small>
-                      launch source
+                      reported platform
                     </small>
 
                   </div>
@@ -1136,6 +1136,131 @@
               </div>
 
             </div>
+
+<!-- TOKEN & TRADING FEES -->
+
+<section
+  id="riTokenFees"
+  class="ri-token-fees"
+  aria-labelledby="riFeesTitle"
+>
+  <header class="ri-fees-heading">
+    <div>
+      <h3 id="riFeesTitle">
+        <span aria-hidden="true">↔</span>
+        Token &amp; Trading Fees
+      </h3>
+
+      <p>
+        Verified fees for this token and the selected pool.
+      </p>
+    </div>
+
+    <span
+      id="riFeePlatform"
+      class="ri-fee-platform"
+    >
+      —
+    </span>
+  </header>
+
+  <div
+    class="ri-fees-grid"
+    aria-live="polite"
+  >
+    <article>
+      <span>Token transfer fee</span>
+
+      <strong id="riTransferFee">—</strong>
+
+      <small>Token-level fee</small>
+    </article>
+
+    <article>
+      <span>Pool trading fee</span>
+
+      <strong id="riPoolFee">—</strong>
+
+      <small>Excludes creator fee</small>
+    </article>
+
+    <article>
+      <span>Creator fee</span>
+
+      <strong id="riCreatorFee">—</strong>
+
+      <small>Selected pool</small>
+    </article>
+  </div>
+
+  <details
+    id="riFeeDetails"
+    class="ri-fee-details"
+  >
+    <summary>
+      View breakdown
+      <span aria-hidden="true">⌄</span>
+    </summary>
+
+    <dl>
+      <div>
+        <dt>Buy · pool fee</dt>
+        <dd id="riFeeBuy">—</dd>
+      </div>
+
+      <div>
+        <dt>Sell · pool fee</dt>
+        <dd id="riFeeSell">—</dd>
+      </div>
+
+      <div>
+        <dt>Creator fee charged on</dt>
+        <dd id="riFeeBasis">—</dd>
+      </div>
+
+      <div>
+        <dt>Transfer fee cap</dt>
+        <dd id="riFeeCap">—</dd>
+      </div>
+
+      <div>
+        <dt>Transfer fee source</dt>
+        <dd id="riFeeTransferSource">—</dd>
+      </div>
+
+      <div>
+        <dt>Pool fee source</dt>
+        <dd id="riFeePoolSource">—</dd>
+      </div>
+
+      <div>
+        <dt>Pool</dt>
+
+        <dd>
+          <a
+            id="riFeePoolLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+          >
+            View pool on Solscan
+          </a>
+
+          <span id="riFeeNoPool">—</span>
+        </dd>
+      </div>
+    </dl>
+
+    <p>
+      Fees apply to different amounts and are shown
+      separately. Transfer fees may apply during swaps.
+      Network, routing and app fees are excluded.
+      An unverified fee is shown as —.
+    </p>
+
+    <small id="riFeeUpdated">—</small>
+  </details>
+</section>
 
 
 <!-- ANALYSIS HIGHLIGHTS -->
