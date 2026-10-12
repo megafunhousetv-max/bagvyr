@@ -613,6 +613,12 @@ hideResults();
       data;
 
 renderAnalysis(data);
+
+void riLoadLaunchRiskSignals(
+  contract,
+  data
+);
+
 window.BagVyrAnalytics?.tokenSearch(contract);
 
 await loadExitAnalysis(contract);
@@ -7718,4 +7724,97 @@ function riRenderHolderOverview(
 
     </div>
   `;
+}
+
+
+let riLaunchRiskController = null;
+
+async function riLoadLaunchRiskSignals(
+  contract,
+  analysis
+) {
+  riLaunchRiskController?.abort();
+
+  const controller = new AbortController();
+
+  riLaunchRiskController = controller;
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    65000
+  );
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/launch-risk-signals?ca=${encodeURIComponent(contract)}`,
+      {
+        signal: controller.signal,
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    if (
+      controller.signal.aborted ||
+      state.currentContract !== contract ||
+      state.currentAnalysis !== analysis ||
+      result.success !== true ||
+      result.contract !== contract ||
+      !Array.isArray(result.signals)
+    ) {
+      return;
+    }
+
+    const extraSignals = result.signals.filter(
+      signal =>
+        signal.code === "creator_launch_block_buys" &&
+        Number.isInteger(signal.count) &&
+        signal.count > 0
+    );
+
+    if (!extraSignals.length) return;
+
+    const originalSignals = Array.isArray(
+      analysis.riskSignals
+    )
+      ? analysis.riskSignals
+      : Array.isArray(analysis.risks)
+      ? analysis.risks
+      : [];
+
+    const merged = new Map();
+
+    for (const signal of [
+      ...originalSignals,
+      ...extraSignals
+    ]) {
+      const key =
+        signal.code ||
+        signal.type ||
+        signal.title;
+
+      merged.set(key, signal);
+    }
+
+    analysis.riskSignals = [
+      ...merged.values()
+    ];
+
+    renderRiskSignals(
+      analysis.riskSignals,
+      analysis
+    );
+
+  } catch {
+    // Unavailable checks add no warning.
+  } finally {
+    clearTimeout(timer);
+
+    if (riLaunchRiskController === controller) {
+      riLaunchRiskController = null;
+    }
+  }
 }
