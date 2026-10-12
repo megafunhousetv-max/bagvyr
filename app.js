@@ -1656,6 +1656,7 @@ function getAdjustedTop10(
   return firstNumber([
     holders?.adjusted?.top10Concentration,
     holders?.top10Concentration,
+    data?.binanceHolderConcentration?.top10_percent,
     data?.pumpfun?.top10Percentage
   ]);
 }
@@ -7021,10 +7022,28 @@ function renderAnalysisHighlights(
       : top > 25
         ? "warning"
         : "neutral",
-    holders.concentrationEstimated === true
+    data.binanceHolderConcentration?.top10_percent != null
+      ? "Binance Web3 · reported concentration"
+      : holders.concentrationEstimated === true
       ? "Estimated share of supply"
       : "Share of supply"
   );
+
+  const top10Title =
+    data.binanceHolderConcentration?.top10_percent != null
+      ? "Reported by Binance Web3. Protocol exclusions have not been verified."
+      : "Holder concentration";
+
+  const top10Highlight =
+    document.getElementById("highlightTop10");
+
+  if (top10Highlight) {
+    top10Highlight.title = top10Title;
+  }
+
+  if (elements.top10Concentration) {
+    elements.top10Concentration.title = top10Title;
+  }
 
   set(
     "highlightLiquidityRatio",
