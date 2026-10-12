@@ -11283,3 +11283,32 @@ body::before {
     grid-column: 1;
   }
 }
+
+
+/* Layout after removing Creator Sell */
+
+#resultsSection .ri-core-signals .quick-signal-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#resultsSection .ri-core-signals .quick-signal,
+#resultsSection .ri-core-signals .quick-signal:nth-child(n+4),
+#resultsSection .ri-core-signals .quick-signal:last-child {
+  grid-column: auto;
+}
+
+#resultsSection .exit-modern-primary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 600px) {
+  #resultsSection .exit-modern-primary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  #resultsSection .ri-core-signals .quick-signal-grid {
+    grid-template-columns: 1fr;
+  }
+}
