@@ -1970,129 +1970,33 @@ function toggleHoldersTable() {
    HOLDER TABLE
    ========================================================= */
 
-function renderHolderTable(
-  holders
-) {
-  if (
-    !elements.holdersTableBody
-  ) {
-    return;
-  }
+function renderHolderTable(holders) {
+  const body = elements.holdersTableBody;
 
-  elements.holdersTableBody.innerHTML =
-    "";
+  if (!body) return;
 
-  if (
-    !holders.length
-  ) {
-    const row =
-      document.createElement(
-        "tr"
-      );
+  const table = body.closest("table");
 
-    row.innerHTML = `
-      <td colspan="5" class="table-empty">
-        No holder data available.
-      </td>
-    `;
+  table?.classList.add(
+    "ri-overview-compact-table"
+  );
 
-    elements.holdersTableBody.appendChild(
-      row
+  table?.closest(".table-wrapper")
+    ?.classList.add(
+      "ri-overview-compact-wrapper"
     );
 
-    return;
-  }
+  body.replaceChildren();
 
-  holders
-    .slice(0, 10)
-    .forEach(
-      (holder, index) => {
-        const wallet =
-          holder.owner ||
-          holder.wallet ||
-          holder.address ||
-          "---";
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
 
-        const balance =
-          holder.amount ??
-          holder.balance ??
-          holder.uiAmount ??
-          null;
+  cell.colSpan = 5;
+  cell.innerHTML = riOverviewHolderList(holders);
 
-        const percentage =
-          holder.percentage ??
-          holder.percent ??
-          holder.supplyPercentage ??
-          null;
-
-        const type =
-          holder.displayType ||
-          holder.type ||
-          holder.label ||
-          (
-            holder.classification ===
-            "holder"
-              ? "Wallet"
-              : holder.classification
-          ) ||
-          "Wallet";
-
-        const explorer =
-          holder.explorer ||
-          (
-            wallet !== "---"
-              ? `https://solscan.io/account/${encodeURIComponent(wallet)}`
-              : null
-          );
-
-        const row =
-          document.createElement(
-            "tr"
-          );
-
-        row.innerHTML = `
-          <td>
-            ${index + 1}
-          </td>
-
-          <td>
-            ${
-              explorer
-                ? `
-                  <a
-                    href="${escapeAttribute(explorer)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="wallet-link"
-                    title="${escapeAttribute(wallet)}"
-                  >
-                    ${escapeHTML(shortenAddress(wallet))}
-                  </a>
-                `
-                : escapeHTML(shortenAddress(wallet))
-            }
-          </td>
-
-          <td>
-            ${escapeHTML(formatTokenAmount(balance))}
-          </td>
-
-          <td>
-            ${escapeHTML(formatPercentage(percentage))}
-          </td>
-
-          <td>
-            ${escapeHTML(String(type))}
-          </td>
-        `;
-
-        elements.holdersTableBody.appendChild(
-          row
-        );
-      }
-    );
+  row.append(cell);
+  body.append(row);
 }
-
 
 /* =========================================================
    CREATOR
@@ -6524,50 +6428,7 @@ async function loadWebsiteTokenInfo(force = false) {
       }).format(number)}%`;
     };
 
-    const supply = readNumber(info.total_supply);
-
-    const rows = [
-      ["Holders", count(info.holders)],
-      ["Pro Holders", count(info.pro_holders)],
-      ["New Wallets", count(info.new_wallets)],
-      [
-        "Total Supply",
-        supply === null
-          ? "Unavailable"
-          : new Intl.NumberFormat("en-US", {
-              notation: "compact",
-              maximumFractionDigits: 2
-            }).format(supply)
-      ],
-      ["Dev Holdings", percent(info.dev_holding_percent)],
-      [
-        "Smart Money Holdings",
-        percent(info.smart_money_holding_percent)
-      ],
-      ["KOL Holdings", percent(info.kol_holding_percent)],
-      ["Sniper Holdings", percent(info.sniper_holding_percent)],
-      ["Insider Holdings", percent(info.insider_holding_percent)],
-      ["Bundler Holdings", percent(info.bundler_holding_percent)],
-      ["Token Creator", info.token_creator || "Unavailable"]
-    ];
-
-    rows.forEach(([label, value]) => {
-      const card = document.createElement("div");
-      card.className = "ri-info-card";
-
-      if (label === "Token Creator") {
-        card.classList.add("ri-info-card-wide");
-      }
-
-      const caption = document.createElement("span");
-      caption.textContent = label;
-
-      const content = document.createElement("strong");
-      content.textContent = value;
-
-      card.append(caption, content);
-      grid.append(card);
-    });
+    riRenderHolderOverview(info);
 
     riTokenInfoLoadedContract = contract;
     status.textContent = "Token information loaded.";
@@ -7422,4 +7283,462 @@ async function riLoadTokenFees() {
       );
     }
   }
+}
+
+function riOverviewNumber(value) {
+  if (
+    !["number", "string"].includes(typeof value) ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : null;
+}
+
+function riOverviewPercent(value) {
+  const number = riOverviewNumber(value);
+
+  return number !== null && number <= 100
+    ? number
+    : null;
+}
+
+function riOverviewPercentText(value) {
+  const number = riOverviewPercent(value);
+
+  if (number === null) return "—";
+  if (number > 0 && number < 0.01) return "<0.01%";
+
+  return (
+    number.toLocaleString("en-US", {
+      maximumFractionDigits: 2
+    }) + "%"
+  );
+}
+
+function riOverviewRing(
+  label,
+  value,
+  color,
+  caption = ""
+) {
+  const number = riOverviewPercent(value);
+
+  return `
+    <div
+      class="ri-overview-metric"
+      style="--ring-color:${color}"
+    >
+      <div
+        class="ri-overview-ring"
+        role="img"
+        aria-label="${escapeAttribute(
+          label + ": " + riOverviewPercentText(number)
+        )}"
+      >
+        <svg
+          viewBox="0 0 120 120"
+          aria-hidden="true"
+        >
+          <circle
+            class="ri-ring-track"
+            cx="60"
+            cy="60"
+            r="50"
+          />
+
+          <circle
+            class="ri-ring-fill"
+            cx="60"
+            cy="60"
+            r="50"
+            pathLength="100"
+            stroke-dasharray="${number ?? 0} 100"
+          />
+        </svg>
+
+        <strong>
+          ${escapeHTML(
+            riOverviewPercentText(number)
+          )}
+        </strong>
+      </div>
+
+      <span class="ri-overview-label">
+        ${escapeHTML(label)}
+      </span>
+
+      ${
+        caption
+          ? `<small>${escapeHTML(caption)}</small>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+function riOverviewHolderRows(holders) {
+  return (
+    Array.isArray(holders)
+      ? holders
+      : []
+  )
+    .filter(holder =>
+      holder &&
+      holder.excludedFromAdjustedConcentration !== true &&
+      ![
+        "liquidity_pool",
+        "protocol",
+        "protocol_account",
+        "burn"
+      ].includes(holder.classification)
+    )
+    .map(holder => ({
+      wallet: String(
+        holder.owner ||
+        holder.wallet ||
+        holder.address ||
+        ""
+      ),
+
+      percent: riOverviewPercent(
+        holder.percentage ??
+        holder.percent ??
+        holder.supplyPercentage
+      ),
+
+      amount:
+        holder.amount ??
+        holder.balance ??
+        holder.uiAmount ??
+        null,
+
+      type: String(
+        holder.displayType ||
+        holder.classification ||
+        "Unverified owner"
+      )
+    }))
+    .sort(
+      (a, b) =>
+        (b.percent ?? -1) -
+        (a.percent ?? -1)
+    )
+    .slice(0, 10);
+}
+
+function riOverviewHolderList(holders) {
+  const rows = riOverviewHolderRows(holders);
+
+  if (!rows.length) {
+    return `
+      <p class="ri-overview-empty">
+        Holder list unavailable.
+      </p>
+    `;
+  }
+
+  const maximum = Math.max(
+    0,
+    ...rows.map(row => row.percent ?? 0)
+  );
+
+  return `
+    <div class="ri-overview-holder-list">
+      ${
+        rows.map((row, index) => {
+          const validWallet =
+            /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+              .test(row.wallet);
+
+          const wallet = validWallet
+            ? `
+              <a
+                href="https://solscan.io/account/${
+                  encodeURIComponent(row.wallet)
+                }"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="${escapeAttribute(row.wallet)}"
+              >
+                ${escapeHTML(
+                  shortenAddress(row.wallet)
+                )}
+              </a>
+            `
+            : `
+              <span class="ri-overview-wallet">
+                ${escapeHTML(row.wallet || "—")}
+              </span>
+            `;
+
+          const width =
+            row.percent !== null &&
+            maximum > 0
+              ? row.percent / maximum * 100
+              : 0;
+
+          return `
+            <div class="ri-overview-holder-row">
+              <span class="ri-overview-rank">
+                ${index + 1}
+              </span>
+
+              ${wallet}
+
+              <span
+                class="ri-overview-bar"
+                aria-hidden="true"
+              >
+                <i style="width:${width}%"></i>
+              </span>
+
+              <strong>
+                ${escapeHTML(
+                  riOverviewPercentText(row.percent)
+                )}
+              </strong>
+            </div>
+          `;
+        }).join("")
+      }
+    </div>
+
+    <details class="ri-overview-holder-details">
+      <summary>
+        View holder details
+        <span aria-hidden="true">›</span>
+      </summary>
+
+      ${
+        rows.map(row => `
+          <div>
+            <span title="${
+              escapeAttribute(row.wallet)
+            }">
+              ${escapeHTML(
+                shortenAddress(row.wallet)
+              )}
+            </span>
+
+            <strong>
+              ${escapeHTML(
+                formatTokenAmount(row.amount)
+              )}
+            </strong>
+
+            <small>
+              ${escapeHTML(row.type)}
+            </small>
+          </div>
+        `).join("")
+      }
+    </details>
+  `;
+}
+
+function riRenderHolderOverview(
+  info,
+  analysis = state.currentAnalysis
+) {
+  const grid =
+    document.getElementById("tokenInfoGrid");
+
+  if (!grid) return;
+
+  info = info || {};
+
+  const count =
+    riOverviewNumber(info.holders);
+
+  const pro =
+    riOverviewNumber(info.pro_holders);
+
+  const fresh =
+    riOverviewNumber(info.new_wallets);
+
+  const ratio = value =>
+    count > 0 &&
+    value !== null &&
+    value <= count
+      ? value / count * 100
+      : null;
+
+  const countText = value =>
+    value === null
+      ? "—"
+      : value.toLocaleString("en-US", {
+          maximumFractionDigits: 0
+        });
+
+  const supply =
+    riOverviewNumber(info.total_supply);
+
+  const holders =
+    analysis?.holderAnalysis ||
+    analysis?.holders ||
+    {};
+
+  const list = normalizeHolderArray(
+    holders,
+    analysis || {}
+  );
+
+  const top10 = getAdjustedTop10(
+    holders,
+    analysis || {}
+  );
+
+  const caption = value =>
+    value === null || count === null
+      ? "Count unavailable"
+      : (
+          `${countText(value)} of ` +
+          `${countText(count)} holders`
+        );
+
+  grid.innerHTML = `
+    <div class="ri-overview-layout">
+
+      <article class="ri-overview-panel">
+        <h4>Holder overview</h4>
+
+        <h5>Holder composition</h5>
+
+        <div class="ri-overview-count-rings">
+          ${
+            riOverviewRing(
+              "Pro holders",
+              ratio(pro),
+              "#ff6262",
+              caption(pro)
+            )
+          }
+
+          ${
+            riOverviewRing(
+              "New wallets",
+              ratio(fresh),
+              "#ffad45",
+              caption(fresh)
+            )
+          }
+        </div>
+
+        <h5>Share of token supply</h5>
+
+        <div class="ri-overview-supply-rings">
+          ${
+            riOverviewRing(
+              "Dev holdings",
+              info.dev_holding_percent,
+              "#24eea2"
+            )
+          }
+
+          ${
+            riOverviewRing(
+              "Insider holdings",
+              info.insider_holding_percent,
+              "#37d8ee"
+            )
+          }
+
+          ${
+            riOverviewRing(
+              "Bundler holdings",
+              info.bundler_holding_percent,
+              "#b9e857"
+            )
+          }
+
+          ${
+            riOverviewRing(
+              "Smart money",
+              info.smart_money_holding_percent,
+              "#e6c85b"
+            )
+          }
+
+          ${
+            riOverviewRing(
+              "KOL holdings",
+              info.kol_holding_percent,
+              "#a783ed"
+            )
+          }
+        </div>
+
+        <div class="ri-overview-totals">
+          <div>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="7" r="3"/>
+              <path d="M3 21v-3a6 6 0 0 1 12 0v3"/>
+              <path d="M16 4a3 3 0 0 1 0 6"/>
+              <path d="M18 14a5 5 0 0 1 3 4v3"/>
+            </svg>
+
+            <span>Holders</span>
+            <strong>${countText(count)}</strong>
+          </div>
+
+          <div>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <ellipse cx="12" cy="5" rx="8" ry="3"/>
+              <path d="M4 5v14c0 4 16 4 16 0V5"/>
+              <path d="M4 10c0 4 16 4 16 0"/>
+              <path d="M4 15c0 4 16 4 16 0"/>
+            </svg>
+
+            <span>Total supply</span>
+
+            <strong>
+              ${
+                supply === null
+                  ? "—"
+                  : supply.toLocaleString("en-US", {
+                      notation: "compact",
+                      maximumFractionDigits: 2
+                    })
+              }
+            </strong>
+          </div>
+        </div>
+
+        <p class="ri-overview-note">
+          Wallet groups may overlap.
+          Each ring is independent.
+        </p>
+      </article>
+
+      <article class="ri-overview-panel">
+        <div class="ri-overview-holder-heading">
+          <div>
+            <h4>Top holders</h4>
+            <p>
+              Excluding identified pools · estimated
+            </p>
+          </div>
+
+          <div>
+            <strong>
+              ${escapeHTML(
+                riOverviewPercentText(top10)
+              )}
+            </strong>
+
+            <small>TOP 10 SHARE</small>
+          </div>
+        </div>
+
+        ${riOverviewHolderList(list)}
+      </article>
+
+    </div>
+  `;
 }
