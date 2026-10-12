@@ -734,7 +734,9 @@ function renderAnalysis(data) {
   );
 
   renderInsiderAnalysis(data);
-  }
+  renderAnalysisHighlights(data);
+  riUpdateExitVerification();
+}
 
 
 function renderInsiderAnalysis(data) {
@@ -2482,6 +2484,8 @@ async function loadExitAnalysis(
       data
     );
 
+    riUpdateExitVerification(data);
+
   } catch (error) {
     console.error(
       "Exit analysis error:",
@@ -2509,6 +2513,8 @@ async function loadExitAnalysis(
       elements.exitAnalysisNote,
       friendlyErrorMessage(error)
     );
+
+    riUpdateExitVerification();
   }
 }
 
@@ -4125,10 +4131,16 @@ async function refreshMarket() {
 
     if (
       !data ||
-      data.success === false
+      data.success === false ||
+      state.currentContract !== contract
     ) {
       return;
     }
+
+    renderAnalysisHighlights(
+      state.currentAnalysis,
+      data
+    );
 
     const marketCap =
       firstNumber([
@@ -6300,6 +6312,8 @@ overview.open = true;
     root.dataset.riLayoutReady = "true";
   }
 
+  riArrangeResults();
+
   analysis.classList.remove("hidden");
 
   const contract = state.currentContract;
@@ -6822,4 +6836,264 @@ async function loadCoinGeckoBadge(contract) {
       coinGeckoBadgeController = null;
     }
   }
+}
+
+
+/* =========================================================
+   RESULTS — HIGHLIGHTS AND LAYOUT
+   ========================================================= */
+
+let riHighlightsMarket = null;
+
+function riArrangeResults() {
+  const root = document.getElementById("resultsSection");
+  const layout = root?.querySelector(".ri-analysis-layout");
+  const quick = root?.querySelector(".quick-result-card");
+
+  const highlights =
+    document.getElementById("analysisHighlights");
+
+  const signals =
+    root?.querySelector(".result-group-signals");
+
+  const overview =
+    root?.querySelector(".ri-overview-body");
+
+  if (!layout || !quick || !overview) return;
+
+  if (highlights) {
+    layout.append(highlights);
+  }
+
+  if (signals) {
+    signals.classList.add("ri-core-signals");
+    layout.append(signals);
+
+    const status = document.getElementById("marketStatus")
+      ?.closest(".metric-card");
+
+    if (status) {
+      signals.append(status);
+    }
+  }
+
+  // Holders patria do Token Overview.
+  const holders = document.getElementById("holderCount")
+    ?.closest(".token-metric-card");
+
+  const grid = overview.querySelector(".token-metrics-grid");
+
+  if (holders && grid) {
+    holders.classList.remove("ri-holder-stat");
+    grid.prepend(holders);
+  }
+}
+
+function riHighlightNumber(...values) {
+  for (const value of values) {
+    if (
+      value === null ||
+      value === undefined ||
+      typeof value === "boolean"
+    ) {
+      continue;
+    }
+
+    if (
+      typeof value !== "number" &&
+      typeof value !== "string"
+    ) {
+      continue;
+    }
+
+    if (String(value).trim() === "") continue;
+
+    const number = Number(value);
+
+    if (Number.isFinite(number) && number >= 0) {
+      return number;
+    }
+  }
+
+  return null;
+}
+
+function renderAnalysisHighlights(
+  data = state.currentAnalysis,
+  live = null
+) {
+  const root = document.getElementById("analysisHighlights");
+
+  if (!root || !data) return;
+
+  if (live) {
+    riHighlightsMarket = {
+      contract: state.currentContract,
+      data: live
+    };
+  }
+
+  const market =
+    riHighlightsMarket?.contract === state.currentContract
+      ? riHighlightsMarket.data
+      : {};
+
+  const holders =
+    data.holderAnalysis || data.holders || {};
+
+  const cap = riHighlightNumber(
+    market.marketCapUsd,
+    data.market?.marketCapUsd,
+    data.token?.marketCapUsd
+  );
+
+  const liquidity = riHighlightNumber(
+    market.liquidityUsd,
+    data.market?.liquidityUsd,
+    data.liquidity?.totalLiquidityUsd
+  );
+
+  const drop = riHighlightNumber(
+    market.dropFromPeakPercent,
+    data.market?.dropFromPeakPercent,
+    data.marketExitAnalysis?.dropFromPeakPercent
+  );
+
+  const top = riHighlightNumber(
+    getAdjustedTop10(holders, data)
+  );
+
+  const ratio =
+    cap !== null &&
+    cap > 0 &&
+    liquidity !== null
+      ? liquidity / cap * 100
+      : null;
+
+  const percent = value =>
+    value === null ? "—" : `${value.toFixed(2)}%`;
+
+  const set = (id, value, tone, note) => {
+    const field = document.getElementById(id);
+
+    if (!field) return;
+
+    field.textContent = percent(value);
+
+    const card = field.closest(".ri-highlight-card");
+
+    if (card) {
+      card.dataset.tone =
+        value === null ? "unknown" : tone;
+    }
+
+    const caption =
+      card?.querySelector(".ri-highlight-note");
+
+    if (caption) {
+      caption.textContent =
+        value === null ? "Data unavailable" : note;
+    }
+  };
+
+  set(
+    "highlightDrop",
+    drop,
+    drop >= 80
+      ? "danger"
+      : drop >= 40
+        ? "warning"
+        : "neutral",
+    "Below historical peak"
+  );
+
+  set(
+    "highlightTop10",
+    top,
+    top > 50
+      ? "danger"
+      : top > 25
+        ? "warning"
+        : "neutral",
+    holders.concentrationEstimated === true
+      ? "Estimated share of supply"
+      : "Share of supply"
+  );
+
+  set(
+    "highlightLiquidityRatio",
+    ratio,
+    ratio < 2 ? "warning" : "neutral",
+    "Liquidity relative to valuation"
+  );
+
+  const available = [drop, top, ratio]
+    .filter(value => value !== null)
+    .length;
+
+  document.getElementById("highlightsCoverage").textContent =
+    `${available}/3 metrics available`;
+
+  document.getElementById("highlightsUpdated").textContent =
+    "Values from the latest available data";
+}
+
+function riUpdateExitVerification(data = {}) {
+  const exit = data.exitAnalysis || {};
+
+  const historyVerified =
+    exit.creatorHistoryAnalyzed === true;
+
+  const sold =
+    exit.confirmedCreatorSell === true ||
+    (
+      historyVerified &&
+      riHighlightNumber(exit.creatorTokensSold) > 0
+    );
+
+  const major =
+    historyVerified &&
+    [
+      "MAJOR_EXIT_ACTIVITY",
+      "SEVERE_EXIT_ACTIVITY"
+    ].includes(exit.status || data.status);
+
+  const apply = (field, detected, verified) => {
+    if (!field) return;
+
+    field.classList.remove(
+      "safe",
+      "warning",
+      "danger",
+      "ri-not-verified"
+    );
+
+    field.textContent = detected
+      ? "DETECTED"
+      : verified
+        ? "NOT DETECTED"
+        : "NOT VERIFIED";
+
+    field.classList.add(
+      detected
+        ? "danger"
+        : verified
+          ? "safe"
+          : "ri-not-verified"
+    );
+  };
+
+  apply(
+    elements.exitCreatorSell,
+    sold,
+    historyVerified
+  );
+
+  apply(
+    elements.exitMajorEvent,
+    major,
+    historyVerified
+  );
+
+  syncExitAnalysisDetails();
 }

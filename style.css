@@ -10693,3 +10693,593 @@ body::before {
     max-width: 150px;
   }
 }
+
+
+/* =========================================================
+   TOKEN ANALYSIS — REFINED RESULTS LAYOUT
+   ========================================================= */
+
+#resultsSection {
+  font-family: Inter, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+#resultsSection .results-container {
+  width: min(1440px, 100%);
+  margin-inline: auto;
+}
+
+#resultsSection .quick-result-card {
+  padding: 24px;
+}
+
+#resultsSection .token-overview {
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+#resultsSection .ri-market-strip {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#resultsSection .ri-market-strip > article {
+  min-width: 0;
+  min-height: 120px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #04130e;
+}
+
+#resultsSection .ri-market-strip .metric-value {
+  font-size: clamp(19px, 2vw, 29px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#resultsSection .ri-analysis-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  grid-template-areas:
+    "highlights overview"
+    "signals overview"
+    "details overview";
+  gap: 16px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+#resultsSection .ri-analysis-layout > * {
+  min-width: 0;
+}
+
+#resultsSection .ri-highlights {
+  grid-area: highlights;
+}
+
+#resultsSection .ri-core-signals {
+  grid-area: signals;
+}
+
+#resultsSection #allInfoSection {
+  grid-area: details;
+}
+
+#resultsSection .ri-overview-sidebar {
+  grid-area: overview;
+  order: initial;
+}
+
+/* Analysis Highlights */
+
+#resultsSection .ri-highlights {
+  padding: 20px;
+  border: 1px solid #174735;
+  border-radius: 14px;
+  background: #04130e;
+}
+
+#resultsSection .ri-highlights-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+#resultsSection .ri-highlights-heading h3 {
+  margin: 0;
+  color: #ecf6f0;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+#resultsSection .ri-highlights-heading p {
+  margin: 4px 0 0;
+  color: #93aaa0;
+  font-size: 12px;
+}
+
+#resultsSection .ri-highlight-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid rgba(65, 225, 151, .2);
+  border-radius: 10px;
+  background: rgba(65, 225, 151, .06);
+  color: #44e7a0;
+}
+
+#resultsSection .ri-highlight-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#resultsSection .ri-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#resultsSection .ri-highlight-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 12px;
+  border: 1px solid #174735;
+  border-radius: 11px;
+  background: rgba(35, 114, 78, .05);
+}
+
+#resultsSection .ri-highlight-content {
+  min-width: 0;
+}
+
+#resultsSection .ri-highlight-label {
+  display: block;
+  color: #d3e4da;
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+#resultsSection .ri-highlight-content strong {
+  display: block;
+  margin-top: 7px;
+  color: #edf8f1;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+#resultsSection .ri-highlight-note {
+  display: block;
+  margin-top: 6px;
+  color: #98aea3;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+#resultsSection .ri-highlight-card[data-tone="warning"] {
+  border-color: rgba(233, 188, 77, .25);
+  background: rgba(233, 188, 77, .045);
+}
+
+#resultsSection .ri-highlight-card[data-tone="warning"] strong,
+#resultsSection .ri-highlight-card[data-tone="warning"] .ri-highlight-icon {
+  color: #eac66b;
+}
+
+#resultsSection .ri-highlight-card[data-tone="warning"] .ri-highlight-icon {
+  border-color: rgba(233, 188, 77, .25);
+  background: rgba(233, 188, 77, .07);
+}
+
+#resultsSection .ri-highlight-card[data-tone="danger"] {
+  border-color: rgba(242, 105, 119, .25);
+  background: rgba(242, 105, 119, .045);
+}
+
+#resultsSection .ri-highlight-card[data-tone="danger"] strong,
+#resultsSection .ri-highlight-card[data-tone="danger"] .ri-highlight-icon {
+  color: #f48d99;
+}
+
+#resultsSection .ri-highlight-card[data-tone="danger"] .ri-highlight-icon {
+  border-color: rgba(242, 105, 119, .25);
+  background: rgba(242, 105, 119, .07);
+}
+
+#resultsSection .ri-highlight-card[data-tone="unknown"] {
+  border-color: rgba(149, 166, 157, .18);
+  background: rgba(149, 166, 157, .03);
+}
+
+#resultsSection .ri-highlight-card[data-tone="unknown"] strong,
+#resultsSection .ri-highlight-card[data-tone="unknown"] .ri-highlight-icon {
+  color: #98aba2;
+}
+
+#resultsSection .ri-highlights-footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(109, 162, 132, .15);
+  color: #8da498;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* Core Risk Signals */
+
+#resultsSection .ri-core-signals {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid #174735;
+  border-radius: 14px;
+  background: #04130e;
+}
+
+#resultsSection .ri-core-signals .result-group-header {
+  margin-bottom: 14px;
+}
+
+#resultsSection .ri-core-signals .quick-signal-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#resultsSection .ri-core-signals .quick-signal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  grid-column: span 2;
+  gap: 12px;
+  min-height: 90px;
+  padding: 14px;
+  text-align: left;
+  border-radius: 11px;
+}
+
+#resultsSection .ri-core-signals .quick-signal:nth-child(n+4) {
+  grid-column: span 3;
+}
+
+#resultsSection .ri-core-signals .signal-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  margin: 0;
+  border-radius: 10px;
+}
+
+#resultsSection .ri-core-signals .signal-content {
+  min-width: 0;
+  text-align: left;
+}
+
+#resultsSection .ri-core-signals .signal-content > span {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+#resultsSection .ri-core-signals .signal-content > strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#resultsSection .ri-core-signals .ri-market-alert {
+  margin: 12px 0 0;
+  padding: 13px 15px;
+  min-height: 0;
+  background: rgba(242, 105, 119, .025);
+  border: 1px solid #253f33;
+  border-radius: 10px;
+}
+
+#resultsSection .ri-core-signals .ri-market-alert .metric-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#resultsSection .ri-core-signals .ri-market-alert .metric-value {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#resultsSection .ri-core-signals .ri-market-alert .metric-description {
+  font-size: 11px;
+}
+
+#resultsSection .ri-not-verified {
+  color: #a0b2a8 !important;
+}
+
+#resultsSection .quick-signal:has(.ri-not-verified) {
+  border-color: rgba(149, 166, 157, .2) !important;
+  background: rgba(149, 166, 157, .035) !important;
+}
+
+#resultsSection .quick-signal:has(.ri-not-verified) .signal-icon {
+  color: #a0b2a8 !important;
+  border-color: rgba(149, 166, 157, .2) !important;
+  background: rgba(149, 166, 157, .05) !important;
+}
+
+#resultsSection .quick-signal:has(.ri-not-verified) .signal-icon svg {
+  stroke: #a0b2a8 !important;
+}
+
+/* Token Overview */
+
+#resultsSection .ri-overview-panel {
+  padding: 18px;
+  border: 1px solid #174735;
+  border-radius: 14px;
+  background: #04130e;
+}
+
+#resultsSection .ri-overview-panel > summary {
+  padding: 0;
+  margin-bottom: 16px;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+#resultsSection .ri-overview-body .token-metrics-grid {
+  gap: 10px;
+}
+
+#resultsSection .ri-overview-body .token-metric-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 14px;
+  min-height: 80px;
+}
+
+#resultsSection .ri-overview-body .token-metric-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  margin: 0;
+}
+
+#resultsSection .ri-overview-body .token-metric-content {
+  min-width: 0;
+}
+
+#resultsSection .ri-overview-body .token-metric-content > strong {
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+#resultsSection .ri-overview-body .token-metric-content .metric-text-value {
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+#resultsSection .ri-overview-body .concentration-metric {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+#resultsSection .ri-overview-body .concentration-ring {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  margin: 0;
+}
+
+#resultsSection .ri-overview-body .concentration-ring-inner {
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+}
+
+#resultsSection .ri-overview-body .concentration-ring strong {
+  font-size: 12px;
+}
+
+#resultsSection .ri-concentration-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+#resultsSection .ri-overview-body > .metric-card {
+  margin: 10px 0 0;
+  padding: 15px;
+  min-height: 0;
+  border-radius: 11px;
+}
+
+#resultsSection .ri-overview-body > .metric-card .metric-value {
+  font-size: 23px;
+}
+
+/* Detailed sections */
+
+#resultsSection .ri-analysis-accordion {
+  margin-bottom: 9px;
+  border-radius: 11px;
+}
+
+#resultsSection .ri-accordion-heading {
+  padding: 15px 18px;
+}
+
+#resultsSection .ri-accordion-heading .section-heading,
+#resultsSection .ri-accordion-heading .analysis-section-header {
+  margin: 0;
+}
+
+#resultsSection .ri-accordion-heading h2,
+#resultsSection .ri-accordion-heading h3 {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+#resultsSection .ri-accordion-body {
+  padding: 18px;
+}
+
+/* Tablet */
+
+@media (max-width: 1100px) {
+  #resultsSection .ri-analysis-layout {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+
+  #resultsSection .ri-highlights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #resultsSection .ri-highlight-card {
+    padding: 13px 15px;
+  }
+
+  #resultsSection .ri-highlight-content strong {
+    font-size: 22px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 800px) {
+  #resultsSection .quick-result-card {
+    padding: 16px;
+  }
+
+  #resultsSection .ri-analysis-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "highlights"
+      "overview"
+      "signals"
+      "details";
+    gap: 14px;
+  }
+
+  #resultsSection .ri-market-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #resultsSection .ri-market-strip > article {
+    padding: 14px;
+    min-height: 105px;
+  }
+
+  #resultsSection .ri-market-strip .metric-value {
+    font-size: clamp(16px, 4.8vw, 23px);
+  }
+
+  #resultsSection .ri-highlights,
+  #resultsSection .ri-core-signals,
+  #resultsSection .ri-overview-panel {
+    padding: 16px;
+  }
+
+  #resultsSection .ri-overview-body .token-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #resultsSection .ri-overview-body .concentration-metric {
+    grid-column: 1 / -1;
+  }
+
+  #resultsSection .ri-overview-body .token-metric-card {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 9px;
+    padding: 12px;
+  }
+
+  #resultsSection .ri-overview-body .token-metric-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  #resultsSection .ri-overview-body .concentration-metric {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  #resultsSection .ri-overview-body .token-metric-content > strong {
+    font-size: 16px;
+  }
+
+  #resultsSection .ri-core-signals .quick-signal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #resultsSection .ri-core-signals .quick-signal,
+  #resultsSection .ri-core-signals .quick-signal:nth-child(n+4) {
+    grid-column: auto;
+    min-height: 86px;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  #resultsSection .ri-core-signals .quick-signal:last-child {
+    grid-column: 1 / -1;
+  }
+
+  #resultsSection .ri-core-signals .signal-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  #resultsSection .ri-core-signals .signal-content > strong {
+    font-size: 11px;
+  }
+
+  #resultsSection .ri-accordion-heading {
+    padding: 14px;
+  }
+
+  #resultsSection .ri-accordion-heading h2,
+  #resultsSection .ri-accordion-heading h3 {
+    font-size: 14px;
+  }
+
+  #resultsSection .ri-accordion-body {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  #resultsSection .ri-core-signals .quick-signal-grid,
+  #resultsSection .ri-overview-body .token-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #resultsSection .ri-core-signals .quick-signal,
+  #resultsSection .ri-core-signals .quick-signal:last-child {
+    grid-column: 1;
+  }
+}
