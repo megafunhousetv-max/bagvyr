@@ -12346,3 +12346,256 @@ table.ri-overview-compact-table tbody > tr:hover {
     font-size: 22px;
   }
 }
+
+/* =========================================================
+   05 RISK SIGNALS — CARD DESIGN
+   ========================================================= */
+
+#riskSignalCount {
+  padding: 7px 10px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #a5bcb0;
+}
+
+.risk-modern-section .ri-risk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.risk-modern-section .ri-risk-toolbar > p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #9ab3a6;
+}
+
+.ri-risk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ri-risk-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #c8d9d0;
+}
+
+.ri-risk-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--ri-risk-color);
+}
+
+.ri-risk-high {
+  --ri-risk-color: #ff6969;
+  --ri-risk-rgb: 255, 105, 105;
+}
+
+.ri-risk-warning {
+  --ri-risk-color: #f4c451;
+  --ri-risk-rgb: 244, 196, 81;
+}
+
+.ri-risk-info,
+.ri-risk-empty {
+  --ri-risk-color: #59e6bc;
+  --ri-risk-rgb: 89, 230, 188;
+}
+
+#riskSignalsList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#riskSignalsList .ri-risk-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  min-width: 0;
+  padding: 20px 18px;
+
+  border: 1px solid rgba(89, 230, 188, 0.13);
+  border-left: 4px solid var(--ri-risk-color);
+  border-radius: 12px;
+
+  background:
+    linear-gradient(120deg, #071810, #04110b);
+
+  box-sizing: border-box;
+}
+
+#riskSignalsList .ri-risk-icon {
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+
+  color: var(--ri-risk-color);
+
+  border:
+    1px solid rgba(var(--ri-risk-rgb), 0.3);
+
+  border-radius: 11px;
+
+  background:
+    rgba(var(--ri-risk-rgb), 0.055);
+}
+
+#riskSignalsList .ri-risk-icon svg {
+  width: 25px;
+  height: 25px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#riskSignalsList .ri-risk-content {
+  flex: 1;
+  min-width: 0;
+}
+
+#riskSignalsList .ri-risk-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#riskSignalsList .ri-risk-content strong {
+  display: block;
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 700;
+
+  color: #effaf4;
+  overflow-wrap: anywhere;
+}
+
+#riskSignalsList .ri-risk-content p {
+  margin: 8px 0 0;
+
+  font-size: 12px;
+  line-height: 1.65;
+
+  color: #9bb2a6;
+  overflow-wrap: anywhere;
+}
+
+#riskSignalsList .ri-risk-badge {
+  display: inline-flex;
+  align-items: center;
+
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 5px 8px;
+
+  border:
+    1px solid rgba(var(--ri-risk-rgb), 0.3);
+
+  border-radius: 7px;
+
+  background:
+    rgba(var(--ri-risk-rgb), 0.06);
+
+  color: var(--ri-risk-color);
+
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+#riskSignalsList .ri-risk-badge > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+#riskSignalsList .ri-risk-empty {
+  grid-column: 1 / -1;
+}
+
+.risk-modern-section .ri-risk-footnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin-top: 16px;
+  padding: 13px 15px;
+
+  border:
+    1px solid rgba(89, 230, 188, 0.13);
+
+  border-radius: 10px;
+
+  font-size: 11px;
+  line-height: 1.6;
+
+  color: #9db6a9;
+  background: rgba(89, 230, 188, 0.025);
+}
+
+.ri-risk-footnote svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+@media (max-width: 850px) {
+  #riskSignalsList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  #riskSignalsList .ri-risk-card {
+    gap: 11px;
+    padding: 16px 12px;
+  }
+
+  #riskSignalsList .ri-risk-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  #riskSignalsList .ri-risk-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  #riskSignalsList .ri-risk-card-heading {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  #riskSignalsList .ri-risk-content strong {
+    font-size: 13px;
+  }
+
+  .ri-risk-legend {
+    gap: 12px;
+  }
+}

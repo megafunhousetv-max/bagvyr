@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 
   <style>
     html {
@@ -2340,9 +2340,7 @@
 
     <div class="section-heading-main">
 
-      <span class="section-number">
-        05
-      </span>
+      <span class="section-number">05</span>
 
       <div class="section-title-with-icon">
 
@@ -2354,14 +2352,11 @@
           </svg>
         </span>
 
-        <h3>
-          Risk Signals
-        </h3>
+        <h3>Risk Signals</h3>
 
       </div>
 
     </div>
-
 
     <span
       id="riskSignalCount"
@@ -2372,41 +2367,55 @@
 
   </div>
 
+  <div class="ri-risk-toolbar">
 
-  <div class="risk-modern-intro">
+    <p>Detected signals deserve a closer look.</p>
 
-    <div class="risk-modern-intro-icon">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 3l8 4v5c0 4.8-3 8-8 9-5-1-8-4.2-8-9V7l8-4z"/>
-        <path d="M12 8v5"/>
-        <path d="M12 16h.01"/>
-      </svg>
-    </div>
+    <div
+      class="ri-risk-legend"
+      aria-label="Signal severity legend"
+    >
 
-    <div>
-
-      <span>
-        DETECTED SIGNALS
+      <span class="ri-risk-high">
+        <i aria-hidden="true"></i>
+        High
       </span>
 
-      <strong>
-        On-chain risk indicators
-      </strong>
+      <span class="ri-risk-warning">
+        <i aria-hidden="true"></i>
+        Warning
+      </span>
 
-      <p>
-        Review detected token-level signals that may require
-        additional attention.
-      </p>
+      <span class="ri-risk-info">
+        <i aria-hidden="true"></i>
+        Info
+      </span>
 
     </div>
 
   </div>
 
-
   <div
     id="riskSignalsList"
     class="risk-signals-list risk-modern-list"
+    role="list"
+    aria-live="polite"
   ></div>
+
+  <div class="ri-risk-footnote">
+
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 11v6M12 7h.01"/>
+    </svg>
+
+    <span>
+      Signals can overlap. Timing and wallet links alone
+      do not prove common ownership or a rug pull.
+      Info labels describe findings, not a safety verdict.
+    </span>
+
+  </div>
 
 </section>
 
@@ -3142,7 +3151,7 @@
   <script src="supabase-config.js"></script>
   <script src="promo.js?v=1" data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"></script>
   <script src="analytics.js"></script>
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
   <script src="trending.js?v=4"></script>
 
 </body>

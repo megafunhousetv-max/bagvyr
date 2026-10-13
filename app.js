@@ -3793,27 +3793,229 @@ if (isProtocolInfrastructure) {
    RISK SIGNALS
    ========================================================= */
 
-function renderRiskSignals(
-  risks,
-  data
-) {
-  if (
-    !elements.riskSignalsList
-  ) {
-    return;
-  }
+function renderRiskSignals(risks, data) {
+  const list = elements.riskSignalsList;
 
-  let signals =
-    Array.isArray(risks)
-      ? risks
-      : [];
+  if (!list) return;
 
-  elements.riskSignalsList.innerHTML =
-    "";
+  const level = signal => {
+    const code = String(
+      signal.code || signal.type || ""
+    ).toLowerCase();
+
+    const title = String(
+      signal.title || ""
+    ).toLowerCase();
+
+    if (
+      (
+        code.includes("metadata") &&
+        code.includes("mutable")
+      ) ||
+      title.includes("metadata is mutable")
+    ) {
+      return "info";
+    }
+
+    const severity = String(
+      signal.severity ||
+      signal.level ||
+      "info"
+    ).toLowerCase();
+
+    if (
+      ["critical", "danger", "high"]
+        .includes(severity)
+    ) {
+      return "high";
+    }
+
+    if (
+      ["warning", "medium"]
+        .includes(severity)
+    ) {
+      return "warning";
+    }
+
+    return "info";
+  };
+
+  const icons = {
+    mint: `
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/>
+      <path d="M14 2v6h6M14 2l6 6"/>
+      <path d="M15 16h6M18 13v6M8 12h3M8 16h3"/>
+    `,
+
+    freeze: `
+      <path d="M12 2v20M3.34 7l17.32 10M3.34 17L20.66 7"/>
+      <path d="M8 4l4 4 4-4M8 20l4-4 4 4"/>
+      <path d="M3 11l5-1-1-5M21 13l-5 1 1 5"/>
+      <path d="M3 13l5 1-1 5M21 11l-5-1 1-5"/>
+    `,
+
+    people: `
+      <circle cx="9" cy="7" r="3"/>
+      <path d="M3 21v-2a6 6 0 0 1 12 0v2"/>
+      <path d="M16 4a3 3 0 0 1 0 6"/>
+      <path d="M21 21v-2a6 6 0 0 0-3-5"/>
+    `,
+
+    creator: `
+      <path d="M3 6l4 5 5-8 5 8 4-5-2 13H5L3 6z"/>
+      <path d="M5 22h14"/>
+    `,
+
+    bundle: `
+      <path d="M12 3l10 5-10 5L2 8l10-5z"/>
+      <path d="M2 12l10 5 10-5M2 16l10 5 10-5"/>
+    `,
+
+    network: `
+      <circle cx="12" cy="5" r="3"/>
+      <circle cx="5" cy="19" r="3"/>
+      <circle cx="19" cy="19" r="3"/>
+      <path d="M10.5 8L6.5 16M13.5 8l4 8M8 19h8"/>
+    `,
+
+    drop: `
+      <path d="M3 4l5 8 4-5 5 13 4-5"/>
+      <path d="M16 20h5v-5"/>
+    `,
+
+    liquidity: `
+      <path d="M12 3s-7 8-7 12a7 7 0 0 0 14 0c0-4-7-12-7-12z"/>
+    `,
+
+    volume: `
+      <path d="M5 21V12M12 21V3M19 21V8"/>
+    `,
+
+    fee: `
+      <path d="M20 13l-7 7-11-11V2h7l11 11z"/>
+      <circle cx="6.5" cy="6.5" r="1"/>
+    `,
+
+    launch: `
+      <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z"/>
+      <path d="M3 8l9 5 9-5M12 13v8"/>
+    `,
+
+    metadata: `
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+      <path d="M14 2v6h6M8 12h8M8 16h6"/>
+    `,
+
+    info: `
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 11v6M12 7h.01"/>
+    `,
+
+    good: `
+      <path d="M12 3l8 4v5c0 5-3 8-8 9-5-1-8-4-8-9V7l8-4z"/>
+      <path d="M8 12l3 3 5-6"/>
+    `
+  };
+
+  const iconFor = signal => {
+    const key = String(
+      signal.code ||
+      signal.type ||
+      signal.title ||
+      ""
+    ).toLowerCase();
+
+    if (key.includes("metadata")) {
+      return icons.metadata;
+    }
+
+    if (key.includes("freeze")) {
+      return icons.freeze;
+    }
+
+    if (key.includes("mint_authority")) {
+      return icons.mint;
+    }
+
+    if (key.includes("launch_block")) {
+      return icons.launch;
+    }
+
+    if (key.includes("fee")) {
+      return icons.fee;
+    }
+
+    if (key.includes("creator")) {
+      return icons.creator;
+    }
+
+    if (key.includes("bundle")) {
+      return icons.bundle;
+    }
+
+    if (
+      key.includes("linked") ||
+      key.includes("network")
+    ) {
+      return icons.network;
+    }
+
+    if (
+      key.includes("insider") ||
+      key.includes("holder") ||
+      key.includes("top10")
+    ) {
+      return icons.people;
+    }
+
+    if (
+      key.includes("drop") ||
+      key.includes("collapse")
+    ) {
+      return icons.drop;
+    }
+
+    if (key.includes("liquidity")) {
+      return icons.liquidity;
+    }
+
+    if (key.includes("volume")) {
+      return icons.volume;
+    }
+
+    return icons.info;
+  };
+
+  const svg = paths => `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      ${paths}
+    </svg>
+  `;
+
+  const order = {
+    high: 0,
+    warning: 1,
+    info: 2
+  };
+
+  const signals = (
+    Array.isArray(risks) ? risks : []
+  )
+    .filter(
+      signal =>
+        signal &&
+        typeof signal === "object"
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        order[level(a)] - order[level(b)]
+    );
+
+  list.innerHTML = "";
 
   setText(
     elements.riskSignalCount,
-
     `${signals.length} ${
       signals.length === 1
         ? "signal"
@@ -3821,22 +4023,24 @@ function renderRiskSignals(
     } detected`
   );
 
-  if (
-    !signals.length
-  ) {
-    elements.riskSignalsList.innerHTML = `
-      <div class="risk-signal good">
-        <div class="risk-signal-icon">
-          ✓
-        </div>
+  if (!signals.length) {
+    list.innerHTML = `
+      <div
+        class="ri-risk-card ri-risk-empty"
+        role="listitem"
+      >
+        <span class="ri-risk-icon">
+          ${svg(icons.good)}
+        </span>
 
-        <div>
+        <div class="ri-risk-content">
           <strong>
             No major signals detected
           </strong>
 
           <p>
-            No major risk signal was detected by the checks currently available to BagVyr.
+            No major risk signal was detected by
+            the checks currently available to RugInspect.
           </p>
         </div>
       </div>
@@ -3845,102 +4049,78 @@ function renderRiskSignals(
     return;
   }
 
-  signals.forEach(
-    signal => {
-      const severity =
-        String(
-          signal.severity ||
-          signal.level ||
-          "info"
-        ).toLowerCase();
+  for (const signal of signals) {
+    const severity = level(signal);
 
-      const className =
-        severity === "critical" ||
-        severity === "danger" ||
-        severity === "high"
-          ? "danger"
+    let title =
+      signal.title ||
+      signal.code ||
+      "Risk signal";
 
-          : severity === "warning" ||
-            severity === "medium"
-            ? "warning"
+    let description =
+      signal.explanation ||
+      signal.description ||
+      signal.message ||
+      "";
 
-            : "info";
+    const key = String(
+      signal.code || signal.type || ""
+    ).toLowerCase();
 
-      const icon =
-        className === "danger" ||
-        className === "warning"
-          ? "!"
-          : "i";
+    if (
+      (
+        key.includes("metadata") &&
+        key.includes("mutable")
+      ) ||
+      String(title)
+        .toLowerCase()
+        .includes("metadata is mutable")
+    ) {
+      title = "Metadata can be updated";
 
-let title =
-  signal.title ||
-  signal.code ||
-  "Risk signal";
+      description =
+        "The token creator can still update metadata such as the name, symbol or image. This alone does not indicate malicious activity.";
+    }
 
-let description =
-  signal.explanation ||
-  signal.description ||
-  signal.message ||
-  "";
+    const label =
+      severity === "high"
+        ? "High"
+        : severity === "warning"
+        ? "Warning"
+        : "Info";
 
-const signalCode =
-  String(signal.code || signal.type || "")
-    .toLowerCase();
+    const item = document.createElement("div");
 
-const isMutableMetadata =
-  signalCode.includes("metadata") &&
-  signalCode.includes("mutable") ||
-  String(title)
-    .toLowerCase()
-    .includes("metadata is mutable");
+    item.className =
+      `ri-risk-card ri-risk-${severity}`;
 
-if (isMutableMetadata) {
-  title = "Metadata can be updated";
+    item.setAttribute("role", "listitem");
 
-  description =
-    "The token creator can still update metadata such as the name, symbol or image. This is informational and does not by itself indicate malicious activity.";
-}
+    item.innerHTML = `
+      <span class="ri-risk-icon">
+        ${svg(iconFor(signal))}
+      </span>
 
-      const item =
-        document.createElement(
-          "div"
-        );
-
-item.className =
-  `risk-signal ${isMutableMetadata ? "metadata-info" : className}`;
-
-      item.innerHTML = `
-<div class="risk-signal-icon">
-  ${
-    isMutableMetadata
-      ? `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3l7 4v5c0 4.5-2.8 7.5-7 9-4.2-1.5-7-4.5-7-9V7l7-4z"></path>
-          <path d="M9 12h6"></path>
-          <path d="M12 9v6"></path>
-        </svg>
-      `
-      : icon
-  }
-</div>
-
-        <div>
+      <div class="ri-risk-content">
+        <div class="ri-risk-card-heading">
           <strong>
-            ${escapeHTML(title)}
+            ${escapeHTML(String(title))}
           </strong>
 
-          <p>
-            ${escapeHTML(description)}
-          </p>
+          <span class="ri-risk-badge">
+            <span aria-hidden="true"></span>
+            ${label}
+          </span>
         </div>
-      `;
 
-      elements.riskSignalsList.appendChild(
-        item
-      );
-    }
-  );
+        <p>
+          ${escapeHTML(String(description))}
+        </p>
+      </div>
+    `;
+
+    list.appendChild(item);
+  }
 }
 
 
