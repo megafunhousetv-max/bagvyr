@@ -607,18 +607,26 @@ function trendingImageVariants(value) {
     const hostname = parsed.hostname.toLowerCase();
 
     // Irys: skús rovnaký súbor cez Arweave.
-    if (hostname === "gateway.irys.xyz") {
-      const transactionId = parsed.pathname.slice(1);
+if (hostname === "gateway.irys.xyz") {
+  const transactionId = parsed.pathname.slice(1);
 
-      if (/^[A-Za-z0-9_-]{43}$/.test(transactionId)) {
-        return [
-          "https://arweave.net/" + transactionId,
-          original
-        ];
-      }
+  if (/^[A-Za-z0-9_-]{43}$/.test(transactionId)) {
+    const proxy = new URL(API, window.location.href);
 
-      return [original];
-    }
+    proxy.pathname = "/api/irys-image";
+    proxy.search = "";
+    proxy.hash = "";
+    proxy.searchParams.set("id", transactionId);
+
+    return [
+      proxy.toString(),
+      "https://arweave.net/" + transactionId,
+      original
+    ];
+  }
+
+  return [original];
+}
 
     // Zachované náhradné načítanie pre IPFS.
     const marker = "/ipfs/";
