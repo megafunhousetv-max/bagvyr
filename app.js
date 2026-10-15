@@ -566,7 +566,7 @@ hideResults();
       "Analyzing largest holders...",
       "Identifying liquidity infrastructure...",
       "Looking for creator activity...",
-      "Calculating BagVyr risk signals..."
+      "Calculating RugInspect risk signals..."
     ];
 
     let messageIndex = 0;
@@ -647,7 +647,7 @@ startMarketRefresh(
 
   } catch (error) {
     console.error(
-      "BagVyr analysis error:",
+      "RugInspect analysis error:",
       error
     );
 
@@ -5243,7 +5243,7 @@ async function apiRequest(
 
     } catch {
       throw new Error(
-        "The BagVyr API returned an invalid response."
+        "The RugInspect API returned an invalid response."
       );
     }
 
@@ -6245,7 +6245,7 @@ function friendlyErrorMessage(
       "Failed to fetch"
     )
   ) {
-    return "Could not connect to the BagVyr API. Please try again.";
+    return "Could not connect to the RugInspect API. Please try again.";
   }
 
   if (

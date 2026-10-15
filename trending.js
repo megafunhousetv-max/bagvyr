@@ -424,131 +424,205 @@ document.head.appendChild(designStyle);
     return `${Math.floor(minutes / 1440)}d`;
   }
 
-  const trendingImageCache = new Map();
+const trendingImageCache = new Map();
 
-  function normalizeTrendingImage(value) {
-    if (typeof value !== "string" || !value.trim()) {
-      return null;
-    }
+const trendingImageQueue = [];
+let trendingImageActive = 0;
 
-    let url = value.trim();
-
-    if (url.startsWith("ipfs://")) {
-      url = "https://ipfs.io/ipfs/" +
-        url.slice(7).replace(/^ipfs\//, "");
-    }
-
-    if (url.startsWith("ar://")) {
-      url = "https://arweave.net/" + url.slice(5);
-    }
-
-    try {
-      const parsed = new URL(url);
-      return parsed.protocol === "https:" ? parsed.href : null;
-    } catch {
-      return null;
-    }
+function normalizeTrendingImage(value) {
+  if (
+    typeof value !== "string" ||
+    !value.trim()
+  ) {
+    return null;
   }
 
-  async function getTrendingDexImages(contract) {
-    if (!contract) return [];
+  let url = value.trim();
 
-    if (trendingImageCache.has(contract)) {
-      return trendingImageCache.get(contract);
-    }
+  if (url.startsWith("ipfs://")) {
+    url =
+      "https://ipfs.io/ipfs/" +
+      url.slice(7).replace(/^ipfs\//, "");
 
-    const request = (async () => {
+  } else if (url.startsWith("ar://")) {
+    url =
+      "https://arweave.net/" +
+      url.slice(5);
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    return (
+      parsed.protocol === "https:" &&
+      !parsed.username &&
+      !parsed.password
+    )
+      ? parsed.href
+      : null;
+
+  } catch {
+    return null;
+  }
+}
+
+function runTrendingImageQueue() {
+  while (
+    trendingImageActive < 3 &&
+    trendingImageQueue.length
+  ) {
+    const job = trendingImageQueue.shift();
+
+    trendingImageActive++;
+
+    Promise.resolve()
+      .then(job.task)
+      .then(job.resolve, job.reject)
+      .finally(() => {
+        trendingImageActive--;
+        runTrendingImageQueue();
+      });
+  }
+}
+
+function queueTrendingImageRequest(task) {
+  return new Promise((resolve, reject) => {
+    trendingImageQueue.push({
+      task,
+      resolve,
+      reject
+    });
+
+    runTrendingImageQueue();
+  });
+}
+
+async function getTrendingScanImages(contract) {
+  if (
+    !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(
+      contract || ""
+    )
+  ) {
+    return [];
+  }
+
+  if (trendingImageCache.has(contract)) {
+    return trendingImageCache.get(contract);
+  }
+
+  const request = queueTrendingImageRequest(
+    async () => {
       const controller = new AbortController();
+
       const timeout = setTimeout(
         () => controller.abort(),
-        8000
+        25000
       );
 
       try {
+        const url = new URL(
+          API,
+          window.location.href
+        );
+
+        url.pathname = "/api/token-images";
+        url.search = "";
+        url.hash = "";
+
+        url.searchParams.set("ca", contract);
+
         const response = await fetch(
-          "https://api.dexscreener.com/token-pairs/v1/solana/" +
-            encodeURIComponent(contract),
-          { signal: controller.signal }
+          url.toString(),
+          {
+            headers: {
+              Accept: "application/json"
+            },
+            signal: controller.signal
+          }
         );
 
         if (!response.ok) {
-          throw new Error("Dex image HTTP " + response.status);
+          throw new Error(
+            "Token images HTTP " + response.status
+          );
         }
 
-        const pairs = await response.json();
+        const result = await response.json();
 
-        if (!Array.isArray(pairs)) {
-          throw new Error("Invalid Dex image response");
+        if (
+          result?.success !== true ||
+          result.contract !== contract ||
+          !Array.isArray(result.images)
+        ) {
+          throw new Error(
+            "Invalid token image response."
+          );
         }
 
-        return [...new Set(
-          pairs
-            .filter(pair =>
-              pair?.chainId === "solana" &&
-              pair?.baseToken?.address === contract
-            )
-            .sort((a, b) =>
-              Number(b?.liquidity?.usd || 0) -
-              Number(a?.liquidity?.usd || 0)
-            )
-            .map(pair =>
-              normalizeTrendingImage(pair?.info?.imageUrl)
-            )
-            .filter(Boolean)
-        )];
+        return [
+          ...new Set(
+            result.images
+              .map(normalizeTrendingImage)
+              .filter(Boolean)
+          )
+        ].slice(0, 12);
+
       } finally {
         clearTimeout(timeout);
       }
-    })();
-
-    trendingImageCache.set(contract, request);
-
-    try {
-      return await request;
-    } catch {
-      trendingImageCache.delete(contract);
-      return [];
     }
+  );
+
+  trendingImageCache.set(contract, request);
+
+  try {
+    const images = await request;
+
+    if (!images.length) {
+      trendingImageCache.delete(contract);
+    }
+
+    return images;
+
+  } catch (error) {
+    trendingImageCache.delete(contract);
+
+    console.warn(
+      "Trending image unavailable:",
+      contract,
+      error
+    );
+
+    return [];
   }
+}
 
 function tokenIcon(item) {
-  const container = element("span", "ri-trend-icon");
-  const letter = (item.symbol || item.name || "?").slice(0, 1);
+  const container = element(
+    "span",
+    "ri-trend-icon"
+  );
+
+  const letter = String(
+    item.symbol || item.name || "?"
+  )
+    .slice(0, 1)
+    .toUpperCase();
+
   container.textContent = letter;
 
-  const image = document.createElement("img");
-  image.alt = "";
-  image.loading = "eager";
-  image.style.cssText =
-    "width:100%;height:100%;object-fit:cover;border-radius:inherit;";
-
-  function normalizeImage(value) {
-    if (typeof value !== "string" || !value.trim()) return null;
-
-    let url = value.trim();
-
-    if (url.startsWith("ipfs://")) {
-      url =
-        "https://ipfs.io/ipfs/" +
-        url.slice(7).replace(/^ipfs\//, "");
-    } else if (url.startsWith("ar://")) {
-      url = "https://arweave.net/" + url.slice(5);
-    }
-
-    try {
-      const parsed = new URL(url);
-      return parsed.protocol === "https:" ? parsed.href : null;
-    } catch {
-      return null;
-    }
-  }
-
-  const tried = new Set();
   const candidates = [];
-  let dexRequested = false;
+  const tried = new Set();
 
-  const savedImage = normalizeImage(item.image_url);
-  if (savedImage) candidates.push(savedImage);
+  let fallbackRequested = false;
+
+  const savedImage = normalizeTrendingImage(
+    item.image_url
+  );
+
+  if (savedImage) {
+    candidates.push(savedImage);
+  }
 
   async function loadNext() {
     let url = candidates.shift();
@@ -557,47 +631,23 @@ function tokenIcon(item) {
       url = candidates.shift();
     }
 
-    if (!url && !dexRequested && item.contract) {
-      dexRequested = true;
+    if (
+      !url &&
+      !fallbackRequested &&
+      item.contract
+    ) {
+      fallbackRequested = true;
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-
-      try {
-        const response = await fetch(
-          "https://api.dexscreener.com/token-pairs/v1/solana/" +
-            encodeURIComponent(item.contract),
-          { signal: controller.signal }
+      const images =
+        await getTrendingScanImages(
+          item.contract
         );
 
-        if (!response.ok) {
-          throw new Error("Dex image HTTP " + response.status);
-        }
-
-        const pairs = await response.json();
-
-        if (Array.isArray(pairs)) {
-          candidates.push(
-            ...pairs
-              .filter(
-                (pair) =>
-                  pair?.chainId === "solana" &&
-                  pair?.baseToken?.address === item.contract
-              )
-              .sort(
-                (a, b) =>
-                  Number(b?.liquidity?.usd || 0) -
-                  Number(a?.liquidity?.usd || 0)
-              )
-              .map((pair) => normalizeImage(pair?.info?.imageUrl))
-              .filter(Boolean)
-          );
-        }
-      } catch (error) {
-        console.warn("Trending image:", item.contract, error);
-      } finally {
-        clearTimeout(timeout);
-      }
+      candidates.push(
+        ...images.filter(
+          imageUrl => !tried.has(imageUrl)
+        )
+      );
 
       return loadNext();
     }
@@ -609,17 +659,57 @@ function tokenIcon(item) {
 
     tried.add(url);
 
-    // Obrázok vložíme do stránky pred začatím načítania.
-    container.replaceChildren(image);
+    const image = new Image();
+
+    image.alt = "";
+    image.decoding = "async";
+
+    image.style.cssText =
+      "display:block;" +
+      "width:100%;" +
+      "height:100%;" +
+      "object-fit:cover;" +
+      "border-radius:inherit;";
+
+    let finished = false;
+    let timeout;
+
+    function finish(success) {
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+      image.onload = null;
+      image.onerror = null;
+
+      if (success) {
+        container.replaceChildren(image);
+      } else {
+        image.removeAttribute("src");
+        void loadNext();
+      }
+    }
+
+    image.onload = () => {
+      finish(image.naturalWidth > 0);
+    };
+
+    image.onerror = () => {
+      finish(false);
+    };
+
+    timeout = setTimeout(
+      () => finish(false),
+      8000
+    );
+
     image.src = url;
   }
 
-  image.onerror = () => {
-    container.textContent = letter;
-    void loadNext();
-  };
-
   void loadNext();
+
   return container;
 }
 
