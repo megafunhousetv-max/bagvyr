@@ -13012,3 +13012,14 @@ table.ri-overview-compact-table tbody > tr:hover {
     flex: 1 1 140px;
   }
 }
+
+#riSharePreview .ri-share-preview-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  line-height: 1;
+}
