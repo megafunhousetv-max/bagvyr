@@ -8006,7 +8006,11 @@ async function riLoadLaunchRiskSignals(
 async function shareAnalysis() {
   const contract = state.currentContract;
   const analysis = state.currentAnalysis;
-  const button = document.getElementById("shareAnalysisButton");
+
+  const button = document.getElementById(
+    "shareAnalysisButton"
+  );
+
   const label = button?.querySelector("span");
 
   if (
@@ -8022,10 +8026,11 @@ async function shareAnalysis() {
     return;
   }
 
-  // Freeze the data so a market refresh cannot change the card halfway.
-  const snapshot = structuredClone(analysis);
+  if (button?.disabled) return;
 
+  const snapshot = structuredClone(analysis);
   const tokenImage = document.getElementById("tokenImage");
+
   const logoUrl =
     tokenImage?.naturalWidth > 0
       ? tokenImage.currentSrc
@@ -8041,32 +8046,13 @@ async function shareAnalysis() {
       logoUrl
     );
 
-    const endpoint = new URL(
-      "/api/share-card",
-      CONFIG.API_BASE
-    );
-
-    endpoint.searchParams.set("ca", contract);
-
-    const response = await fetch(endpoint.href, {
-      method: "POST",
-      headers: { "Content-Type": "image/png" },
-      body: blob,
-      signal: AbortSignal.timeout(30000)
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success || !result.url) {
-      throw new Error(
-        result.error || "Could not create share link."
-      );
-    }
-
-    await riCopyAnalysisLink(result.url);
+    riOpenSharePreview(blob, snapshot, contract);
   } catch (error) {
-    console.warn("Share analysis failed:", error);
-    showToast(error.message || "Could not share analysis");
+    console.warn("Analysis preview failed:", error);
+
+    showToast(
+      error.message || "Could not create analysis image"
+    );
   } finally {
     if (button) button.disabled = false;
     if (label) label.textContent = "Share analysis";
@@ -8482,4 +8468,183 @@ async function riDrawAnalysisCard(data, contract, logoUrl) {
       }
     }, "image/png");
   });
+}
+
+
+function riOpenSharePreview(blob, data, contract) {
+  document.getElementById("riSharePreview")?.close();
+
+  const imageUrl = URL.createObjectURL(blob);
+
+  const scannerUrl = new URL(window.location.href);
+  scannerUrl.search = "";
+  scannerUrl.searchParams.set("ca", contract);
+  scannerUrl.hash = "scanner";
+
+  const symbol = String(data.token?.symbol || "token")
+    .replace(/^\$/, "");
+
+  const filename =
+    "RugInspect-" +
+    (symbol.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 30) || "token") +
+    ".png";
+
+  const score =
+    typeof data.score === "number"
+      ? data.score
+      : data.score?.value ?? data.score?.score;
+
+  const scoreLine =
+    typeof score === "number" && Number.isFinite(score)
+      ? `\nRugInspect score: ${Math.round(score)}/100`
+      : "";
+
+  const intent = new URL("https://x.com/intent/tweet");
+
+  intent.searchParams.set(
+    "text",
+    `${symbol ? "$" + symbol : "Token"} analysis on @RugInspect` +
+      scoreLine
+  );
+
+  intent.searchParams.set("url", scannerUrl.href);
+
+  const dialog = document.createElement("dialog");
+  dialog.id = "riSharePreview";
+  dialog.className = "ri-share-preview";
+
+  dialog.innerHTML = `
+    <div class="ri-share-preview-header">
+      <h2>Share analysis</h2>
+      <button
+        type="button"
+        class="ri-share-preview-close"
+        aria-label="Close preview"
+      >×</button>
+    </div>
+
+    <img
+      class="ri-share-preview-image"
+      alt="Token analysis card"
+    >
+
+    <div class="ri-share-preview-actions">
+      <button type="button" data-share-action="copy">
+        Copy image
+      </button>
+
+      <button type="button" data-share-action="x">
+        Share on X ↗
+      </button>
+
+      <a data-share-action="download">
+        Download PNG
+      </a>
+    </div>
+
+    <p class="ri-share-preview-status" role="status" aria-live="polite">
+      Share on X copies the image and opens your post.
+      Paste the image on X with Ctrl+V or ⌘V.
+    </p>
+  `;
+
+  const image = dialog.querySelector("img");
+  const status = dialog.querySelector("[role='status']");
+  const copyButton = dialog.querySelector(
+    "[data-share-action='copy']"
+  );
+
+  const xButton = dialog.querySelector(
+    "[data-share-action='x']"
+  );
+
+  const download = dialog.querySelector(
+    "[data-share-action='download']"
+  );
+
+  image.src = imageUrl;
+  download.href = imageUrl;
+  download.download = filename;
+
+  async function copyImage() {
+    if (
+      !window.isSecureContext ||
+      !navigator.clipboard?.write ||
+      typeof ClipboardItem === "undefined"
+    ) {
+      throw new Error(
+        "Use Download PNG or right-click the image to copy it."
+      );
+    }
+
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "image/png": blob
+      })
+    ]);
+  }
+
+  copyButton.addEventListener("click", async () => {
+    copyButton.disabled = true;
+
+    try {
+      await copyImage();
+      status.textContent = "Image copied. Paste it with Ctrl+V or ⌘V.";
+    } catch {
+      status.textContent =
+        "Could not copy the image. Use Download PNG or right-click the image.";
+    } finally {
+      copyButton.disabled = false;
+    }
+  });
+
+  xButton.addEventListener("click", async () => {
+    xButton.disabled = true;
+
+    try {
+      await copyImage();
+
+      // Same-tab navigation avoids browser popup blocking.
+      window.location.assign(intent.href);
+    } catch {
+      status.textContent =
+        "Download or copy the image first, then choose Open X.";
+
+      const openX = document.createElement("a");
+      openX.href = intent.href;
+      openX.target = "_blank";
+      openX.rel = "noopener noreferrer";
+      openX.textContent = "Open X ↗";
+
+      xButton.replaceWith(openX);
+    } finally {
+      xButton.disabled = false;
+    }
+  });
+
+  dialog.querySelector(".ri-share-preview-close")
+    .addEventListener("click", () => dialog.close());
+
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+
+    const bounds = dialog.getBoundingClientRect();
+
+    if (
+      event.clientX < bounds.left ||
+      event.clientX > bounds.right ||
+      event.clientY < bounds.top ||
+      event.clientY > bounds.bottom
+    ) {
+      dialog.close();
+    }
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.remove();
+    URL.revokeObjectURL(imageUrl);
+  }, { once: true });
+
+  document.body.appendChild(dialog);
+  dialog.showModal();
 }

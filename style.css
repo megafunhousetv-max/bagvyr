@@ -12902,3 +12902,113 @@ table.ri-overview-compact-table tbody > tr:hover {
 #resultsSection .ri-share-analysis svg {
   flex-shrink: 0;
 }
+
+.ri-share-preview {
+  box-sizing: border-box;
+  width: min(1080px, calc(100vw - 28px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid rgba(56, 227, 166, 0.4);
+  border-radius: 18px;
+  background: #061710;
+  color: #eefaf4;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+.ri-share-preview::backdrop {
+  background: rgba(0, 7, 4, 0.86);
+}
+
+.ri-share-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ri-share-preview-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.ri-share-preview-close {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #27523e;
+  border-radius: 9px;
+  background: #10291e;
+  color: #def9eb;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.ri-share-preview-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.ri-share-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ri-share-preview-actions button,
+.ri-share-preview-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 10px 18px;
+  border: 1px solid #2c7252;
+  border-radius: 10px;
+  background: #103423;
+  color: #dfffee;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ri-share-preview-actions button:hover,
+.ri-share-preview-actions a:hover {
+  background: #194c33;
+  border-color: #38e3a6;
+}
+
+.ri-share-preview-actions button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ri-share-preview button:focus-visible,
+.ri-share-preview a:focus-visible {
+  outline: 2px solid #38e3a6;
+  outline-offset: 3px;
+}
+
+.ri-share-preview-status {
+  margin: 14px 0 0;
+  color: #a2c4b2;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .ri-share-preview {
+    padding: 12px;
+  }
+
+  .ri-share-preview-actions > * {
+    flex: 1 1 140px;
+  }
+}
