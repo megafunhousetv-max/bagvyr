@@ -1381,8 +1381,148 @@ $("loadInboxButton").addEventListener("click", async () => {
         ? new Date(message.date).toLocaleString("en-GB")
         : "";
 
-      card.append(subject, sender, date);
-      list.append(card);
+const openButton = document.createElement("button");
+openButton.type = "button";
+openButton.textContent = "Open email";
+openButton.setAttribute("aria-expanded", "false");
+
+Object.assign(openButton.style, {
+  display: "block",
+  marginTop: "12px",
+  padding: "8px 14px",
+  border: "1px solid rgba(53,255,192,.3)",
+  borderRadius: "10px",
+  background: "rgba(53,255,192,.08)",
+  color: "#35ffc0",
+  cursor: "pointer",
+  font: "inherit",
+});
+
+const content = document.createElement("div");
+content.hidden = true;
+
+Object.assign(content.style, {
+  marginTop: "16px",
+  padding: "18px",
+  border: "1px solid rgba(53,255,192,.2)",
+  borderRadius: "12px",
+  background: "rgba(0,0,0,.15)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  lineHeight: "1.6",
+  maxHeight: "600px",
+  overflowY: "auto",
+});
+
+let loaded = false;
+let loading = false;
+
+openButton.addEventListener("click", async () => {
+  if (loading) return;
+
+  if (loaded) {
+    content.hidden = !content.hidden;
+
+    openButton.textContent = content.hidden
+      ? "Open email"
+      : "Close email";
+
+    openButton.setAttribute(
+      "aria-expanded",
+      String(!content.hidden)
+    );
+
+    return;
+  }
+
+  loading = true;
+  openButton.disabled = true;
+  openButton.textContent = "Loading…";
+  openButton.setAttribute("aria-expanded", "true");
+
+  content.hidden = false;
+  content.textContent = "Loading email…";
+
+  try {
+    const { data: auth, error: sessionError } =
+      await client.auth.getSession();
+
+    if (
+      sessionError ||
+      auth.session?.user.id !== userId ||
+      requestId !== mailRequestVersion
+    ) {
+      throw new Error("Please sign in again.");
+    }
+
+    const { data: response, error: requestError } =
+      await client.functions.invoke("admin-mail", {
+        body: {
+          action: "message",
+          uid: message.uid,
+        },
+      });
+
+    const { data: currentAuth } =
+      await client.auth.getSession();
+
+    if (
+      requestId !== mailRequestVersion ||
+      currentAuth.session?.user.id !== userId
+    ) {
+      content.textContent = "";
+      content.hidden = true;
+      return;
+    }
+
+    if (requestError) {
+      let errorText =
+        requestError.message || "Could not open email.";
+
+      if (requestError.context instanceof Response) {
+        try {
+          const details =
+            await requestError.context.clone().json();
+
+          if (typeof details.error === "string") {
+            errorText = details.error;
+          }
+        } catch {}
+      }
+
+      throw new Error(errorText);
+    }
+
+    if (
+      response?.ok !== true ||
+      typeof response.message?.text !== "string"
+    ) {
+      throw new Error(
+        response?.error || "Could not load email content."
+      );
+    }
+
+    content.textContent = response.message.text;
+    loaded = true;
+    openButton.textContent = "Close email";
+  } catch (error) {
+    if (requestId !== mailRequestVersion) return;
+
+    content.textContent =
+      "Error: " +
+      (error instanceof Error
+        ? error.message
+        : "Could not open email.");
+
+    openButton.textContent = "Try again";
+  } finally {
+    loading = false;
+    openButton.disabled = false;
+  }
+});
+
+card.append(subject, sender, date, openButton, content);
+list.append(card);
     }
   } catch (error) {
     if (requestId === mailRequestVersion) {
