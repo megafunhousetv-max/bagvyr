@@ -1362,7 +1362,12 @@ for (const [board, label] of [
     const body = element("tbody");
 
     items.forEach((item, index) => {
-      const row = element("tr");
+  const row = element("tr");
+
+  row.classList.toggle(
+    "ri-trend-featured",
+    item.featured === true
+  );
       row.append(element("td", "", String(index + 1)));
 
       const tokenCell = element("td");

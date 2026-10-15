@@ -13857,3 +13857,329 @@ table.ri-overview-compact-table tbody > tr:hover {
     transform: none;
   }
 }
+
+/* TRENDING TABLE — tmavé sklo a jemné efekty */
+
+#trending #trendingRoot .ri-trend-tabs {
+  gap: 24px;
+  border-bottom: 1px solid rgba(137, 203, 169, .12);
+}
+
+#trending #trendingRoot .ri-trend-tab {
+  position: relative;
+  background: transparent;
+}
+
+#trending #trendingRoot .ri-trend-tab[aria-selected="true"] {
+  color: #effaf4;
+  border-bottom-color: transparent;
+  background: transparent;
+}
+
+#trending #trendingRoot .ri-trend-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    #5affc1,
+    rgba(90, 255, 193, .4) 65%,
+    transparent
+  );
+
+  box-shadow: 0 0 10px rgba(65, 255, 181, .25);
+}
+
+/* Obal tabuľky. */
+
+#trending #trendingRoot .ri-trend-scroll {
+  overflow-x: auto;
+  isolation: isolate;
+
+  border: 1px solid rgba(111, 204, 157, .13);
+  border-radius: 16px;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 0,
+      rgba(37, 118, 83, .08),
+      transparent 65%
+    ),
+    rgba(2, 14, 10, .82);
+
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, .2),
+    inset 0 1px 0 rgba(163, 255, 209, .04);
+
+  scrollbar-width: thin;
+  scrollbar-color: #285d45 transparent;
+}
+
+/* Rozloženie a zarovnanie čísel. */
+
+#trending #trendingRoot .ri-trend-table {
+  width: 100%;
+  min-width: 1020px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+#trending #trendingRoot .ri-trend-table th {
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(134, 204, 165, .12);
+
+  background: rgba(8, 30, 22, .6);
+  color: #9fb8aa;
+
+  font-size: 12px;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#trending #trendingRoot .ri-trend-table th:first-child {
+  width: 54px;
+  text-align: center;
+}
+
+#trending #trendingRoot .ri-trend-table th:nth-child(2) {
+  min-width: 280px;
+  text-align: left;
+}
+
+#trending #trendingRoot .ri-trend-table td {
+  padding: 20px 16px;
+  vertical-align: middle;
+
+  border-bottom: 1px solid rgba(137, 203, 169, .07);
+  background: transparent;
+  color: #e9f4ed;
+
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#trending #trendingRoot .ri-trend-table td:first-child {
+  position: relative;
+  text-align: center;
+  color: #b3c7bb;
+}
+
+#trending #trendingRoot .ri-trend-table td:nth-child(2) {
+  text-align: left;
+}
+
+#trending #trendingRoot .ri-trend-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Jemné zvýraznenie celého riadku. */
+
+#trending #trendingRoot .ri-trend-table tbody tr {
+  background: transparent;
+  transition: background-color 220ms ease;
+}
+
+#trending #trendingRoot .ri-trend-table tbody tr:hover,
+#trending #trendingRoot .ri-trend-table tbody tr:focus-within {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 229, 153, .11),
+      rgba(37, 229, 153, .045) 65%,
+      rgba(37, 229, 153, .015)
+    );
+}
+
+/* Svetelný akcent na ľavej strane riadku. */
+
+#trending #trendingRoot .ri-trend-table td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+
+  border-radius: 3px;
+  background: #42efad;
+  box-shadow: 0 0 10px rgba(66, 239, 173, .4);
+
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+#trending #trendingRoot .ri-trend-table tr:hover td:first-child::before,
+#trending #trendingRoot .ri-trend-table tr:focus-within td:first-child::before {
+  opacity: 1;
+}
+
+/* Featured — decentný zlatý akcent. */
+
+#trending #trendingRoot .ri-trend-table tbody tr.ri-trend-featured {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(217, 178, 67, .09),
+      rgba(217, 178, 67, .025) 65%,
+      transparent
+    );
+}
+
+#trending #trendingRoot .ri-trend-table tr.ri-trend-featured td:first-child::before {
+  background: #e1c568;
+  box-shadow: 0 0 10px rgba(225, 197, 104, .25);
+  opacity: .85;
+}
+
+#trending #trendingRoot .ri-trend-table tbody tr.ri-trend-featured:hover,
+#trending #trendingRoot .ri-trend-table tbody tr.ri-trend-featured:focus-within {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(217, 178, 67, .13),
+      rgba(37, 229, 153, .045),
+      transparent
+    );
+}
+
+#trending #trendingRoot .ri-trend-table .ri-trend-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 3px 6px;
+
+  border: 1px solid rgba(225, 197, 104, .2);
+  border-radius: 5px;
+
+  background: rgba(225, 197, 104, .07);
+  color: #e1c568;
+
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+/* Token a jeho logo. */
+
+#trending #trendingRoot .ri-trend-table td:nth-child(2) > a > .ri-trend-token {
+  gap: 14px;
+}
+
+#trending #trendingRoot .ri-trend-table .ri-trend-icon {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 50%;
+  background: rgba(18, 43, 30, .7);
+
+  transition: box-shadow 220ms ease;
+}
+
+#trending #trendingRoot .ri-trend-table tr:hover .ri-trend-icon,
+#trending #trendingRoot .ri-trend-table tr:focus-within .ri-trend-icon {
+  box-shadow:
+    0 0 16px rgba(49, 239, 162, .22),
+    0 0 30px rgba(49, 239, 162, .07);
+}
+
+#trending #trendingRoot .ri-trend-table .ri-trend-name {
+  color: #effaf4;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#trending #trendingRoot .ri-trend-table .ri-trend-symbol {
+  margin-top: 4px;
+  color: #91ab9c;
+  font-size: 11px;
+}
+
+/* Skóre — zachová pôvodné farby hodnotenia. */
+
+#trending #trendingRoot .ri-trend-table .ri-trend-score {
+  padding: 6px 9px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+/* Analyze — bez šípky. */
+
+#trending #trendingRoot .ri-trend-table .ri-trend-row-analyze {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 80px;
+  min-height: 38px;
+  padding: 9px 14px;
+  box-sizing: border-box;
+
+  border: 1px solid rgba(92, 197, 143, .2);
+  border-radius: 9px;
+
+  background: rgba(31, 75, 51, .22);
+  color: #7de9b9;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+#trending #trendingRoot .ri-trend-table tr:hover .ri-trend-row-analyze,
+#trending #trendingRoot .ri-trend-table tr:focus-within .ri-trend-row-analyze {
+  border-color: transparent;
+  background: #42eaaa;
+  color: #05291b;
+  box-shadow: 0 4px 18px rgba(66, 234, 170, .12);
+}
+
+#trending #trendingRoot .ri-trend-table .ri-trend-row-analyze::before,
+#trending #trendingRoot .ri-trend-table .ri-trend-row-analyze::after,
+#trending #trendingRoot .ri-trend-table .ri-trend-row-analyze svg {
+  content: none;
+  display: none;
+}
+
+#trending #trendingRoot .ri-trend-table a:focus-visible {
+  outline: 2px solid #42eaaa;
+  outline-offset: 4px;
+}
+
+/* Mobil — tabuľka sa posúva vodorovne. */
+
+@media (max-width: 700px) {
+  #trending #trendingRoot .ri-trend-table th,
+  #trending #trendingRoot .ri-trend-table td {
+    padding: 16px 12px;
+  }
+
+  #trending #trendingRoot .ri-trend-table td:first-child::before {
+    left: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #trending #trendingRoot .ri-trend-table tr,
+  #trending #trendingRoot .ri-trend-table .ri-trend-icon,
+  #trending #trendingRoot .ri-trend-table .ri-trend-row-analyze,
+  #trending #trendingRoot .ri-trend-table td:first-child::before {
+    transition: none;
+  }
+}
