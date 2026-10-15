@@ -12858,3 +12858,47 @@ table.ri-overview-compact-table tbody > tr:hover {
     font-size: clamp(25px, 7vw, 34px) !important;
   }
 }
+
+
+#resultsSection .contract-row {
+  flex-wrap: wrap;
+}
+
+#resultsSection .ri-share-analysis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid rgba(104, 240, 185, 0.4);
+  border-radius: 9px;
+  background: rgba(22, 74, 52, 0.25);
+  color: #c3f8df;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#resultsSection .ri-share-analysis:hover {
+  background: rgba(34, 119, 80, 0.3);
+  border-color: #68f0b9;
+}
+
+#resultsSection .ri-share-analysis:focus-visible {
+  outline: 2px solid #68f0b9;
+  outline-offset: 3px;
+}
+
+#resultsSection .ri-share-analysis:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+#resultsSection .ri-share-analysis svg {
+  flex-shrink: 0;
+}

@@ -422,6 +422,9 @@ window.addEventListener(
    ========================================================= */
 
 function initializeEvents() {
+    document
+    .getElementById("shareAnalysisButton")
+    ?.addEventListener("click", shareAnalysis);
     elements.copyContractButton?.addEventListener(
     "click",
     copyContract
@@ -7996,5 +7999,76 @@ async function riLoadLaunchRiskSignals(
     if (riLaunchRiskController === controller) {
       riLaunchRiskController = null;
     }
+  }
+}
+
+
+async function shareAnalysis() {
+  const contract = state.currentContract;
+
+  if (
+    state.analyzing ||
+    !contract ||
+    !isLikelySolanaAddress(contract)
+  ) {
+    showToast("Wait for the analysis to finish");
+    return;
+  }
+
+  const url = new URL(window.location.href);
+
+  url.search = "";
+  url.searchParams.set("ca", contract);
+  url.hash = "scanner";
+
+  const link = url.toString();
+  const button = document.getElementById("shareAnalysisButton");
+
+  if (button) button.disabled = true;
+
+  try {
+    let copied = false;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(link);
+        copied = true;
+      } catch {
+        // Try the fallback below.
+      }
+    }
+
+    if (!copied) {
+      const previousFocus = document.activeElement;
+      const field = document.createElement("textarea");
+
+      field.value = link;
+      field.readOnly = true;
+      field.style.cssText =
+        "position:fixed;top:0;left:-9999px;opacity:0;";
+
+      document.body.appendChild(field);
+
+      try {
+        field.focus();
+        field.select();
+        field.setSelectionRange(0, field.value.length);
+
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      } finally {
+        field.remove();
+        previousFocus?.focus?.({ preventScroll: true });
+      }
+    }
+
+    if (copied) {
+      showToast("Link copied");
+    } else {
+      window.prompt("Copy this analysis link:", link);
+    }
+  } finally {
+    if (button) button.disabled = false;
   }
 }
