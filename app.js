@@ -8005,70 +8005,481 @@ async function riLoadLaunchRiskSignals(
 
 async function shareAnalysis() {
   const contract = state.currentContract;
+  const analysis = state.currentAnalysis;
+  const button = document.getElementById("shareAnalysisButton");
+  const label = button?.querySelector("span");
 
   if (
     state.analyzing ||
-    !contract ||
-    !isLikelySolanaAddress(contract)
+    !analysis ||
+    !isLikelySolanaAddress(contract || "") ||
+    (
+      analysis.contractAddress ||
+      analysis.token?.contractAddress
+    ) !== contract
   ) {
     showToast("Wait for the analysis to finish");
     return;
   }
 
-  const url = new URL(window.location.href);
+  // Freeze the data so a market refresh cannot change the card halfway.
+  const snapshot = structuredClone(analysis);
 
-  url.search = "";
-  url.searchParams.set("ca", contract);
-  url.hash = "scanner";
-
-  const link = url.toString();
-  const button = document.getElementById("shareAnalysisButton");
+  const tokenImage = document.getElementById("tokenImage");
+  const logoUrl =
+    tokenImage?.naturalWidth > 0
+      ? tokenImage.currentSrc
+      : snapshot.token?.image || snapshot.pumpfun?.image;
 
   if (button) button.disabled = true;
+  if (label) label.textContent = "Preparing…";
 
   try {
-    let copied = false;
+    const blob = await riDrawAnalysisCard(
+      snapshot,
+      contract,
+      logoUrl
+    );
 
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(link);
-        copied = true;
-      } catch {
-        // Try the fallback below.
-      }
+    const endpoint = new URL(
+      "/api/share-card",
+      CONFIG.API_BASE
+    );
+
+    endpoint.searchParams.set("ca", contract);
+
+    const response = await fetch(endpoint.href, {
+      method: "POST",
+      headers: { "Content-Type": "image/png" },
+      body: blob,
+      signal: AbortSignal.timeout(30000)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.url) {
+      throw new Error(
+        result.error || "Could not create share link."
+      );
     }
 
-    if (!copied) {
-      const previousFocus = document.activeElement;
-      const field = document.createElement("textarea");
-
-      field.value = link;
-      field.readOnly = true;
-      field.style.cssText =
-        "position:fixed;top:0;left:-9999px;opacity:0;";
-
-      document.body.appendChild(field);
-
-      try {
-        field.focus();
-        field.select();
-        field.setSelectionRange(0, field.value.length);
-
-        copied = document.execCommand("copy");
-      } catch {
-        copied = false;
-      } finally {
-        field.remove();
-        previousFocus?.focus?.({ preventScroll: true });
-      }
-    }
-
-    if (copied) {
-      showToast("Link copied");
-    } else {
-      window.prompt("Copy this analysis link:", link);
-    }
+    await riCopyAnalysisLink(result.url);
+  } catch (error) {
+    console.warn("Share analysis failed:", error);
+    showToast(error.message || "Could not share analysis");
   } finally {
     if (button) button.disabled = false;
+    if (label) label.textContent = "Share analysis";
   }
+}
+
+async function riCopyAnalysisLink(link) {
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast("Link copied");
+    return;
+  } catch {
+    // Browser clipboard permissions may require a fallback.
+  }
+
+  const previousFocus = document.activeElement;
+  const field = document.createElement("textarea");
+
+  field.value = link;
+  field.readOnly = true;
+  field.style.cssText =
+    "position:fixed;left:-9999px;top:0;opacity:0;";
+
+  document.body.appendChild(field);
+
+  let copied = false;
+
+  try {
+    field.focus();
+    field.select();
+    field.setSelectionRange(0, field.value.length);
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  } finally {
+    field.remove();
+    previousFocus?.focus?.({ preventScroll: true });
+  }
+
+  if (copied) {
+    showToast("Link copied");
+  } else {
+    window.prompt("Copy this analysis link:", link);
+  }
+}
+
+
+function riCardNumber(value) {
+  if (
+    !["number", "string"].includes(typeof value) ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0
+    ? number
+    : null;
+}
+
+function riCardMoney(value) {
+  const number = riCardNumber(value);
+
+  if (number === null) return "—";
+
+  for (const [divisor, suffix] of [
+    [1e12, "T"],
+    [1e9, "B"],
+    [1e6, "M"],
+    [1e3, "K"]
+  ]) {
+    if (number >= divisor) {
+      return "$" + (number / divisor).toFixed(2) + suffix;
+    }
+  }
+
+  return "$" + number.toFixed(2);
+}
+
+function riCardPercent(value) {
+  const number = riCardNumber(value);
+
+  return number === null || number > 100
+    ? "—"
+    : number.toFixed(2).replace(/\.?0+$/, "") + "%";
+}
+
+function riCardLoadImage(source) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const timer = setTimeout(() => finish(false), 12000);
+    let finished = false;
+
+    function finish(success) {
+      if (finished) return;
+      finished = true;
+
+      clearTimeout(timer);
+      image.onload = null;
+      image.onerror = null;
+
+      if (success) {
+        resolve(image);
+      } else {
+        image.removeAttribute("src");
+        reject(new Error("Could not load image."));
+      }
+    }
+
+    image.crossOrigin = "anonymous";
+    image.onload = () => finish(image.naturalWidth > 0);
+    image.onerror = () => finish(false);
+    image.src = source;
+  });
+}
+
+async function riDrawAnalysisCard(data, contract, logoUrl) {
+  const canvas = document.createElement("canvas");
+
+  canvas.width = 1585;
+  canvas.height = 992;
+
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) throw new Error("Image rendering unavailable.");
+
+  const template = await riCardLoadImage(
+    new URL("./analyse.png", window.location.href).href
+  );
+
+  ctx.drawImage(template, 0, 0, 1585, 992);
+
+  // Draw text inside a fixed area, reducing its size when needed.
+  function text(
+    value,
+    x,
+    baseline,
+    width,
+    size = 48,
+    color = "#f1faf6",
+    weight = 700,
+    family = "Arial"
+  ) {
+    let content = String(value ?? "—");
+    let fontSize = size;
+
+    ctx.fillStyle = color;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+
+    function setFont() {
+      ctx.font = `${weight} ${fontSize}px ${family}`;
+    }
+
+    setFont();
+
+    while (
+      ctx.measureText(content).width > width &&
+      fontSize > 14
+    ) {
+      fontSize--;
+      setFont();
+    }
+
+    if (ctx.measureText(content).width > width) {
+      while (
+        content.length &&
+        ctx.measureText(content + "…").width > width
+      ) {
+        content = content.slice(0, -1);
+      }
+
+      content += "…";
+    }
+
+    ctx.fillText(content, x, baseline);
+  }
+
+  const token = data.token || {};
+  const market = data.market || {};
+  const holders = data.holderAnalysis || {};
+  const provider = data.providerTokenInfo?.token_info || {};
+
+  const name = String(token.name || "Unknown token");
+  const symbol = String(token.symbol || "")
+    .replace(/^\$/, "");
+
+  text(name, 355, 240, 655, 82);
+  text(
+    symbol ? "$" + symbol : "—",
+    355,
+    315,
+    290,
+    48,
+    "#b8cbd0",
+    600
+  );
+
+  // Token logo, clipped inside the existing circle.
+  let logo = null;
+
+  if (logoUrl) {
+    try {
+      const proxy = new URL(
+        "/api/share-logo",
+        CONFIG.API_BASE
+      );
+
+      proxy.searchParams.set("url", logoUrl);
+      logo = await riCardLoadImage(proxy.href);
+    } catch {
+      // If the source is unavailable, use the token's initial.
+    }
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(202, 233, 103, 0, Math.PI * 2);
+  ctx.clip();
+
+  if (logo) {
+    const scale = Math.max(
+      206 / logo.naturalWidth,
+      206 / logo.naturalHeight
+    );
+
+    const width = logo.naturalWidth * scale;
+    const height = logo.naturalHeight * scale;
+
+    ctx.drawImage(
+      logo,
+      202 - width / 2,
+      233 - height / 2,
+      width,
+      height
+    );
+  } else {
+    ctx.fillStyle = "#09251c";
+    ctx.fillRect(99, 130, 206, 206);
+    ctx.fillStyle = "#bafbe0";
+    ctx.font = "700 92px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(
+      (symbol || name).slice(0, 1).toUpperCase(),
+      202,
+      233
+    );
+  }
+
+  ctx.restore();
+
+  const rawScore =
+    typeof data.score === "number"
+      ? data.score
+      : data.score?.value ?? data.score?.score;
+
+  const score = riCardNumber(rawScore);
+
+  const scoreText =
+    score !== null && score <= 100
+      ? String(Math.round(score))
+      : "—";
+
+  const scoreColor =
+    score === null ? "#b8cbd0" :
+    score >= 80 ? "#00e6aa" :
+    score >= 60 ? "#f5d56c" :
+    score >= 40 ? "#f2a34b" : "#ef7373";
+
+  // Right-aligned immediately before the fixed "/100".
+  let scoreSize = 116;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = scoreColor;
+  ctx.font = `700 ${scoreSize}px Arial`;
+
+  while (ctx.measureText(scoreText).width > 205) {
+    scoreSize--;
+    ctx.font = `700 ${scoreSize}px Arial`;
+  }
+
+  ctx.fillText(scoreText, 1260, 272);
+
+  const count = riCardNumber(
+    holders.holderCount ??
+    data.pumpfun?.holderCount ??
+    provider.holders
+  );
+
+  const top10 =
+    holders.adjusted?.top10Concentration ??
+    holders.top10Concentration;
+
+  const ageMetric = data.score?.breakdown?.find(
+    item => item.metric === "Age (days)"
+  );
+
+  let age = riCardNumber(ageMetric?.value);
+
+  if (age === null && token.createdTimestamp) {
+    const raw = Number(token.createdTimestamp);
+
+    const timestamp = Number.isFinite(raw)
+      ? raw < 1e11 ? raw * 1000 : raw
+      : Date.parse(token.createdTimestamp);
+
+    const scannedAt = Date.parse(data.timestamp);
+    const elapsed =
+      (Number.isFinite(scannedAt) ? scannedAt : Date.now()) -
+      timestamp;
+
+    if (Number.isFinite(elapsed) && elapsed >= 0) {
+      age = elapsed / 86400000;
+    }
+  }
+
+  const ageText =
+    age === null ? "—" :
+    age < 1 ? Math.floor(age * 24) + " hours" :
+    Math.floor(age) + (Math.floor(age) === 1 ? " day" : " days");
+
+  const values = [
+    riCardMoney(market.marketCapUsd ?? token.marketCapUsd),
+    riCardMoney(
+      market.liquidityUsd ??
+      data.liquidity?.currentLiquidityUsd ??
+      data.liquidity?.totalLiquidityUsd
+    ),
+    riCardMoney(market.volume24hUsd),
+    count === null ? "—" : Math.floor(count).toLocaleString("en-US"),
+    riCardPercent(top10),
+    riCardPercent(data.creator?.supplyOwned),
+    riCardPercent(provider.bundler_holding_percent),
+    ageText
+  ];
+
+  const columns = [
+    { x: 155, width: 238 },
+    { x: 545, width: 220 },
+    { x: 915, width: 225 },
+    { x: 1290, width: 225 }
+  ];
+
+  values.forEach((value, index) => {
+    const column = columns[index % 4];
+
+    text(
+      value,
+      column.x,
+      index < 4 ? 465 : 615,
+      column.width,
+      48
+    );
+  });
+
+  function authority(value) {
+    return value === true
+      ? "Disabled"
+      : value === false
+        ? "Active"
+        : "—";
+  }
+
+  function authorityColor(value) {
+    return value === true
+      ? "#00e6aa"
+      : value === false
+        ? "#ef7373"
+        : "#b8cbd0";
+  }
+
+  const mint = data.authorities?.mintAuthorityDisabled;
+  const freeze = data.authorities?.freezeAuthorityDisabled;
+
+  text(
+    authority(mint),
+    545, 710, 225, 25,
+    authorityColor(mint), 600
+  );
+
+  text(
+    authority(freeze),
+    1150, 710, 350, 25,
+    authorityColor(freeze), 600
+  );
+
+  text(
+    contract,
+    280, 806, 1220, 29,
+    "#ecf5f1", 500, "monospace"
+  );
+
+  const measuredAt = new Date(data.timestamp);
+
+  const time = Number.isFinite(measuredAt.getTime())
+    ? measuredAt.toISOString().slice(0, 16).replace("T", " ") + " UTC"
+    : "Unavailable";
+
+  text(time, 1365, 862, 180, 12, "#c4d5ce", 400);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        reject(new Error("Could not generate analysis image."));
+      } else if (blob.size > 4 * 1024 * 1024) {
+        reject(new Error("Analysis image is too large."));
+      } else {
+        resolve(blob);
+      }
+    }, "image/png");
+  });
 }
