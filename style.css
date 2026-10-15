@@ -13023,3 +13023,430 @@ table.ri-overview-compact-table tbody > tr:hover {
   padding: 0;
   line-height: 1;
 }
+
+
+/* HOME — reklamy plynulo zapustené do pozadia */
+
+#home.ri-home-has-ads {
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+#home .ri-home-ad-stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 240px)
+    minmax(0, 820px)
+    minmax(180px, 240px);
+  align-items: center;
+  column-gap: clamp(20px, 3vw, 60px);
+  row-gap: 52px;
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+#home .ri-home-ad-stage > .hero-content {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+#home .ri-home-ad {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  padding: 28px 12px;
+  text-align: center;
+  color: #effbf5;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Jemné stmavenie bez viditeľných hrán. */
+
+#home .ri-home-ad::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -35px -25px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(1, 10, 7, .9) 0%,
+    rgba(1, 10, 7, .65) 40%,
+    rgba(1, 10, 7, 0) 73%
+  );
+  pointer-events: none;
+}
+
+#home .ri-home-ad--1 {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+#home .ri-home-ad--2 {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+#home .ri-home-ad-label {
+  display: block;
+  color: #9bb0a5;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  line-height: 1.5;
+}
+
+#home .ri-home-ad-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  max-width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+#home .ri-home-ad .ri-trend-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  border: none;
+  border-radius: 50%;
+  background: rgba(13, 31, 23, .65);
+  color: #b9d8c8;
+  font-size: 34px;
+  font-weight: 700;
+}
+
+#home .ri-home-ad .ri-trend-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#home .ri-home-ad-names {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#home .ri-home-ad-name {
+  color: #effbf5;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#home .ri-home-ad-symbol {
+  color: #a1b6aa;
+  font-size: 12px;
+  letter-spacing: .06em;
+  overflow-wrap: anywhere;
+}
+
+#home .ri-home-ad-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#home .ri-home-ad-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+#home .ri-home-ad-caption {
+  color: #a1b6aa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#home .ri-home-ad-value {
+  color: #effbf5;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+/* Skóre ostane farebné podľa existujúceho hodnotenia. */
+
+#home .ri-home-ad .ri-trend-score {
+  display: inline-block;
+  padding: 0;
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 29px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+#home .ri-home-ad .ri-trend-score--unknown {
+  color: #91a69b;
+}
+
+#home .ri-home-ad .ri-trend-score--green {
+  color: #39edb0;
+}
+
+#home .ri-home-ad .ri-trend-score--yellow {
+  color: #ecd16c;
+}
+
+#home .ri-home-ad .ri-trend-score--orange {
+  color: #efa56a;
+}
+
+#home .ri-home-ad .ri-trend-score--red {
+  color: #ef8181;
+}
+
+#home .ri-home-ad-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 4px 8px;
+  color: #39edb0;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+#home .ri-home-ad-action:hover {
+  color: #c0ffe3;
+}
+
+#home .ri-home-ad-action:focus-visible,
+#home .ri-home-ad-identity:focus-visible {
+  outline: 2px solid #39edb0;
+  outline-offset: 6px;
+}
+
+/* Tretia reklama — široké rozloženie pod hlavnou sekciou. */
+
+#home .ri-home-ad--3 {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+  column-gap: clamp(24px, 5vw, 90px);
+  row-gap: 18px;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 12px 28px;
+  text-align: left;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-label {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-identity {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+#home .ri-home-ad--3 .ri-trend-icon {
+  width: 72px;
+  height: 72px;
+  font-size: 26px;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-name {
+  font-size: 21px;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-stats {
+  flex-direction: row;
+  gap: 36px;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-stat {
+  align-items: flex-start;
+}
+
+#home .ri-home-ad--3 .ri-home-ad-value,
+#home .ri-home-ad--3 .ri-trend-score {
+  font-size: 23px;
+}
+
+/* Menšie obrazovky — reklamy pod vyhľadávaním. */
+
+@media (max-width: 1199px) {
+  #home .ri-home-ad-stage {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 20px;
+    row-gap: 36px;
+    max-width: 1000px;
+  }
+
+  #home .ri-home-ad-stage > .hero-content {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #home .ri-home-ad--1 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #home .ri-home-ad--2 {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #home .ri-home-ad--3 {
+    grid-column: 3;
+    grid-row: 2;
+    display: flex;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 28px 12px;
+    gap: 22px;
+    text-align: center;
+  }
+
+  #home .ri-home-ad--3 .ri-home-ad-identity {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  #home .ri-home-ad--3 .ri-trend-icon {
+    width: 100px;
+    height: 100px;
+    font-size: 34px;
+  }
+
+  #home .ri-home-ad--3 .ri-home-ad-name {
+    font-size: 24px;
+  }
+
+  #home .ri-home-ad--3 .ri-home-ad-stats {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  #home .ri-home-ad--3 .ri-home-ad-stat {
+    align-items: center;
+  }
+
+  #home .ri-home-ad--3 .ri-home-ad-value {
+    font-size: 24px;
+  }
+
+  #home .ri-home-ad--3 .ri-trend-score {
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 760px) {
+  #home.ri-home-has-ads {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  #home .ri-home-ad-stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  #home .ri-home-ad-stage > .hero-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #home .ri-home-ad {
+    grid-column: 1;
+    grid-row: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 16px;
+    padding: 20px 12px;
+    text-align: left;
+  }
+
+  #home .ri-home-ad-label {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  #home .ri-home-ad .ri-home-ad-identity {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  #home .ri-home-ad .ri-trend-icon {
+    width: 54px;
+    height: 54px;
+    font-size: 22px;
+  }
+
+  #home .ri-home-ad .ri-home-ad-name {
+    font-size: 18px;
+  }
+
+  #home .ri-home-ad .ri-home-ad-symbol {
+    font-size: 10px;
+  }
+
+  #home .ri-home-ad .ri-home-ad-stats {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 9px;
+  }
+
+  #home .ri-home-ad .ri-home-ad-stat {
+    align-items: flex-end;
+  }
+
+  #home .ri-home-ad .ri-home-ad-caption {
+    font-size: 10px;
+  }
+
+  #home .ri-home-ad .ri-home-ad-value,
+  #home .ri-home-ad .ri-trend-score {
+    font-size: 18px;
+  }
+
+  #home .ri-home-ad-action {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding-left: 0;
+  }
+}

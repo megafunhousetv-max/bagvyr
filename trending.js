@@ -1071,6 +1071,149 @@ function tokenContent(item) {
     return Number.isFinite(expiry) && expiry > Date.now();
   }
 
+let homeAdsSignature = "";
+
+function renderHomeAdvertisements(items) {
+  const home = document.getElementById("home");
+  const hero = home?.querySelector(".hero-content");
+
+  if (!home || !hero) return;
+
+  const ads = items.filter(item =>
+    [1, 2, 3].includes(Number(item.slot))
+  );
+
+  let stage = home.querySelector(".ri-home-ad-stage");
+
+  if (!ads.length) {
+    if (stage) stage.replaceWith(hero);
+
+    home.classList.remove("ri-home-has-ads");
+    homeAdsSignature = "";
+    return;
+  }
+
+  const signature = JSON.stringify({
+    ads,
+    scoreRefresh: Math.floor(Date.now() / 180000)
+  });
+
+  if (signature === homeAdsSignature && stage) return;
+
+  homeAdsSignature = signature;
+
+  if (!stage) {
+    stage = element("div", "ri-home-ad-stage");
+    hero.before(stage);
+    stage.append(hero);
+  }
+
+  home.classList.add("ri-home-has-ads");
+
+  stage.querySelectorAll(".ri-home-ad").forEach(ad => {
+    ad.remove();
+  });
+
+  for (const item of ads) {
+    const slot = Number(item.slot);
+    const name = item.name || item.symbol || "Token";
+
+    const ad = element(
+      "aside",
+      `ri-home-ad ri-home-ad--${slot}`
+    );
+
+    ad.setAttribute(
+      "aria-label",
+      `Advertisement: ${name}`
+    );
+
+    const label = element(
+      "span",
+      "ri-home-ad-label",
+      "ADVERTISEMENT"
+    );
+
+    const identity = scannerLink(
+      item,
+      "ri-home-ad-identity"
+    );
+
+    identity.setAttribute(
+      "aria-label",
+      `Analyze ${name}`
+    );
+
+    const icon = tokenIcon(item);
+
+    const names = element(
+      "span",
+      "ri-home-ad-names"
+    );
+
+    names.append(
+      element("strong", "ri-home-ad-name", name),
+      element(
+        "span",
+        "ri-home-ad-symbol",
+        item.symbol || ""
+      )
+    );
+
+    identity.append(icon, names);
+
+    const stats = element(
+      "div",
+      "ri-home-ad-stats"
+    );
+
+    const score = element(
+      "div",
+      "ri-home-ad-stat ri-home-ad-stat--score"
+    );
+
+    score.append(
+      element("span", "ri-home-ad-caption", "Score"),
+      trendingScoreBadge(item)
+    );
+
+    const marketCap = element(
+      "div",
+      "ri-home-ad-stat ri-home-ad-stat--market"
+    );
+
+    marketCap.append(
+      element(
+        "span",
+        "ri-home-ad-caption",
+        "Market cap"
+      ),
+      element(
+        "strong",
+        "ri-home-ad-value",
+        money(item.market_cap_usd)
+      )
+    );
+
+    stats.append(score, marketCap);
+
+    const action = scannerLink(
+      item,
+      "ri-home-ad-action"
+    );
+
+    action.textContent = "Analyze token ↗";
+
+    action.setAttribute(
+      "aria-label",
+      `Analyze ${name}`
+    );
+
+    ad.append(label, identity, stats, action);
+    stage.append(ad);
+  }
+}
+
   function render() {
     root.replaceChildren();
 
@@ -1079,6 +1222,8 @@ function tokenContent(item) {
         validContract(item.contract) && notExpired(item)
       )
       .slice(0, 3);
+     
+      renderHomeAdvertisements(ads);
 
     if (ads.length) {
       const adGrid = element("div", "ri-trend-ads");
