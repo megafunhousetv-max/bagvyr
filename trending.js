@@ -604,12 +604,27 @@ function trendingImageVariants(value) {
 
   try {
     const parsed = new URL(original);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Irys: skús rovnaký súbor cez Arweave.
+    if (hostname === "gateway.irys.xyz") {
+      const transactionId = parsed.pathname.slice(1);
+
+      if (/^[A-Za-z0-9_-]{43}$/.test(transactionId)) {
+        return [
+          "https://arweave.net/" + transactionId,
+          original
+        ];
+      }
+
+      return [original];
+    }
+
+    // Zachované náhradné načítanie pre IPFS.
     const marker = "/ipfs/";
     const position = parsed.pathname.indexOf(marker);
 
-    if (position === -1) {
-      return [original];
-    }
+    if (position === -1) return [original];
 
     const ipfsPath = parsed.pathname.slice(
       position + marker.length
@@ -620,13 +635,10 @@ function trendingImageVariants(value) {
     return [
       ...new Set([
         original,
-
         "https://gateway.pinata.cloud/ipfs/" +
           ipfsPath + parsed.search,
-
         "https://dweb.link/ipfs/" +
           ipfsPath + parsed.search,
-
         "https://ipfs.io/ipfs/" +
           ipfsPath + parsed.search
       ])
