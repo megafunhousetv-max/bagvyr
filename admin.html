@@ -461,6 +461,98 @@ transition:
   }
 }
 
+.monthly-visitors {
+  margin-top: 24px;
+  padding: 24px 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  background: var(--panel);
+}
+
+.monthly-visitors-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.monthly-visitors-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.monthly-visitors-heading > span {
+  color: #68f5a3;
+  font-size: 12px;
+}
+
+.monthly-visitors-note {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.monthly-visitors-scroll {
+  overflow-x: auto;
+}
+
+.monthly-visitors-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.monthly-visitors-table th,
+.monthly-visitors-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.monthly-visitors-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.monthly-visitors-table td:last-child {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.monthly-visitors-table .monthly-visitors-count {
+  color: #68f5a3;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.monthly-visitors-current {
+  background: rgba(104, 245, 163, 0.04);
+}
+
+.monthly-visitors-table tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .monthly-visitors {
+    padding: 18px 12px;
+  }
+
+  .monthly-visitors-heading h2 {
+    font-size: 16px;
+  }
+
+  .monthly-visitors-table th,
+  .monthly-visitors-table td {
+    padding: 12px 8px;
+  }
+}
 
   </style>
 </head>
@@ -678,6 +770,17 @@ transition:
           </small>
         </article>
         <article class="card">
+<article class="card">
+  <div class="card-label">
+    Website Users · All time
+  </div>
+
+  <strong id="websiteUsersTotal" class="value">—</strong>
+
+  <small>Recorded unique browsers</small>
+</article>
+
+<article class="card">
   <div class="card-label">
     Telegram Bot Users · All time
   </div>
@@ -687,6 +790,49 @@ transition:
   <small>Unique users who submitted a valid CA</small>
 </article>
       </div>
+
+<section
+  class="monthly-visitors"
+  aria-labelledby="monthlyVisitorsTitle"
+>
+  <div class="monthly-visitors-heading">
+    <h2 id="monthlyVisitorsTitle">
+      Website visitors · Monthly history
+    </h2>
+
+    <span>Last 12 months</span>
+  </div>
+
+  <p class="monthly-visitors-note">
+    Unique browsers per calendar month.
+    Time zone: Europe/Bratislava.
+  </p>
+
+  <div class="monthly-visitors-scroll">
+    <table class="monthly-visitors-table">
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col">Website users</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="monthlyVisitorsBody">
+        <tr>
+          <td colspan="3">Loading history…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="monthly-visitors-note">
+    The current month is still in progress.
+    — means no historical data is available.
+    Monthly counts are not added together to calculate
+    all-time users.
+  </p>
+</section>
 
       <p id="updated" role="status">
         Loading statistics…
@@ -1303,14 +1449,130 @@ client.auth.onAuthStateChange((event) => {
   }
 });
 
+function renderMonthlyVisitors(history) {
+  const body =
+    document.getElementById("monthlyVisitorsBody");
+
+  if (!body) return;
+
+  body.replaceChildren();
+
+  const message = text => {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 3;
+    cell.textContent = text;
+
+    row.appendChild(cell);
+    body.appendChild(row);
+  };
+
+  if (history === null) {
+    message("Loading history…");
+    return;
+  }
+
+  if (
+    !Array.isArray(history) ||
+    history.length !== 12
+  ) {
+    message("Monthly history unavailable.");
+    return;
+  }
+
+  const valid = history.every(item => {
+    if (
+      !item ||
+      !/^\d{4}-(0[1-9]|1[0-2])$/.test(item.month) ||
+      typeof item.is_current_month !== "boolean"
+    ) {
+      return false;
+    }
+
+    if (item.visitors === null) return true;
+
+    return (
+      ["number", "string"].includes(
+        typeof item.visitors
+      ) &&
+      String(item.visitors).trim() !== "" &&
+      Number.isSafeInteger(Number(item.visitors)) &&
+      Number(item.visitors) >= 0
+    );
+  });
+
+  if (!valid) {
+    message("Monthly history unavailable.");
+    return;
+  }
+
+  for (const item of history) {
+    const [year, month] =
+      item.month.split("-").map(Number);
+
+    const date = new Date(
+      Date.UTC(year, month - 1, 1)
+    );
+
+    const row = document.createElement("tr");
+
+    if (item.is_current_month) {
+      row.className = "monthly-visitors-current";
+    }
+
+    const monthCell =
+      document.createElement("td");
+
+    monthCell.textContent =
+      date.toLocaleDateString("en-GB", {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC"
+      });
+
+    const countCell =
+      document.createElement("td");
+
+    countCell.className = "monthly-visitors-count";
+
+    countCell.textContent =
+      item.visitors === null
+        ? "—"
+        : Number(item.visitors)
+            .toLocaleString("en-US");
+
+    const statusCell =
+      document.createElement("td");
+
+    statusCell.textContent =
+      item.visitors === null
+        ? "No recorded data"
+        : item.is_current_month
+        ? "In progress"
+        : "Saved";
+
+    row.append(
+      monthCell,
+      countCell,
+      statusCell
+    );
+
+    body.appendChild(row);
+  }
+}
+
       function clearStats() {
 const ids = [
   "visitors24",
   "visitors7",
   "visitorsMonth",
   "searches24",
+  "websiteUsersTotal",
   "telegramUsersTotal"
 ];
+
+renderMonthlyVisitors(null);
 
         for (const id of ids) {
           $(id).textContent = "—";
@@ -1426,6 +1688,7 @@ const fields = {
   visitors7: "visitors_7d",
   visitorsMonth: "visitors_month",
   searches24: "searches_24h",
+  websiteUsersTotal: "visitors_total",
   telegramUsersTotal: "telegram_users_total"
 };
 
@@ -1458,6 +1721,7 @@ const fields = {
               value.toLocaleString("sk-SK");
           }
 
+          renderMonthlyVisitors(data.monthly_visitors);
           const distinct = Number(data.unique_tokens_24h);
 
           $("uniqueTokens").textContent =
