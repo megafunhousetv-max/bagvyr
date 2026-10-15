@@ -12599,3 +12599,262 @@ table.ri-overview-compact-table tbody > tr:hover {
     gap: 12px;
   }
 }
+
+
+/* =========================================================
+   HOME — CONTRACT SEARCH + TELEGRAM BOT
+   ========================================================= */
+
+#home .ri-home-scan {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+#home .ri-home-scan-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  min-height: 68px;
+  margin: 0;
+  padding: 7px;
+
+  border: 1px solid rgba(80, 245, 158, 0.55);
+  border-radius: 12px;
+
+  background: rgba(3, 17, 11, 0.92);
+  box-sizing: border-box;
+
+  transition: border-color 0.2s ease;
+}
+
+#home .ri-home-scan-form:focus-within {
+  border-color: #50f59e;
+}
+
+#home .ri-home-search-icon {
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 27px;
+  width: 27px;
+  margin-left: 10px;
+
+  color: #a4b9ae;
+}
+
+#home .ri-home-search-icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+#home .ri-home-scan svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#home .ri-home-contract {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 4px;
+
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+
+  background: transparent;
+  color: #effff6;
+
+  font-family: inherit;
+  font-size: 15px;
+}
+
+#home .ri-home-contract::placeholder {
+  color: #8fa79a;
+  opacity: 1;
+}
+
+#home .ri-home-paste {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  flex: 0 0 auto;
+  min-height: 50px;
+  margin: 0;
+  padding: 0 14px;
+
+  border: 1px solid rgba(80, 245, 158, 0.22);
+  border-radius: 8px;
+
+  background: rgba(80, 245, 158, 0.025);
+  color: #e1f4e9;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+#home .ri-home-paste svg {
+  width: 16px;
+  height: 16px;
+}
+
+#home .ri-home-paste:hover {
+  background: rgba(80, 245, 158, 0.09);
+  border-color: rgba(80, 245, 158, 0.5);
+}
+
+#home .ri-home-submit {
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #50f59e;
+  color: #032014;
+
+  cursor: pointer;
+}
+
+#home .ri-home-submit svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+#home .ri-home-submit:hover {
+  background: #78ffb7;
+}
+
+#home .ri-home-paste:focus-visible,
+#home .ri-home-submit:focus-visible,
+#home .ri-home-bot:focus-visible {
+  outline: 2px solid #effff6;
+  outline-offset: 4px;
+}
+
+#home .ri-home-status {
+  margin-top: 10px;
+  color: #f4c451;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+#home .ri-home-bot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  width: fit-content;
+  max-width: 100%;
+  margin: 22px auto 0;
+
+  color: #50f59e;
+  text-decoration: none;
+}
+
+#home .ri-home-bot-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+#home .ri-home-bot-heading svg {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+}
+
+#home .ri-home-bot-address {
+  color: #91aa9d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+#home .ri-home-bot:hover {
+  color: #a2ffca;
+}
+
+#home .hero-feature-row {
+  margin-top: 30px;
+}
+
+@media (max-width: 600px) {
+  #home .ri-home-scan-form {
+    gap: 6px;
+    min-height: 60px;
+    padding: 5px;
+  }
+
+  #home .ri-home-search-icon {
+    flex-basis: 20px;
+    width: 20px;
+    margin-left: 5px;
+  }
+
+  #home .ri-home-search-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  #home .ri-home-contract {
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  #home .ri-home-paste {
+    min-height: 44px;
+    padding: 0 9px;
+    font-size: 11px;
+  }
+
+  #home .ri-home-paste svg {
+    display: none;
+  }
+
+  #home .ri-home-submit {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  #home .ri-home-bot-heading {
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  #home .hero-content h1 {
+    font-size: clamp(42px, 12vw, 64px) !important;
+  }
+
+  #home .hero-content h2 {
+    font-size: clamp(25px, 7vw, 34px) !important;
+  }
+}

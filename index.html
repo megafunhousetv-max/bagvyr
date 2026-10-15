@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 
   <style>
     html {
@@ -261,21 +261,87 @@
         </p>
 
 
-        <div class="hero-actions">
+        <div class="ri-home-scan">
+
+          <form
+            id="riHomeScanForm"
+            class="ri-home-scan-form"
+            novalidate
+          >
+
+            <span class="ri-home-search-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="7"/>
+                <path d="M16 16l5 5"/>
+              </svg>
+            </span>
+
+            <input
+              id="riHomeContract"
+              class="ri-home-contract"
+              type="text"
+              placeholder="Paste a Solana contract address"
+              aria-label="Solana token contract address"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              maxlength="50"
+              required
+            >
+
+            <button
+              id="riHomePaste"
+              class="ri-home-paste"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="7" y="7" width="13" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/>
+              </svg>
+              <span>Paste</span>
+            </button>
+
+            <button
+              class="ri-home-submit"
+              type="submit"
+              aria-label="Scan token"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+            </button>
+
+          </form>
+
+          <div
+            id="riHomeStatus"
+            class="ri-home-status"
+            role="status"
+            hidden
+          ></div>
 
           <a
-            href="#scanner"
-            class="primary-hero-button"
+            class="ri-home-bot"
+            href="https://t.me/RugInspect_Bot"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Scan a Token
-            <span>→</span>
-          </a>
 
-          <a
-            href="#about"
-            class="secondary-hero-button"
-          >
-            Learn More
+            <span class="ri-home-bot-heading">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 2L9 15"/>
+                <path d="M22 2l-7 20-6-7-7-6 20-7z"/>
+              </svg>
+
+              <span>Scan with our Telegram bot</span>
+
+              <span aria-hidden="true">↗</span>
+            </span>
+
+            <span class="ri-home-bot-address">
+              t.me/RugInspect_Bot
+            </span>
+
           </a>
 
         </div>
@@ -3152,6 +3218,120 @@
   <script src="promo.js?v=1" data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"></script>
   <script src="analytics.js"></script>
   <script src="app.js?v=15"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form =
+        document.getElementById("riHomeScanForm");
+
+      const input =
+        document.getElementById("riHomeContract");
+
+      const paste =
+        document.getElementById("riHomePaste");
+
+      const status =
+        document.getElementById("riHomeStatus");
+
+      if (!form || !input || !paste || !status) {
+        return;
+      }
+
+      const notify = text => {
+        status.textContent = text;
+        status.hidden = !text;
+      };
+
+      input.addEventListener("input", () => {
+        input.setCustomValidity("");
+        notify("");
+      });
+
+      paste.addEventListener("click", async () => {
+        try {
+          const value =
+            await navigator.clipboard.readText();
+
+          input.value = value.trim();
+
+          input.dispatchEvent(
+            new Event("input", {
+              bubbles: true
+            })
+          );
+
+          input.focus();
+
+        } catch {
+          input.focus();
+
+          notify(
+            "Paste the contract address into the field manually."
+          );
+        }
+      });
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const ca = input.value.trim();
+
+        input.value = ca;
+
+        if (
+          !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(ca)
+        ) {
+          input.setCustomValidity(
+            "Enter a valid Solana contract address."
+          );
+
+          input.reportValidity();
+          return;
+        }
+
+        input.setCustomValidity("");
+
+        const scannerInput =
+          document.getElementById("contractInput");
+
+        const scanButton =
+          document.getElementById("analyzeButton");
+
+        if (!scannerInput || !scanButton) {
+          notify(
+            "Scanner unavailable. Please reload the page."
+          );
+
+          return;
+        }
+
+        if (scanButton.disabled) {
+          notify(
+            "An analysis is already running. Please wait for it to finish."
+          );
+
+          return;
+        }
+
+        scannerInput.value = ca;
+
+        scannerInput.dispatchEvent(
+          new Event("input", {
+            bubbles: true
+          })
+        );
+
+        window.location.hash = "scanner";
+
+        window.dispatchEvent(
+          new Event("hashchange")
+        );
+
+        scanButton.click();
+      });
+    });
+  </script>
+
   <script src="trending.js?v=10"></script>
 
 </body>
