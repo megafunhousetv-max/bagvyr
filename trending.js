@@ -656,6 +656,76 @@ if (hostname === "gateway.irys.xyz") {
   }
 }
 
+const trendingDexImageCache = new Map();
+
+async function getTrendingDexImages(contract) {
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(contract || "")) {
+    return [];
+  }
+
+  if (trendingDexImageCache.has(contract)) {
+    return trendingDexImageCache.get(contract);
+  }
+
+  const request = queueTrendingImageRequest(async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const response = await fetch(
+        "https://api.dexscreener.com/token-pairs/v1/solana/" +
+          encodeURIComponent(contract),
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error("Dex images HTTP " + response.status);
+      }
+
+      const pairs = await response.json();
+
+      if (!Array.isArray(pairs)) return [];
+
+      return [
+        ...new Set(
+          pairs
+            .filter(pair =>
+              pair?.chainId === "solana" &&
+              pair?.baseToken?.address === contract
+            )
+            .sort((a, b) =>
+              Number(b?.liquidity?.usd || 0) -
+              Number(a?.liquidity?.usd || 0)
+            )
+            .flatMap(pair => [
+              pair?.info?.imageUrl,
+              pair?.baseToken?.imageUrl
+            ])
+            .map(normalizeTrendingImage)
+            .filter(Boolean)
+        )
+      ];
+    } finally {
+      clearTimeout(timeout);
+    }
+  });
+
+  trendingDexImageCache.set(contract, request);
+
+  try {
+    const images = await request;
+
+    if (!images.length) {
+      trendingDexImageCache.delete(contract);
+    }
+
+    return images;
+  } catch {
+    trendingDexImageCache.delete(contract);
+    return [];
+  }
+}
+
 function tokenIcon(item) {
   const container = element(
     "span",
@@ -673,17 +743,18 @@ function tokenIcon(item) {
   const candidates = [];
   const tried = new Set();
 
-  let fallbackRequested = false;
+let fallbackRequested = false;
+let dexRequested = false;
 
   const savedImage = normalizeTrendingImage(
     item.image_url
   );
 
-  if (savedImage) {
-    candidates.push(
-      ...trendingImageVariants(savedImage)
-    );
-  }
+if (savedImage && !item.contract) {
+  candidates.push(
+    ...trendingImageVariants(savedImage)
+  );
+}
 
   async function loadNext() {
     let url = candidates.shift();
@@ -691,6 +762,28 @@ function tokenIcon(item) {
     while (url && tried.has(url)) {
       url = candidates.shift();
     }
+
+if (!url && !dexRequested && item.contract) {
+  dexRequested = true;
+
+  const dexImages = await getTrendingDexImages(
+    item.contract
+  );
+
+  candidates.push(
+    ...dexImages.filter(imageUrl => !tried.has(imageUrl))
+  );
+
+  if (savedImage) {
+    candidates.push(
+      ...trendingImageVariants(savedImage).filter(
+        imageUrl => !tried.has(imageUrl)
+      )
+    );
+  }
+
+  return loadNext();
+}
 
     if (
       !url &&
