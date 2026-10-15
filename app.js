@@ -8253,22 +8253,64 @@ async function riDrawAnalysisCard(data, contract, logoUrl) {
     600
   );
 
-  // Token logo, clipped inside the existing circle.
-  let logo = null;
+// Try direct loading and the Worker proxy.
+let logo = null;
 
-  if (logoUrl) {
-    try {
-      const proxy = new URL(
-        "/api/share-logo",
-        CONFIG.API_BASE
-      );
+async function tryLogoSources(sources) {
+  const urls = [
+    ...new Set(
+      sources.filter(value =>
+        typeof value === "string" &&
+        value.trim()
+      )
+    )
+  ].slice(0, 4);
 
-      proxy.searchParams.set("url", logoUrl);
-      logo = await riCardLoadImage(proxy.href);
-    } catch {
-      // If the source is unavailable, use the token's initial.
-    }
+  if (!urls.length) return null;
+
+  const attempts = urls.flatMap(source => {
+    const proxy = new URL(
+      "/api/share-logo",
+      CONFIG.API_BASE
+    );
+
+    proxy.searchParams.set("url", source);
+
+    return [
+      riCardLoadImage(source),
+      riCardLoadImage(proxy.href)
+    ];
+  });
+
+  try {
+    return await Promise.any(attempts);
+  } catch {
+    return null;
   }
+}
+
+logo = await tryLogoSources([
+  logoUrl,
+  data.token?.image,
+  data.pumpfun?.image
+]);
+
+if (!logo) {
+  try {
+    const dexImage = await getDexTokenImage(contract);
+
+    logo = await tryLogoSources([dexImage]);
+  } catch (error) {
+    console.warn("Share card Dex logo failed:", error);
+  }
+}
+
+if (!logo) {
+  console.warn("Share card logo unavailable:", {
+    contract,
+    logoUrl
+  });
+}
 
   ctx.save();
   ctx.beginPath();
@@ -8437,11 +8479,11 @@ async function riDrawAnalysisCard(data, contract, logoUrl) {
     authorityColor(mint), 600
   );
 
-  text(
-    authority(freeze),
-    1150, 710, 350, 25,
-    authorityColor(freeze), 600
-  );
+text(
+  authority(freeze),
+  1225, 710, 285, 25,
+  authorityColor(freeze), 600
+);
 
   text(
     contract,
