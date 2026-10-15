@@ -13450,3 +13450,410 @@ table.ri-overview-compact-table tbody > tr:hover {
     padding-left: 0;
   }
 }
+
+/* Presné vycentrovanie hlavného obsahu a bočných reklám */
+
+@media (min-width: 1200px) {
+  #home .ri-home-ad-stage {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 820px)
+      minmax(0, 1fr);
+
+    width: 100%;
+    max-width: 1540px;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  #home .ri-home-ad-stage > .hero-content {
+    justify-self: center;
+    box-sizing: border-box;
+  }
+}
+
+/* TRENDING ADS — bez rámikov, svetelné efekty */
+
+#trending #trendingRoot .ri-trend-ads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 24px;
+  margin: 0 0 38px;
+  padding: 10px 0;
+}
+
+#trending #trendingRoot .ri-trend-ad {
+  position: relative;
+  isolation: isolate;
+  display: block;
+
+  flex: 0 1 calc((100% - 48px) / 3);
+  width: calc((100% - 48px) / 3);
+  max-width: 420px;
+  min-width: 0;
+  min-height: 220px;
+
+  padding: 24px 20px 28px;
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  color: #effaf4;
+  text-decoration: none;
+
+  transition: transform 250ms ease;
+}
+
+/* Žiara, svetelné body a pomalý odlesk. */
+
+#trending #trendingRoot .ri-trend-ad::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+
+  border: none;
+  border-radius: 0;
+
+  background:
+    radial-gradient(
+      circle at 15% 39%,
+      rgba(41, 255, 178, .17),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 9% 26%,
+      rgba(149, 255, 217, .8) 0,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 37% 19%,
+      rgba(80, 255, 191, .65) 0,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 78% 35%,
+      rgba(80, 255, 191, .45) 0,
+      transparent 1.5px
+    ),
+    linear-gradient(
+      115deg,
+      transparent 32%,
+      rgba(84, 255, 195, .035) 44%,
+      rgba(128, 255, 216, .09) 48%,
+      transparent 56%
+    ),
+    radial-gradient(
+      ellipse at center,
+      rgba(1, 13, 9, .86),
+      rgba(1, 13, 9, .3) 48%,
+      transparent 75%
+    );
+
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    240% 100%,
+    100% 100%;
+
+  background-repeat: no-repeat;
+  pointer-events: none;
+
+  animation: riTrendingAdSheen 9s ease-in-out infinite;
+}
+
+/* Krátky svetelný odlesk pod reklamou. */
+
+#trending #trendingRoot .ri-trend-ad::after {
+  content: "";
+  position: absolute;
+
+  left: 12%;
+  right: 12%;
+  bottom: 2px;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 238, 166, .25) 25%,
+    rgba(103, 255, 209, .9) 50%,
+    rgba(34, 238, 166, .25) 75%,
+    transparent
+  );
+
+  filter: drop-shadow(0 0 6px rgba(42, 255, 184, .65));
+  pointer-events: none;
+
+  animation: riTrendingAdLight 5s ease-in-out infinite;
+}
+
+#trending #trendingRoot .ri-trend-ad:nth-child(2)::before {
+  animation-delay: -3s;
+}
+
+#trending #trendingRoot .ri-trend-ad:nth-child(3)::before {
+  animation-delay: -6s;
+}
+
+#trending #trendingRoot .ri-trend-ad:nth-child(2)::after {
+  animation-delay: -1.5s;
+}
+
+#trending #trendingRoot .ri-trend-ad:nth-child(3)::after {
+  animation-delay: -3s;
+}
+
+#trending #trendingRoot .ri-trend-ad:hover {
+  transform: translateY(-4px);
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+#trending #trendingRoot .ri-trend-ad:focus-visible {
+  outline: 2px solid #43edb0;
+  outline-offset: 5px;
+}
+
+/* Obsah reklamy. */
+
+#trending #trendingRoot .ri-trend-ad-label {
+  margin-bottom: 22px;
+  color: #9ab3a6;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+#trending #trendingRoot .ri-trend-ad > .ri-trend-token {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-icon {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+
+  border: none;
+  border-radius: 50%;
+
+  box-shadow:
+    -7px 0 22px rgba(41, 255, 178, .2),
+    0 0 36px rgba(41, 255, 178, .09);
+
+  transition: box-shadow 250ms ease;
+}
+
+#trending #trendingRoot .ri-trend-ad:hover .ri-trend-icon {
+  box-shadow:
+    -7px 0 28px rgba(41, 255, 178, .32),
+    0 0 44px rgba(41, 255, 178, .14);
+}
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-token-details {
+  flex: 1;
+  min-width: 0;
+}
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #effaf4;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-symbol {
+  display: block;
+  margin-top: 5px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #a6bdb0;
+  font-size: 11px;
+  letter-spacing: .04em;
+}
+
+/* Farba skóre zostáva podľa existujúceho hodnotenia. */
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-score {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0;
+
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+/* Market cap a Analyze. */
+
+#trending #trendingRoot .ri-trend-ad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(139, 207, 173, .09);
+}
+
+#trending #trendingRoot .ri-trend-ad-metric-label {
+  color: #a6bdb0;
+  font-size: 11px;
+}
+
+#trending #trendingRoot .ri-trend-ad-metric-value {
+  color: #effaf4;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-analyze {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 42px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    155deg,
+    #b2f5d7,
+    #6de0b5
+  );
+
+  color: #06271b;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+
+  box-shadow:
+    0 5px 22px rgba(41, 255, 178, .1),
+    inset 0 1px 0 rgba(255, 255, 255, .4);
+
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease;
+}
+
+#trending #trendingRoot .ri-trend-ad:hover .ri-trend-analyze {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 6px 28px rgba(41, 255, 178, .22),
+    inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+/* Bez šípky pri Analyze. */
+
+#trending #trendingRoot .ri-trend-ad .ri-trend-analyze::before,
+#trending #trendingRoot .ri-trend-ad .ri-trend-analyze::after,
+#trending #trendingRoot .ri-trend-ad .ri-trend-analyze svg {
+  display: none;
+  content: none;
+}
+
+/* Animácie. */
+
+@keyframes riTrendingAdSheen {
+  0%, 15% {
+    background-position:
+      0 0, 0 0, 0 0, 0 0, 120% 0, 0 0;
+    opacity: .72;
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  85%, 100% {
+    background-position:
+      0 0, 0 0, 0 0, 0 0, -120% 0, 0 0;
+    opacity: .72;
+  }
+}
+
+@keyframes riTrendingAdLight {
+  0%, 100% {
+    opacity: .45;
+    transform: scaleX(.82);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Tablet — dve vedľa seba, ďalšia vycentrovaná. */
+
+@media (max-width: 950px) {
+  #trending #trendingRoot .ri-trend-ad {
+    flex-basis: calc((100% - 24px) / 2);
+    width: calc((100% - 24px) / 2);
+  }
+}
+
+/* Mobil — reklamy pod sebou. */
+
+@media (max-width: 620px) {
+  #trending #trendingRoot .ri-trend-ads {
+    gap: 20px;
+  }
+
+  #trending #trendingRoot .ri-trend-ad {
+    flex-basis: 100%;
+    width: 100%;
+    max-width: 440px;
+    min-height: 210px;
+    padding: 20px 16px 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #trending #trendingRoot .ri-trend-ad,
+  #trending #trendingRoot .ri-trend-ad::before,
+  #trending #trendingRoot .ri-trend-ad::after,
+  #trending #trendingRoot .ri-trend-ad .ri-trend-icon,
+  #trending #trendingRoot .ri-trend-ad .ri-trend-analyze {
+    animation: none;
+    transition: none;
+  }
+
+  #trending #trendingRoot .ri-trend-ad:hover,
+  #trending #trendingRoot .ri-trend-ad:hover .ri-trend-analyze {
+    transform: none;
+  }
+}
