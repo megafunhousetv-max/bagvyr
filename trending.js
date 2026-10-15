@@ -561,11 +561,11 @@ async function getTrendingScanImages(contract) {
 
         return [
           ...new Set(
-            result.images
-              .map(normalizeTrendingImage)
-              .filter(Boolean)
+            result.images.flatMap(
+              trendingImageVariants
+            )
           )
-        ].slice(0, 12);
+        ].slice(0, 36);
 
       } finally {
         clearTimeout(timeout);
@@ -597,6 +597,45 @@ async function getTrendingScanImages(contract) {
   }
 }
 
+function trendingImageVariants(value) {
+  const original = normalizeTrendingImage(value);
+
+  if (!original) return [];
+
+  try {
+    const parsed = new URL(original);
+    const marker = "/ipfs/";
+    const position = parsed.pathname.indexOf(marker);
+
+    if (position === -1) {
+      return [original];
+    }
+
+    const ipfsPath = parsed.pathname.slice(
+      position + marker.length
+    );
+
+    if (!ipfsPath) return [original];
+
+    return [
+      ...new Set([
+        original,
+
+        "https://gateway.pinata.cloud/ipfs/" +
+          ipfsPath + parsed.search,
+
+        "https://dweb.link/ipfs/" +
+          ipfsPath + parsed.search,
+
+        "https://ipfs.io/ipfs/" +
+          ipfsPath + parsed.search
+      ])
+    ];
+  } catch {
+    return [original];
+  }
+}
+
 function tokenIcon(item) {
   const container = element(
     "span",
@@ -621,7 +660,9 @@ function tokenIcon(item) {
   );
 
   if (savedImage) {
-    candidates.push(savedImage);
+    candidates.push(
+      ...trendingImageVariants(savedImage)
+    );
   }
 
   async function loadNext() {
