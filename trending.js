@@ -872,6 +872,20 @@ const trendingScoreQueue = [];
 
 let trendingScoreActive = 0;
 
+
+function queueTrendingScore(run) {
+  return new Promise((resolve, reject) => {
+    trendingScoreQueue.push({
+      run,
+      resolve,
+      reject
+    });
+
+    runTrendingScoreQueue();
+  });
+}
+
+
 function runTrendingScoreQueue() {
   while (
     trendingScoreActive < 2 &&
@@ -891,29 +905,74 @@ function runTrendingScoreQueue() {
   }
 }
 
-function queueTrendingScore(run) {
-  return new Promise((resolve, reject) => {
-    trendingScoreQueue.push({
-      run,
-      resolve,
-      reject
-    });
 
-    runTrendingScoreQueue();
-  });
+function riValidDisplayScore(value) {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 100
+  );
 }
 
-function getTrendingScore(contract) {
-  const previous = trendingScoreCache.get(contract);
 
-  if (previous && previous.expiresAt > Date.now()) {
-    return previous.promise;
+function riPaintScore(badge, score) {
+  if (!riValidDisplayScore(score)) return;
+
+  const color =
+    score >= 80 ? "green" :
+    score >= 60 ? "yellow" :
+    score >= 40 ? "orange" :
+    "red";
+
+  badge.className =
+    "ri-trend-score ri-trend-score--" +
+    color;
+
+  badge.textContent =
+    Math.round(score) + "/100";
+
+  badge.setAttribute(
+    "aria-label",
+    `Score ${Math.round(score)} out of 100`
+  );
+}
+
+
+function riPaintAllScores(contract, score) {
+  document
+    .querySelectorAll(
+      ".ri-trend-score[data-contract]"
+    )
+    .forEach(badge => {
+      if (badge.dataset.contract === contract) {
+        riPaintScore(badge, score);
+      }
+    });
+}
+
+
+function getTrendingScore(contract) {
+  let entry = trendingScoreCache.get(contract);
+
+  if (!entry) {
+    entry = {
+      score: null,
+      measuredAt: null,
+      nextCheck: 0,
+      promise: null
+    };
+
+    trendingScoreCache.set(contract, entry);
   }
 
-  const entry = {
-    expiresAt: Infinity,
-    promise: null
-  };
+  if (entry.promise) {
+    return entry.promise;
+  }
+
+  if (entry.nextCheck > Date.now()) {
+    return Promise.resolve(entry.score);
+  }
 
   entry.promise = queueTrendingScore(async () => {
     const controller = new AbortController();
@@ -935,45 +994,72 @@ function getTrendingScore(contract) {
       );
 
       if (!response.ok) {
-        throw new Error("Score HTTP " + response.status);
+        throw new Error("Score request failed.");
       }
 
       const result = await response.json();
 
       if (
-        result.success !== true ||
+        result?.success !== true ||
         result.contract !== contract
       ) {
-        throw new Error("Invalid score response.");
+        throw new Error(
+          "Invalid score response."
+        );
       }
 
-      const score = result.score;
+      const measured = Date.parse(
+        result.measured_at || ""
+      );
+
+      const previous = Date.parse(
+        entry.measuredAt || ""
+      );
 
       if (
-        typeof score !== "number" ||
-        !Number.isFinite(score) ||
-        score < 0 ||
-        score > 100
+        riValidDisplayScore(result.score) &&
+        Number.isFinite(measured)
       ) {
-        entry.expiresAt = Date.now() + 30000;
-        return null;
+        if (
+          !Number.isFinite(previous) ||
+          measured >= previous
+        ) {
+          entry.score = Math.round(result.score);
+          entry.measuredAt = result.measured_at;
+        }
+
+        entry.nextCheck = result.stale
+          ? Date.now() + 15000
+          : Date.now() + Math.max(
+              1000,
+              Math.min(
+                180000,
+                measured + 180000 - Date.now()
+              )
+            );
+      } else {
+        entry.nextCheck = Date.now() + 15000;
       }
 
-      entry.expiresAt = Date.now() + 180000;
+      riPaintAllScores(
+        contract,
+        entry.score
+      );
 
-      return Math.round(score);
+      return entry.score;
     } catch {
-      entry.expiresAt = Date.now() + 30000;
-      return null;
+      entry.nextCheck = Date.now() + 30000;
+
+      return entry.score;
     } finally {
       clearTimeout(timeout);
+      entry.promise = null;
     }
   });
 
-  trendingScoreCache.set(contract, entry);
-
   return entry.promise;
 }
+
 
 function trendingScoreBadge(item) {
   const badge = element(
@@ -982,27 +1068,65 @@ function trendingScoreBadge(item) {
     "—/100"
   );
 
-  badge.setAttribute("aria-label", "Score unavailable");
+  badge.dataset.contract = item.contract;
 
-  void getTrendingScore(item.contract).then(score => {
-    if (score === null) return;
+  badge.setAttribute(
+    "aria-label",
+    "Score unavailable"
+  );
 
-    const color =
-      score >= 80 ? "green" :
-      score >= 60 ? "yellow" :
-      score >= 40 ? "orange" :
-      "red";
+  const measured = Date.parse(
+    item.score_measured_at || ""
+  );
 
-    badge.className =
-      "ri-trend-score ri-trend-score--" + color;
+  let entry = trendingScoreCache.get(
+    item.contract
+  );
 
-    badge.textContent = score + "/100";
+  const previous = Date.parse(
+    entry?.measuredAt || ""
+  );
 
-    badge.setAttribute(
-      "aria-label",
-      "Score " + score + " out of 100"
+  if (
+    riValidDisplayScore(item.score) &&
+    Number.isFinite(measured) &&
+    (
+      !Number.isFinite(previous) ||
+      measured > previous
+    )
+  ) {
+    if (!entry) {
+      entry = {
+        score: null,
+        measuredAt: null,
+        nextCheck: 0,
+        promise: null
+      };
+
+      trendingScoreCache.set(
+        item.contract,
+        entry
+      );
+    }
+
+    entry.score = Math.round(item.score);
+    entry.measuredAt = item.score_measured_at;
+
+    entry.nextCheck = Date.now() + Math.max(
+      0,
+      Math.min(
+        180000,
+        measured + 180000 - Date.now()
+      )
     );
-  });
+  }
+
+  riPaintScore(badge, entry?.score);
+
+  void getTrendingScore(item.contract)
+    .then(score => {
+      riPaintScore(badge, score);
+    });
 
   return badge;
 }
