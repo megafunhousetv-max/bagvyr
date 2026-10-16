@@ -739,6 +739,213 @@ transition:
 }
 
   </style>
+
+<style>
+  #monitoringSection {
+    min-width: 0;
+  }
+
+  #monitoringSection[hidden] {
+    display: none !important;
+  }
+
+  #monitoringSection .ri-monitor-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  #monitoringSection .ri-monitor-eyebrow {
+    margin: 0 0 8px;
+    color: #80a99a;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+
+  #monitoringSection h2 {
+    margin: 0;
+    color: #edfff7;
+    font-size: 26px;
+  }
+
+  #monitoringSection .ri-monitor-description {
+    margin: 0;
+    color: #91a99f;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  #monitoringSection .ri-monitor-scan {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0;
+    padding: 20px;
+    border: 1px solid rgba(85, 229, 177, 0.12);
+    border-radius: 14px;
+    background: rgba(7, 28, 20, 0.55);
+  }
+
+  #monitoringSection .ri-monitor-scan label {
+    color: #d9eee4;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  #monitoringSection #riMonitorContract {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid rgba(119, 180, 151, 0.22);
+    border-radius: 10px;
+    background: #07130e;
+    color: #e8fff3;
+    font: inherit;
+    font-size: 13px;
+  }
+
+  #monitoringSection #riMonitorContract:focus {
+    outline: 2px solid rgba(46, 237, 175, 0.4);
+    outline-offset: 2px;
+  }
+
+  #monitoringSection button {
+    padding: 11px 16px;
+    border: 1px solid rgba(65, 235, 172, 0.3);
+    border-radius: 10px;
+    background: rgba(27, 130, 91, 0.2);
+    color: #dffff0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  #monitoringSection button:hover:not(:disabled) {
+    background: rgba(27, 160, 109, 0.32);
+    border-color: rgba(65, 235, 172, 0.6);
+  }
+
+  #monitoringSection button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  #monitoringSection .ri-monitor-message {
+    min-height: 20px;
+    color: #b6d7c6;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  #monitoringSection .ri-monitor-rows {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  #monitoringSection .ri-monitor-row {
+    --monitor-color: #84958d;
+
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid rgba(120, 160, 140, 0.1);
+    border-radius: 12px;
+    background: rgba(5, 20, 13, 0.78);
+  }
+
+  #monitoringSection .ri-monitor-row[data-state="ok"] {
+    --monitor-color: #35e4a1;
+  }
+
+  #monitoringSection .ri-monitor-row[data-state="warning"] {
+    --monitor-color: #f1b953;
+  }
+
+  #monitoringSection .ri-monitor-row[data-state="error"] {
+    --monitor-color: #ff6d78;
+  }
+
+  #monitoringSection .ri-monitor-row[data-state="checking"] {
+    --monitor-color: #80c7ee;
+  }
+
+  #monitoringSection .ri-monitor-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--monitor-color);
+    box-shadow: 0 0 12px color-mix(
+      in srgb,
+      var(--monitor-color) 25%,
+      transparent
+    );
+  }
+
+  #monitoringSection .ri-monitor-body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  #monitoringSection .ri-monitor-body > strong {
+    color: #e8f7ef;
+    font-size: 14px;
+  }
+
+  #monitoringSection .ri-monitor-detail {
+    color: #95aca0;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  #monitoringSection .ri-monitor-meta {
+    display: grid;
+    gap: 6px;
+    text-align: right;
+  }
+
+  #monitoringSection .ri-monitor-status {
+    color: var(--monitor-color);
+    font-size: 12px;
+  }
+
+  #monitoringSection .ri-monitor-time {
+    color: #80958a;
+    font-size: 11px;
+  }
+
+  @media (max-width: 600px) {
+    #monitoringSection .ri-monitor-row {
+      grid-template-columns: 10px minmax(0, 1fr);
+      gap: 12px;
+      padding: 15px;
+    }
+
+    #monitoringSection .ri-monitor-meta {
+      grid-column: 2;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      text-align: left;
+    }
+
+    #monitoringSection .ri-monitor-scan {
+      padding: 16px;
+    }
+  }
+</style>
+
 </head>
 
 <body>
@@ -825,7 +1032,21 @@ transition:
 
   <p class="sidebar-title">Admin workspace</p>
 
+
   <nav class="admin-nav" aria-label="Admin navigation">
+
+<button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="monitoring"
+  aria-controls="monitoringSection"
+>
+  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 12h4l3-7 4 14 3-7h4"></path>
+  </svg>
+  <span>Monitoring</span>
+</button>
+
     <button
       type="button"
       class="admin-nav-button active"
@@ -1164,6 +1385,84 @@ transition:
     </noscript>
   </main>
 
+<template id="riMonitorTemplate">
+  <section
+    id="monitoringSection"
+    class="admin-section"
+    aria-labelledby="riMonitorTitle"
+    hidden
+  >
+    <div class="ri-monitor-heading">
+      <div>
+        <p class="ri-monitor-eyebrow">SYSTEM STATUS</p>
+        <h2 id="riMonitorTitle">Monitoring</h2>
+      </div>
+
+      <button
+        id="riMonitorRefresh"
+        class="button"
+        type="button"
+      >
+        Check now
+      </button>
+    </div>
+
+    <p class="ri-monitor-description">
+      Basic checks refresh every 60 seconds while this tab is visible.
+    </p>
+
+    <div class="ri-monitor-scan">
+      <label for="riMonitorContract">
+        Token address for a detailed check
+      </label>
+
+      <input
+        id="riMonitorContract"
+        type="text"
+        value="A2yA6AFtfKkfVkfsnGpvsKoUV5kQPpMYboZsBPvmkA9T"
+        placeholder="Enter a Solana token address"
+        maxlength="44"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+
+      <div>
+        <button
+          id="riMonitorDeep"
+          class="button"
+          type="button"
+        >
+          Check scanner, score and data sources
+        </button>
+      </div>
+
+      <p class="ri-monitor-description">
+        Detailed checks run manually and make real API requests.
+        They may take up to a minute.
+      </p>
+    </div>
+
+    <p
+      id="riMonitorMessage"
+      class="ri-monitor-message"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <div
+      id="riMonitorRows"
+      class="ri-monitor-rows"
+    ></div>
+
+    <p class="ri-monitor-description">
+      Results reflect requests from this browser. A failed check may
+      indicate a network, permission or endpoint problem.
+      Basic checks do not test every button or page interaction.
+    </p>
+  </section>
+</template>
+
   <script src="supabase-config.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1229,7 +1528,14 @@ window.dispatchEvent(new Event("bagvyr-admin-ready"));
       let requestVersion = 0;
       let timer = null;
 
+const monitorTemplate = $("riMonitorTemplate");
+
+$("overviewSection").parentElement.append(
+  monitorTemplate.content.cloneNode(true)
+);
+
 const adminSections = {
+  monitoring: $("monitoringSection"),
   overview: $("overviewSection"),
   trending: $("trendingSection"),
   promo: $("promoSection"),
@@ -1242,6 +1548,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+  monitoring: "Monitoring",
   overview: "Dashboard",
   trending: "Trending",
   promo: "Promo requests",
@@ -1292,6 +1599,640 @@ for (const button of adminNavigation) {
 }
 
 selectAdminSection("overview");
+
+const monitorAPI =
+  "https://bagvyr-api.megafunhousetv.workers.dev";
+
+const monitorDefinitions = [
+  ["web", "Website", "Homepage response"],
+  ["api", "Cloudflare Worker", "API health endpoint"],
+  ["database", "Supabase", "Database read access"],
+  ["trending", "Trending", "Trending data and snapshot freshness"],
+  ["scanner", "Token scanner", "Analysis response and data completeness"],
+  ["score", "Trending and ad score", "Score endpoint response"],
+  ["rugCheck", "RugCheck", "Provider result for the selected token"],
+  ["binanceTokenInfo", "Binance Web3", "Provider result for the selected token"],
+  ["dexScreener", "DexScreener", "Provider result for the selected token"],
+  ["pumpfun", "Pump.fun", "Provider result for the selected token"],
+  ["heliusTokenAccounts", "Helius", "Token account data availability"]
+];
+
+const monitorLabels = {
+  ok: "Operational",
+  warning: "Warning",
+  error: "Error",
+  unknown: "Not checked",
+  checking: "Checking"
+};
+
+const monitorRows = new Map();
+const monitorControllers = new Set();
+
+let monitorTimer = null;
+let monitorBusy = false;
+let monitorGeneration = 0;
+
+for (const [key, title, description] of monitorDefinitions) {
+  const row = document.createElement("div");
+  row.className = "ri-monitor-row";
+  row.dataset.state = "unknown";
+
+  const dot = document.createElement("span");
+  dot.className = "ri-monitor-dot";
+  dot.setAttribute("aria-hidden", "true");
+
+  const body = document.createElement("div");
+  body.className = "ri-monitor-body";
+
+  const name = document.createElement("strong");
+  name.textContent = title;
+
+  const detail = document.createElement("span");
+  detail.className = "ri-monitor-detail";
+  detail.textContent = description;
+
+  body.append(name, detail);
+
+  const meta = document.createElement("div");
+  meta.className = "ri-monitor-meta";
+
+  const status = document.createElement("strong");
+  status.className = "ri-monitor-status";
+  status.textContent = "Not checked";
+
+  const time = document.createElement("span");
+  time.className = "ri-monitor-time";
+  time.textContent = "No check yet";
+
+  meta.append(status, time);
+  row.append(dot, body, meta);
+
+  $("riMonitorRows").append(row);
+
+  monitorRows.set(key, {
+    row,
+    detail,
+    status,
+    time,
+    description
+  });
+}
+
+function monitorWrite(
+  key,
+  state,
+  detail,
+  checked = true
+) {
+  const item = monitorRows.get(key);
+
+  if (!item) return;
+
+  item.row.dataset.state = state;
+  item.status.textContent = monitorLabels[state] || state;
+  item.detail.textContent = detail;
+
+  if (checked) {
+    item.time.textContent =
+      "Checked " +
+      new Date().toLocaleTimeString("en-GB");
+  } else if (state === "unknown") {
+    item.time.textContent = "No check yet";
+  }
+}
+
+function monitorVisible() {
+  return Boolean(
+    session?.user?.id &&
+    !document.hidden &&
+    !$("dashboard").hidden &&
+    !$("monitoringSection").hidden
+  );
+}
+
+function monitorStop() {
+  clearInterval(monitorTimer);
+  monitorTimer = null;
+  monitorGeneration += 1;
+
+  for (const controller of monitorControllers) {
+    controller.abort();
+  }
+
+  monitorControllers.clear();
+}
+
+async function monitorFetchJSON(url, timeoutMs = 12000) {
+  return monitorFetch(url, timeoutMs, true);
+}
+
+async function monitorFetch(
+  url,
+  timeoutMs = 12000,
+  parseJSON = false
+) {
+  const controller = new AbortController();
+  monitorControllers.add(controller);
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    timeoutMs
+  );
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    if (!parseJSON) {
+      return await response.text();
+    }
+
+    try {
+      return await response.json();
+    } catch (error) {
+      if (error?.name === "AbortError") throw error;
+
+      throw new Error("The server returned invalid JSON.");
+    }
+  } finally {
+    clearTimeout(timeout);
+    monitorControllers.delete(controller);
+  }
+}
+
+function monitorUpdateSources(analysis) {
+  const sources = analysis?.dataSources || {};
+
+  const keys = [
+    "rugCheck",
+    "binanceTokenInfo",
+    "dexScreener",
+    "pumpfun",
+    "heliusTokenAccounts"
+  ];
+
+  for (const key of keys) {
+    const source = sources[key];
+
+    if (!source) {
+      monitorWrite(
+        key,
+        "unknown",
+        "No provider status was included in this analysis."
+      );
+      continue;
+    }
+
+    if (source.disabled === true) {
+      monitorWrite(
+        key,
+        "unknown",
+        "Disabled in the current configuration."
+      );
+      continue;
+    }
+
+    if (source.ok === true && source.empty !== true) {
+      monitorWrite(
+        key,
+        "ok",
+        "The analysis reported a successful provider response."
+      );
+      continue;
+    }
+
+    if (source.empty === true) {
+      monitorWrite(
+        key,
+        "warning",
+        "No usable data was returned for this token."
+      );
+      continue;
+    }
+
+    monitorWrite(
+      key,
+      "error",
+      typeof source.error === "string"
+        ? source.error
+        : "The analysis reported a failed provider request."
+    );
+  }
+}
+
+async function monitorRun(deep = false) {
+  if (monitorBusy || !monitorVisible()) return;
+
+  const contract = $("riMonitorContract").value.trim();
+
+  if (
+    deep &&
+    !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(contract)
+  ) {
+    $("riMonitorMessage").textContent =
+      "Enter a valid Solana token address.";
+    return;
+  }
+
+  const generation = monitorGeneration;
+  const userId = session.user.id;
+
+  const current = () =>
+    generation === monitorGeneration &&
+    session?.user?.id === userId &&
+    monitorVisible();
+
+  monitorBusy = true;
+
+  $("riMonitorRefresh").disabled = true;
+  $("riMonitorDeep").disabled = true;
+
+  $("riMonitorMessage").textContent = deep
+    ? "Checking scanner, score and data sources..."
+    : "Checking website, API, database and trending...";
+
+  async function check(key, task) {
+    if (!current()) return;
+
+    monitorWrite(
+      key,
+      "checking",
+      "Waiting for a response...",
+      false
+    );
+
+    const started = performance.now();
+
+    try {
+      const result = await task();
+
+      if (!current()) return;
+
+      const elapsed = performance.now() - started;
+      const duration = `${(elapsed / 1000).toFixed(1)}s`;
+
+      const state =
+        result.state ||
+        (elapsed > 5000 ? "warning" : "ok");
+
+      const slowNote =
+        !result.state && elapsed > 5000
+          ? " Slow response."
+          : "";
+
+      monitorWrite(
+        key,
+        state,
+        `${result.detail}${slowNote} (${duration})`
+      );
+    } catch (error) {
+      if (!current()) return;
+
+      monitorWrite(
+        key,
+        "error",
+        error?.name === "AbortError"
+          ? "The request timed out."
+          : error?.message || "The check failed."
+      );
+    }
+  }
+
+  try {
+    if (deep) {
+      const sourceKeys = [
+        "rugCheck",
+        "binanceTokenInfo",
+        "dexScreener",
+        "pumpfun",
+        "heliusTokenAccounts"
+      ];
+
+      for (const key of sourceKeys) {
+        monitorWrite(
+          key,
+          "checking",
+          "Waiting for the scanner response...",
+          false
+        );
+      }
+
+      let analysis = null;
+
+      await check("scanner", async () => {
+        const result = await monitorFetchJSON(
+          `${monitorAPI}/api/analyze?ca=${encodeURIComponent(contract)}`,
+          45000
+        );
+
+        if (
+          result?.success !== true ||
+          result.contractAddress !== contract
+        ) {
+          throw new Error(
+            typeof result?.error === "string"
+              ? result.error
+              : "The scanner returned an invalid analysis."
+          );
+        }
+
+        analysis = result;
+
+        if (current()) {
+          monitorUpdateSources(analysis);
+        }
+
+        const complete =
+          analysis.dataCompleteness?.canScore === true;
+
+        return {
+          state: complete ? "ok" : "warning",
+          detail: complete
+            ? "Analysis completed with sufficient data for scoring."
+            : "Analysis returned incomplete data. Check the provider rows below."
+        };
+      });
+
+      if (!analysis && current()) {
+        for (const key of sourceKeys) {
+          monitorWrite(
+            key,
+            "unknown",
+            "Provider status is unavailable because the scanner check failed."
+          );
+        }
+      }
+
+      await check("score", async () => {
+        const result = await monitorFetchJSON(
+          `${monitorAPI}/api/trending-score?ca=${encodeURIComponent(contract)}`,
+          40000
+        );
+
+        if (
+          result?.success !== true ||
+          result.contract !== contract
+        ) {
+          throw new Error(
+            typeof result?.error === "string"
+              ? result.error
+              : "The score endpoint returned an invalid response."
+          );
+        }
+
+        const rawScore = result.score;
+
+        const value =
+          typeof rawScore === "number"
+            ? rawScore
+            : typeof rawScore === "string" &&
+                rawScore.trim() !== ""
+              ? Number(rawScore)
+              : NaN;
+
+        if (
+          !Number.isFinite(value) ||
+          value < 0 ||
+          value > 100
+        ) {
+          return {
+            state: "warning",
+            detail: "The endpoint responded, but no valid score is available."
+          };
+        }
+
+        if (!analysis) {
+          return {
+            state: "warning",
+            detail:
+              `Score returned: ${value}/100. ` +
+              "Scanner data completeness could not be verified."
+          };
+        }
+
+        if (analysis.dataCompleteness?.canScore !== true) {
+          return {
+            state: "warning",
+            detail:
+              `Score returned: ${value}/100, but the scanner ` +
+              "reported insufficient data for scoring."
+          };
+        }
+
+        return {
+          detail: `Score returned: ${value}/100.`
+        };
+      });
+    } else {
+      await Promise.allSettled([
+        check("web", async () => {
+          const html = await monitorFetch(
+            new URL("/", window.location.origin).href
+          );
+
+          if (!/ruginspect/i.test(html)) {
+            throw new Error(
+              "The homepage response did not contain the expected website name."
+            );
+          }
+
+          return {
+            detail: "The homepage returned the expected HTML."
+          };
+        }),
+
+        check("api", async () => {
+          const result = await monitorFetchJSON(
+            `${monitorAPI}/api/health`
+          );
+
+          if (
+            result?.success !== true ||
+            result.status !== "ok"
+          ) {
+            throw new Error(
+              "The API health endpoint did not report a healthy status."
+            );
+          }
+
+          return {
+            detail: result.version
+              ? `API is responding. Version ${result.version}.`
+              : "API is responding."
+          };
+        }),
+
+        check("database", async () => {
+          const controller = new AbortController();
+          monitorControllers.add(controller);
+
+          const timeout = setTimeout(
+            () => controller.abort(),
+            12000
+          );
+
+          try {
+            const { error } = await client
+              .from("ruginspect_trending_ads")
+              .select("slot")
+              .limit(1)
+              .abortSignal(controller.signal);
+
+            if (error) {
+              if (controller.signal.aborted) {
+                throw new Error(
+                  "The database request timed out."
+                );
+              }
+
+              throw new Error(
+                `Database read failed: ${error.message}`
+              );
+            }
+
+            return {
+              detail:
+                "Authenticated database read succeeded. An empty result is valid."
+            };
+          } finally {
+            clearTimeout(timeout);
+            monitorControllers.delete(controller);
+          }
+        }),
+
+        check("trending", async () => {
+          const result = await monitorFetchJSON(
+            `${monitorAPI}/api/trending`,
+            20000
+          );
+
+          const board = result?.boards?.trending;
+
+          if (
+            result?.success !== true ||
+            !Array.isArray(board?.items)
+          ) {
+            throw new Error(
+              "The trending endpoint returned invalid data."
+            );
+          }
+
+          const updatedAt = Date.parse(board.updated_at);
+
+          if (!Number.isFinite(updatedAt)) {
+            return {
+              state: "warning",
+              detail:
+                "Trending responded, but its snapshot timestamp is missing."
+            };
+          }
+
+          const ageMinutes = Math.max(
+            0,
+            (Date.now() - updatedAt) / 60000
+          );
+
+          if (ageMinutes > 15) {
+            return {
+              state: "warning",
+              detail:
+                `Trending snapshot is ${Math.floor(ageMinutes)} minutes old. ` +
+                "Check the data refresh process."
+            };
+          }
+
+          if (board.items.length === 0) {
+            return {
+              state: "warning",
+              detail: "Trending responded, but the token list is empty."
+            };
+          }
+
+          return {
+            detail:
+              `${board.items.length} tokens available. ` +
+              `Snapshot age: ${Math.floor(ageMinutes)} minutes.`
+          };
+        })
+      ]);
+    }
+  } finally {
+    monitorBusy = false;
+
+    $("riMonitorRefresh").disabled = false;
+    $("riMonitorDeep").disabled = false;
+
+    if (current()) {
+      $("riMonitorMessage").textContent =
+        "Checks completed. Review the status rows below.";
+    }
+  }
+}
+
+function monitorStart() {
+  if (!monitorVisible()) return;
+
+  clearInterval(monitorTimer);
+
+  void monitorRun(false);
+
+  monitorTimer = setInterval(() => {
+    void monitorRun(false);
+  }, 60000);
+}
+
+$("riMonitorRefresh").addEventListener("click", () => {
+  void monitorRun(false);
+});
+
+$("riMonitorDeep").addEventListener("click", () => {
+  void monitorRun(true);
+});
+
+document.addEventListener("bagvyr:admin-section", event => {
+  monitorStop();
+
+  if (event.detail?.section === "monitoring") {
+    monitorStart();
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  monitorStop();
+
+  if (monitorVisible()) {
+    monitorStart();
+  }
+});
+
+const monitorDashboardObserver = new MutationObserver(() => {
+  if ($("dashboard").hidden) {
+    monitorStop();
+
+    for (const [key, item] of monitorRows) {
+      monitorWrite(
+        key,
+        "unknown",
+        item.description,
+        false
+      );
+    }
+
+    $("riMonitorMessage").textContent = "";
+  }
+});
+
+monitorDashboardObserver.observe($("dashboard"), {
+  attributes: true,
+  attributeFilter: ["hidden"]
+});
+
 let mailRequestVersion = 0;
 
 $("loadInboxButton").addEventListener("click", async () => {
