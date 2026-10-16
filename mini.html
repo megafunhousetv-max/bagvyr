@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RugInspect Mini</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #09120d;
+      color: #eef6f0;
+      font: 14px/1.5 system-ui, sans-serif;
+    }
+
+    main { max-width: 520px; margin: auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      color: #eef6f0;
+      font-size: 23px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .brand span { color: #86efac; }
+
+    button, input { font: inherit; }
+
+    button {
+      padding: 11px 14px;
+      border: 1px solid #335541;
+      border-radius: 10px;
+      background: #16291e;
+      color: #a1f3bc;
+      cursor: pointer;
+    }
+
+    button:hover { background: #203d2b; }
+    button:disabled { opacity: .55; cursor: wait; }
+
+    form {
+      display: flex;
+      gap: 8px;
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #304638;
+      border-radius: 10px;
+      background: #0e1c14;
+      color: white;
+    }
+
+    :focus-visible {
+      outline: 2px solid #86efac;
+      outline-offset: 3px;
+    }
+
+    #status { min-height: 24px; color: #a8baae; }
+    #status.error { color: #ffb4ab; }
+
+    #result {
+      padding: 20px;
+      border: 1px solid #294533;
+      border-radius: 16px;
+      background: #102017;
+    }
+
+    h1 { margin: 0; font-size: 23px; overflow-wrap: anywhere; }
+    h2 { margin: 24px 0 12px; font-size: 15px; }
+
+    #contract {
+      color: #a8baae;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .score {
+      margin: 16px 0;
+      font-size: 46px;
+      font-weight: 750;
+    }
+
+    .score small { color: #a8baae; font-size: 16px; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid #294533;
+      border-radius: 10px;
+    }
+
+    .metric span {
+      display: block;
+      color: #a8baae;
+      font-size: 12px;
+    }
+
+    .metric strong { font-size: 19px; }
+
+    #signals { padding: 0; list-style: none; }
+
+    #signals li {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-left: 3px solid #97b5a2;
+      border-radius: 5px;
+      background: #172b1f;
+      overflow-wrap: anywhere;
+    }
+
+    #signals li[data-level="high"],
+    #signals li[data-level="critical"] {
+      border-color: #ff8c82;
+    }
+
+    #signals li[data-level="medium"],
+    #signals li[data-level="warning"] {
+      border-color: #e8c878;
+    }
+
+    #signals small { display: block; color: #bac8bf; }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    a { color: #99efb5; }
+
+    footer {
+      margin-top: 20px;
+      color: #93a699;
+      font-size: 11px;
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+
+<body>
+<main>
+  <header>
+    <a class="brand" href="./" target="_blank" rel="noopener">
+      Rug<span>Inspect</span>
+    </a>
+    <button id="openWindow" type="button">Pop out ↗</button>
+  </header>
+
+  <form id="scanForm">
+    <input
+      id="ca"
+      aria-label="Solana contract address"
+      placeholder="Paste a Solana CA"
+      autocomplete="off"
+      spellcheck="false"
+      required
+    >
+    <button id="scanButton" type="submit">Scan</button>
+  </form>
+
+  <p id="status" role="status" aria-live="polite"></p>
+
+  <section id="result" aria-label="Token analysis" hidden>
+    <h1 id="tokenName"></h1>
+    <p id="contract"></p>
+
+    <div class="score">
+      <span id="score">—</span><small> /100</small>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <span>Market cap</span>
+        <strong id="marketCap">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>Liquidity</span>
+        <strong id="liquidity">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>Holders</span>
+        <strong id="holders">—</strong>
+      </div>
+
+      <div class="metric">
+        <span>24h volume</span>
+        <strong id="volume">—</strong>
+      </div>
+    </div>
+
+    <h2>Risk signals</h2>
+    <ul id="signals"></ul>
+
+    <div class="links">
+      <a href="./#scanner" target="_blank" rel="noopener">
+        Open full scanner ↗
+      </a>
+      <a href="https://t.me/RugInspect_Bot"
+         target="_blank" rel="noopener">
+        Telegram bot ↗
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Available on-chain data only. Data may be incomplete or delayed.
+    Scores are not a safety guarantee or financial advice.
+  </footer>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const API =
+    "https://bagvyr-api.megafunhousetv.workers.dev/api/analyze";
+
+  const el = id => document.getElementById(id);
+  const form = el("scanForm");
+  const input = el("ca");
+  const button = el("scanButton");
+  const status = el("status");
+
+  function number(value) {
+    if (
+      !["number", "string"].includes(typeof value) ||
+      String(value).trim() === ""
+    ) return null;
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  function money(value) {
+    const parsed = number(value);
+
+    return parsed === null ? "—" : parsed.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: "compact",
+      maximumFractionDigits: 2
+    });
+  }
+
+  function render(data, ca) {
+    el("tokenName").textContent = data.token?.name || "Token";
+    el("contract").textContent = ca;
+
+    const rawScore = typeof data.score === "object"
+      ? data.score?.value ?? data.score?.score ?? data.scoreValue
+      : data.score ?? data.scoreValue;
+
+    const score = number(rawScore);
+
+    el("score").textContent =
+      score !== null && score <= 100 ? Math.round(score) : "—";
+
+    el("marketCap").textContent = money(data.market?.marketCapUsd);
+    el("liquidity").textContent =
+      money(data.liquidity?.totalLiquidityUsd);
+    el("volume").textContent = money(data.market?.volume24hUsd);
+
+    const holders = number(data.holderAnalysis?.holderCount);
+
+    el("holders").textContent =
+      holders === null ? "—" : holders.toLocaleString("en-US");
+
+    const list = el("signals");
+    list.replaceChildren();
+
+    const signals = Array.isArray(data.riskSignals)
+      ? data.riskSignals
+      : Array.isArray(data.risks) ? data.risks : null;
+
+    const validSignals = signals?.filter(signal =>
+      signal && typeof signal === "object" &&
+      typeof signal.title === "string" && signal.title.trim()
+    );
+
+    if (!validSignals?.length) {
+      const row = document.createElement("li");
+      row.textContent = signals === null
+        ? "Risk signal data unavailable."
+        : "No risk signals returned. Review the full analysis.";
+      list.append(row);
+    } else {
+      for (const signal of validSignals) {
+        const row = document.createElement("li");
+        row.dataset.level = String(signal.severity || "").toLowerCase();
+
+        const title = document.createElement("strong");
+        title.textContent = signal.title;
+        row.append(title);
+
+        if (typeof signal.explanation === "string") {
+          const description = document.createElement("small");
+          description.textContent = signal.explanation;
+          row.append(description);
+        }
+
+        list.append(row);
+      }
+    }
+
+    el("result").hidden = false;
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (button.disabled) return;
+
+    const ca = input.value.trim();
+
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(ca)) {
+      status.className = "error";
+      status.textContent = "Enter a valid Solana contract address.";
+      return;
+    }
+
+    button.disabled = true;
+    status.className = "";
+    status.textContent = "Analyzing token…";
+    el("result").hidden = true;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+
+    try {
+      const url = new URL(API);
+      url.searchParams.set("ca", ca);
+
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { Accept: "application/json" },
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("Analysis request failed (HTTP " + response.status + ").");
+      }
+
+      const data = await response.json();
+
+      if (data?.success !== true) {
+        throw new Error("Analysis unavailable. Please try again.");
+      }
+
+      const returnedCA = data.contractAddress ?? data.contract;
+
+      if (returnedCA && returnedCA !== ca) {
+        throw new Error("Token address mismatch. Please try again.");
+      }
+
+      render(data, ca);
+
+      const current = new URL(location.href);
+      current.searchParams.set("ca", ca);
+      history.replaceState(null, "", current);
+
+      status.textContent =
+        "Snapshot loaded at " + new Date().toLocaleTimeString() +
+        ". Scan again to refresh. Some data may be unavailable.";
+    } catch (error) {
+      status.className = "error";
+      status.textContent = error.name === "AbortError"
+        ? "Analysis timed out. Please try again."
+        : error.message || "Unable to load analysis.";
+    } finally {
+      clearTimeout(timeout);
+      button.disabled = false;
+    }
+  });
+
+  el("openWindow").addEventListener("click", () => {
+    const url = new URL(location.href);
+    const ca = input.value.trim();
+
+    if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(ca)) {
+      url.searchParams.set("ca", ca);
+    } else {
+      url.searchParams.delete("ca");
+    }
+
+    window.open(
+      url.href,
+      "_blank",
+      "popup,width=460,height=780,noopener,noreferrer"
+    );
+  });
+
+  const initialCA = new URL(location.href).searchParams.get("ca");
+
+  if (initialCA) {
+    input.value = initialCA;
+
+    if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(initialCA)) {
+      form.requestSubmit();
+    }
+  }
+})();
+</script>
+</body>
+</html>
