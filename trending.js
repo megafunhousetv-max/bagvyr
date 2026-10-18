@@ -1068,65 +1068,33 @@ function trendingScoreBadge(item) {
     "—/100"
   );
 
-  badge.dataset.contract = item.contract;
+  badge.dataset.contract =
+    item.contract;
 
   badge.setAttribute(
     "aria-label",
     "Score unavailable"
   );
 
+  // Skóre už prišlo spolu so zoznamom.
+  riPaintScore(
+    badge,
+    item.score
+  );
+
   const measured = Date.parse(
     item.score_measured_at || ""
   );
 
-  let entry = trendingScoreCache.get(
-    item.contract
-  );
-
-  const previous = Date.parse(
-    entry?.measuredAt || ""
-  );
-
   if (
-    riValidDisplayScore(item.score) &&
-    Number.isFinite(measured) &&
-    (
-      !Number.isFinite(previous) ||
-      measured > previous
-    )
+    Number.isFinite(measured)
   ) {
-    if (!entry) {
-      entry = {
-        score: null,
-        measuredAt: null,
-        nextCheck: 0,
-        promise: null
-      };
-
-      trendingScoreCache.set(
-        item.contract,
-        entry
-      );
-    }
-
-    entry.score = Math.round(item.score);
-    entry.measuredAt = item.score_measured_at;
-
-    entry.nextCheck = Date.now() + Math.max(
-      0,
-      Math.min(
-        180000,
-        measured + 180000 - Date.now()
-      )
-    );
+    badge.title =
+      "Last score check: " +
+      new Date(
+        measured
+      ).toLocaleString();
   }
-
-  riPaintScore(badge, entry?.score);
-
-  void getTrendingScore(item.contract)
-    .then(score => {
-      riPaintScore(badge, score);
-    });
 
   return badge;
 }
@@ -1358,8 +1326,7 @@ function riTrendingAthCell(item) {
     value === null ||
     value > 100 ||
     !Number.isFinite(measured) ||
-    measured > now ||
-    now - measured >= 180000
+    measured > now
   ) {
     cell.textContent = "—";
 
@@ -1612,48 +1579,11 @@ function renderHomeAdvertisements(items) {
 }
 
 function riTrendingAllowed(item) {
-  const cached =
-    trendingScoreCache.get(
-      item.contract
-    );
-
-  const listedTime =
-    Date.parse(
-      item.score_measured_at || ""
-    );
-
-  const cachedTime =
-    Date.parse(
-      cached?.measuredAt || ""
-    );
-
-  const useCached =
-    Number.isFinite(cachedTime) &&
-    (
-      !Number.isFinite(listedTime) ||
-      cachedTime > listedTime
-    );
-
-  const score =
-    useCached
-      ? cached.score
-      : item.score;
-
-  const measured =
-    useCached
-      ? cachedTime
-      : listedTime;
-
-  const now = Date.now();
-
   return (
-    typeof score === "number" &&
-    Number.isFinite(score) &&
-    score >= 80 &&
-    score <= 100 &&
-    Number.isFinite(measured) &&
-    measured <= now &&
-    now - measured < 180000
+    typeof item.score === "number" &&
+    Number.isFinite(item.score) &&
+    item.score >= 80 &&
+    item.score <= 100
   );
 }
 
@@ -1774,8 +1704,8 @@ for (const [board, label] of [
           ? `Updated ${new Date(updated).toLocaleTimeString(
               [],
               { hour: "2-digit", minute: "2-digit" }
-            )} · Lists refresh every 3 minutes`
-          : "Lists refresh every 3 minutes"
+            )} · Lists refresh every 12 minutes`
+          : "Lists refresh every 12 minutes"
       )
     );
 
@@ -1912,7 +1842,7 @@ for (const [board, label] of [
 
   setInterval(() => {
     if (!document.hidden) refresh();
-  }, 180000);
+  }, 720000);
 
   // Odstráni expirované reklamy a Featured coiny.
   setInterval(() => {
