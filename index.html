@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
 
   <style>
     html {
@@ -539,179 +539,203 @@
 
             <div class="token-overview">
 
-              <div class="token-main">
+<div class="token-main ri-token-header-v2">
 
-                <div
-                  id="tokenImageWrapper"
-                  class="token-image-wrapper"
-                >
-
-                  <img
-                    id="tokenImage"
-                    class="token-image hidden"
-                    alt="Token logo"
-                  >
-
-                  <div
-                    id="tokenImageFallback"
-                    class="token-image-fallback"
-                  >
-                    ?
-                  </div>
-
-                </div>
-
-
-                <div class="token-identity">
-
-                  <div class="token-name-row">
-
-                    <h2 id="tokenName">
-                      Token
-                    </h2>
-
-                    <span
-                      id="tokenSymbol"
-                      class="token-symbol"
-                    >
-                      ---
-                    </span>
-
-                  </div>
-
-
-                  <div class="contract-row">
-
-  <code id="tokenContract">
-    ---
-  </code>
-
-  <button
-    id="caCopyButton"
-    class="icon-button"
-    type="button"
-    title="Copy contract address"
-    onclick="
-      const button = this;
-      const ca = document.getElementById('tokenContract').textContent.trim();
-
-      if (!ca || ca === '---') {
-        alert('CA ešte nie je načítaná.');
-        return;
-      }
-
-      const copied = () => {
-        button.textContent = 'COPIED!';
-        setTimeout(() => button.textContent = 'COPY', 1500);
-      };
-
-      const fallback = () => {
-        const field = document.createElement('textarea');
-        field.value = ca;
-        field.style.position = 'fixed';
-        field.style.opacity = '0';
-        document.body.appendChild(field);
-        field.focus();
-        field.select();
-
-        let success = false;
-        try {
-          success = document.execCommand('copy');
-        } catch {}
-
-        field.remove();
-
-        if (success) copied();
-        else window.prompt('Skopíruj CA pomocou Ctrl+C:', ca);
-      };
-
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(ca).then(copied).catch(fallback);
-      } else {
-        fallback();
-      }
-    "
+  <div
+    id="tokenImageWrapper"
+    class="token-image-wrapper"
   >
-    COPY
-  </button>
+    <img
+      id="tokenImage"
+      class="token-image hidden"
+      alt="Token logo"
+    >
 
-  <button
-    id="pageRefreshButton"
-    class="icon-button"
-    type="button"
-    title="Refresh entire page"
-    onclick="window.location.reload()"
-  >
-    REFRESH
-  </button>
+    <div
+      id="tokenImageFallback"
+      class="token-image-fallback"
+    >
+      ?
+    </div>
+  </div>
 
+  <div class="token-identity">
+
+    <div class="token-name-row">
+      <h2 id="tokenName">Token</h2>
+
+      <span
+        id="tokenSymbol"
+        class="token-symbol"
+      >
+        ---
+      </span>
+
+      <div id="tokenAge">
+        Age: Unavailable
+      </div>
+    </div>
+
+    <div class="contract-row">
+      <code id="tokenContract">---</code>
+
+      <button
+        id="caCopyButton"
+        class="icon-button ri-header-copy"
+        type="button"
+        title="Copy contract address"
+        aria-label="Copy contract address"
+        onclick="
+          const button = this;
+          const label = button.querySelector('span');
+          const ca = document
+            .getElementById('tokenContract')
+            .textContent.trim();
+
+          if (!ca || ca === '---') return;
+
+          const copied = () => {
+            label.textContent = 'Copied';
+            button.classList.add('is-copied');
+
+            clearTimeout(button.riCopyTimer);
+
+            button.riCopyTimer = setTimeout(() => {
+              label.textContent = 'Copy';
+              button.classList.remove('is-copied');
+            }, 1500);
+          };
+
+          const fallback = () => {
+            const field = document.createElement('textarea');
+
+            field.value = ca;
+            field.style.position = 'fixed';
+            field.style.opacity = '0';
+
+            document.body.appendChild(field);
+
+            field.focus();
+            field.select();
+
+            let success = false;
+
+            try {
+              success = document.execCommand('copy');
+            } catch {}
+
+            field.remove();
+
+            if (success) {
+              copied();
+            } else {
+              window.prompt('Copy the contract address:', ca);
+            }
+          };
+
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(ca)
+              .then(copied)
+              .catch(fallback);
+          } else {
+            fallback();
+          }
+        "
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="8" y="8" width="12" height="13" rx="2"/>
+          <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/>
+        </svg>
+
+        <span>Copy</span>
+      </button>
+    </div>
+
+    <div class="ri-header-actions">
+      <button
+        id="shareAnalysisButton"
+        class="ri-share-analysis"
+        type="button"
+        title="Share this token analysis"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M10 13a5 5 0 0 0 7 .1l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/>
+          <path d="M14 11a5 5 0 0 0-7-.1l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/>
+        </svg>
+
+        <span>Share analysis</span>
+      </button>
+
+      <button
+        id="pageRefreshButton"
+        class="icon-button ri-header-refresh"
+        type="button"
+        title="Refresh entire page"
+        aria-label="Refresh entire page"
+        onclick="window.location.reload()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 7v5h-5"/>
+          <path d="M4 17v-5h5"/>
+          <path d="M6.1 7a7 7 0 0 1 11.5-2L20 8"/>
+          <path d="M17.9 17a7 7 0 0 1-11.5 2L4 16"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="token-links">
+
+      <a
+        id="solscanTokenLink"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="10" cy="10" r="6"/>
+          <path d="m15 15 6 6M8 10h4M10 8v4"/>
+        </svg>
+
+        <span>Solscan</span>
+        <span class="ri-link-arrow" aria-hidden="true">↗</span>
+      </a>
+
+      <a
+        id="pumpFunLink"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m8.5 18.5 10-10a5 5 0 0 0-7-7l-10 10a5 5 0 0 0 7 7Z"
+            transform="translate(2 2) scale(.85)"/>
+          <path d="m8 8 8 8"/>
+        </svg>
+
+        <span>Pump.fun</span>
+        <span class="ri-link-arrow" aria-hidden="true">↗</span>
+      </a>
+
+      <a
+        id="tokenXLink"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="display: none;"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 3h4l12 18h-4L4 3ZM20 3l-7 8M11 13l-7 8"/>
+        </svg>
+
+        <span>X</span>
+        <span class="ri-link-arrow" aria-hidden="true">↗</span>
+      </a>
+
+    </div>
+  </div>
 </div>
-
-<button
-  id="shareAnalysisButton"
-  class="ri-share-analysis"
-  type="button"
-  title="Copy link to this token analysis"
->
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M10 13a5 5 0 0 0 7 .1l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/>
-    <path d="M14 11a5 5 0 0 0-7-.1l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/>
-  </svg>
-  <span>Share analysis</span>
-</button>
-
-                  <div
-                    id="tokenAge"
-                    style="margin: 8px 0; color: #8eb6a5; font-size: 12px;"
-                  >
-                    Age: Unavailable
-                  </div>
-
-
-                  <div class="token-links">
-
-                    <a
-                      id="solscanTokenLink"
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Solscan ↗
-                    </a>
-
-                    <a
-                      id="pumpFunLink"
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Pump.fun ↗
-                    </a>
-
-                    <a
-                      id="tokenXLink"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style="display: none;"
-                    >
-                      X ↗
-                    </a>
-
-                  </div>
-
-                </div>
-
-              </div>
 
 
 <div class="token-listing-badges">
