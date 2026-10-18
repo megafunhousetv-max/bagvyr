@@ -751,86 +751,176 @@ function renderAnalysis(data) {
 function renderInsiderAnalysis(data) {
   const analysis = data?.insiderAnalysis;
 
-  const detectedEl =
-    document.getElementById("insidersDetected");
+  const detectedEl = document.getElementById(
+    "insidersDetected"
+  );
 
-  const networksEl =
-    document.getElementById("insiderNetworks");
+  const networksEl = document.getElementById(
+    "insiderNetworks"
+  );
 
   if (!detectedEl || !networksEl) return;
 
+  const readNumber = value => {
+    if (
+      value === null ||
+      value === undefined ||
+      !["number", "string"].includes(typeof value) ||
+      String(value).trim() === ""
+    ) {
+      return null;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number) && number >= 0
+      ? number
+      : null;
+  };
+
   if (!analysis) {
-    detectedEl.textContent = "---";
+    detectedEl.textContent = "—";
 
     networksEl.innerHTML = `
       <div class="insider-empty">
-        Insider data unavailable
+        Network data unavailable.
       </div>
     `;
 
     return;
   }
 
-  detectedEl.textContent =
-    analysis.insidersDetected ?? "0";
+  const detected = readNumber(
+    analysis.insidersDetected
+  );
 
-  const networks =
-    Array.isArray(analysis.networks)
-      ? analysis.networks
-      : [];
+  detectedEl.textContent = detected === null
+    ? "—"
+    : detected.toLocaleString("en-US");
+
+  const token = data.token || {};
+
+  let supply = readNumber(
+    token.supplyFormatted
+  );
+
+  if (!(supply > 0)) {
+    const rawSupply = readNumber(token.supply);
+    const decimals = readNumber(token.decimals);
+
+    supply =
+      rawSupply > 0 &&
+      Number.isInteger(decimals) &&
+      decimals <= 18
+        ? rawSupply / (10 ** decimals)
+        : null;
+  }
+
+  const networks = Array.isArray(analysis.networks)
+    ? analysis.networks
+    : [];
 
   if (!networks.length) {
     networksEl.innerHTML = `
       <div class="insider-empty">
-        No insider networks detected
+        No connected networks were returned.
       </div>
     `;
 
     return;
   }
 
-  networksEl.innerHTML = networks
-    .map((network, index) => {
-      const holding =
-        typeof network.currentHolding === "number"
-          ? formatNumber(network.currentHolding)
-          : "---";
+  networksEl.innerHTML = networks.map(
+    (network, index) => {
+      const holding = readNumber(
+        network.currentHolding
+      );
 
-      const accounts =
-        network.accounts ?? "---";
+      const accounts = readNumber(
+        network.accounts
+      );
 
-      const type =
-        network.type
-          ? String(network.type)
-              .replaceAll("_", " ")
-              .toUpperCase()
-          : "NETWORK";
+      const calculated =
+        holding !== null && supply > 0
+          ? holding / supply * 100
+          : null;
+
+      const percentage =
+        calculated !== null &&
+        Number.isFinite(calculated) &&
+        calculated >= 0 &&
+        calculated <= 100
+          ? calculated
+          : null;
+
+      const percentageText = percentage === null
+        ? "—"
+        : percentage > 0 && percentage < 0.01
+          ? "<0.01%"
+          : percentage.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }) + "%";
+
+      const holdingText = holding === null
+        ? "Token holding unavailable"
+        : holding.toLocaleString("en-US", {
+            maximumFractionDigits: 2
+          }) + " tokens";
+
+      const accountsText = accounts === null
+        ? "—"
+        : accounts.toLocaleString("en-US");
+
+      const type = network.type
+        ? String(network.type)
+            .replaceAll("_", " ")
+            .toUpperCase()
+        : "NETWORK";
 
       return `
-        <div class="insider-network">
+        <div class="insider-network ri-network-v2">
 
           <div class="insider-network-number">
             ${String(index + 1).padStart(2, "0")}
           </div>
 
           <div class="insider-network-holding">
-            <strong>${holding}</strong>
-            <span>CURRENT HOLDING</span>
+            <div class="ri-network-percentage">
+              <strong>${percentageText}</strong>
+              <span>OF TOTAL SUPPLY</span>
+            </div>
+
+            <small class="ri-network-token-amount">
+              ${holdingText}
+            </small>
+
+            <div
+              class="ri-network-track"
+              aria-hidden="true"
+            >
+              <i style="width:${percentage ?? 0}%"></i>
+            </div>
           </div>
 
           <div class="insider-network-accounts">
-            <strong>${accounts}</strong>
+            <strong>${accountsText}</strong>
             <span>ACCOUNTS</span>
           </div>
 
           <div class="insider-network-type">
-             ${type}
+            ${escapeHTML(type)}
           </div>
 
         </div>
       `;
-    })
-    .join("");
+    }
+  ).join("") + `
+    <p class="ri-network-note">
+      Transfer connections do not confirm insider ownership.
+      Networks may overlap.
+    </p>
+  `;
 }
 
 

@@ -15161,3 +15161,143 @@ table.ri-overview-compact-table tbody > tr:hover {
     font-size: 11px;
   }
 }
+
+
+/* Insider network supply percentages */
+
+#insiderNetworks .ri-network-v2 {
+  grid-template-columns:
+    34px minmax(0, 1fr) 100px auto;
+
+  gap: 20px;
+  min-height: 108px;
+  padding: 18px 20px;
+
+  border: 1px solid rgba(93, 187, 135, 0.12);
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      110deg,
+      rgba(36, 238, 162, 0.035),
+      rgba(1, 12, 7, 0.55) 65%
+    );
+}
+
+#insiderNetworks .ri-network-v2:hover {
+  border-color: rgba(36, 238, 162, 0.28);
+  background-color: rgba(36, 238, 162, 0.025);
+}
+
+#insiderNetworks .ri-network-v2 .insider-network-number {
+  font-size: 12px;
+  color: #5e987d;
+}
+
+#insiderNetworks .ri-network-percentage {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#insiderNetworks .ri-network-percentage strong {
+  margin: 0;
+  color: #47eeb0;
+
+  font-size: 25px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+#insiderNetworks .ri-network-percentage span {
+  color: #799d89;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+}
+
+#insiderNetworks .ri-network-token-amount {
+  display: block;
+  margin-top: 7px;
+
+  color: #a0b8aa;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+#insiderNetworks .ri-network-track {
+  width: 100%;
+  max-width: 420px;
+  height: 4px;
+  margin-top: 12px;
+
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(125, 192, 152, 0.09);
+}
+
+#insiderNetworks .ri-network-track i {
+  display: block;
+  height: 100%;
+
+  border-radius: inherit;
+  background: linear-gradient(90deg, #18b880, #68f5bc);
+}
+
+#insiderNetworks .ri-network-v2 .insider-network-accounts strong {
+  margin-bottom: 6px;
+  font-size: 20px;
+  color: #e4f5eb;
+}
+
+#insiderNetworks .ri-network-v2 .insider-network-accounts span {
+  color: #799d89;
+  font-size: 9px;
+}
+
+#insiderNetworks .ri-network-v2 .insider-network-type {
+  padding: 7px 10px;
+  border-radius: 7px;
+  color: #91b6a2;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+#insiderNetworks .ri-network-note {
+  margin: 9px 2px 0;
+  color: #799d89;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  #insiderNetworks .ri-network-v2 {
+    grid-template-columns: 24px minmax(0, 1fr) 65px;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  #insiderNetworks .ri-network-percentage {
+    gap: 5px;
+  }
+
+  #insiderNetworks .ri-network-percentage strong {
+    font-size: 23px;
+  }
+
+  #insiderNetworks .ri-network-percentage span {
+    font-size: 8px;
+  }
+
+  #insiderNetworks .ri-network-v2 .insider-network-type {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  #insiderNetworks .ri-network-token-amount {
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+}
