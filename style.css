@@ -15688,3 +15688,133 @@ table.ri-overview-compact-table tbody > tr:hover {
     grid-column: 1 / -1;
   }
 }
+
+
+/* Compact sell simulation */
+
+#riSellSimulation {
+  margin: 14px 0;
+  border-radius: 14px;
+}
+
+#riSellSimulation .ri-sell-heading {
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+#riSellSimulation .ri-sell-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 22px;
+}
+
+#riSellSimulation .ri-sell-heading strong {
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+}
+
+#riSellSimulation .ri-sell-heading small {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#riSellSimulation .ri-sell-chevron {
+  font-size: 18px;
+}
+
+#riSellSimulation .ri-sell-body {
+  padding: 0 16px 14px;
+}
+
+#riSellSimulation .ri-sell-layout {
+  gap: 12px;
+}
+
+#riSellSimulation .ri-sell-input-panel,
+#riSellSimulation .ri-sell-proceeds-panel,
+#riSellSimulation .ri-sell-mc-panel {
+  padding: 16px;
+  border-radius: 11px;
+}
+
+#riSellSimulation .ri-sell-input-heading {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+#riSellSimulation h4 {
+  font-size: 15px;
+}
+
+#riSellSimulation #riSellAmount {
+  padding: 12px;
+  font-size: 23px;
+}
+
+#riSellSimulation h5 {
+  margin-top: 16px;
+  margin-bottom: 9px;
+  font-size: 12px;
+}
+
+#riSellSimulation .ri-sell-portions button {
+  padding: 10px;
+  font-size: 13px;
+}
+
+#riSellSimulation .ri-sell-primary {
+  margin-top: 16px;
+  padding: 12px;
+  font-size: 13px;
+}
+
+#riSellSimulation .ri-sell-wallet-note {
+  margin-top: 10px;
+}
+
+#riSellSimulation #riSellProceeds {
+  margin: 12px 0 6px;
+  font-size: clamp(25px, 2.5vw, 34px);
+}
+
+#riSellSimulation .ri-sell-results {
+  gap: 12px;
+}
+
+#riSellSimulation .ri-sell-metrics {
+  gap: 8px;
+  margin-top: 16px;
+}
+
+#riSellSimulation .ri-sell-metrics > div {
+  padding: 10px;
+}
+
+#riSellSimulation .ri-sell-metrics strong,
+#riSellSimulation .ri-sell-mc-values strong {
+  font-size: 14px;
+}
+
+#riSellSimulation .ri-sell-mc-values {
+  gap: 10px;
+  margin: 14px 0;
+}
+
+#riSellSimulation #riSellMcDrop {
+  font-size: 19px;
+}
+
+#riSellSimulation .ri-sell-status-row {
+  margin-top: 12px;
+  padding: 11px 12px;
+  font-size: 11px;
+}
+
+#riSellSimulation .ri-sell-disclaimer {
+  margin-top: 12px;
+  padding-top: 11px;
+  font-size: 10px;
+}
