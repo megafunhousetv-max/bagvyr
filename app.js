@@ -7978,6 +7978,60 @@ function riRenderTokenFees(data = null) {
   const transfer = data?.transfer;
   const trading = data?.trading;
 
+  const destination =
+    trading?.creator_destination || "creator";
+
+  const feeLabel =
+    destination === "holders"
+      ? "Holder rewards fee"
+      : destination === "cashback"
+        ? "Cashback fee"
+        : "Creator fee";
+
+  const creatorCard = document
+    .getElementById("riCreatorFee")
+    ?.closest("article");
+
+  const creatorLabel =
+    creatorCard?.querySelector("span");
+
+  const creatorNote =
+    creatorCard?.querySelector("small");
+
+  if (creatorLabel) {
+    creatorLabel.textContent = feeLabel;
+  }
+
+  if (creatorNote) {
+    creatorNote.textContent =
+      destination === "holders"
+        ? "Allocated to holder rewards"
+        : destination === "cashback"
+          ? "Routed as trader cashback"
+          : "Selected pool";
+  }
+
+  const poolNote = document
+    .getElementById("riPoolFee")
+    ?.closest("article")
+    ?.querySelector("small");
+
+  if (poolNote) {
+    poolNote.textContent =
+      destination === "creator"
+        ? "Excludes creator fee"
+        : "Excludes rewards fee";
+  }
+
+  const basisLabel = document
+    .getElementById("riFeeBasis")
+    ?.previousElementSibling;
+
+  if (basisLabel) {
+    basisLabel.textContent =
+      `${feeLabel} charged on`;
+  }
+
   const values = {
     riTransferFee:
       riFeePercent(
