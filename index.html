@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
 
   <style>
     html {
@@ -2609,6 +2609,88 @@
 </section>
 
 
+<section
+  id="bundlerHoldersSection"
+  class="result-block analysis-modern-block"
+>
+  <div class="section-heading">
+    <div class="section-heading-main">
+      <span class="section-number">08</span>
+
+      <div class="section-title-with-icon">
+        <span class="section-main-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="5" r="3"/>
+            <circle cx="5" cy="18" r="3"/>
+            <circle cx="19" cy="18" r="3"/>
+            <path d="M10.5 7.5 6.5 15M13.5 7.5l4 7.5M8 18h8"/>
+          </svg>
+        </span>
+
+        <h3>Bundler holders</h3>
+      </div>
+    </div>
+
+    <span class="section-description">
+      Wallet addresses and share of token supply
+    </span>
+  </div>
+
+  <div class="ri-bundlers-content">
+    <div class="ri-bundlers-stats">
+      <div>
+        <span>Wallets shown</span>
+        <strong id="riBundlerCount">—</strong>
+      </div>
+
+      <div>
+        <span>Bundler holdings</span>
+        <strong id="riBundlerPercentage">—</strong>
+      </div>
+
+      <div>
+        <span>Wallet list updated</span>
+        <strong id="riBundlerUpdated">—</strong>
+      </div>
+    </div>
+
+    <p id="riBundlerStatus" role="status">
+      Open this section to load bundler holders.
+    </p>
+
+    <div class="ri-bundlers-table-wrap">
+      <table class="ri-bundlers-table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Wallet address</th>
+            <th scope="col">Supply held</th>
+            <th scope="col">Explorer</th>
+          </tr>
+        </thead>
+
+        <tbody id="riBundlerRows"></tbody>
+      </table>
+    </div>
+
+    <div class="ri-bundlers-footer">
+      <p>
+        Wallet groups may overlap.
+        The available list may not include every bundler.
+      </p>
+
+      <button
+        id="riBundlerReload"
+        class="ri-info-reload"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
+  </div>
+</section>
+
+
             <!-- DISCLAIMER -->
 
             <div class="analysis-disclaimer">
@@ -3247,7 +3329,7 @@
   <script src="supabase-config.js"></script>
   <script src="promo.js?v=1" data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"></script>
   <script src="analytics.js"></script>
-  <script src="app.js?v=22"></script>
+  <script src="app.js?v=23"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {

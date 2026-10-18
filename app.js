@@ -7029,6 +7029,7 @@ overview.open = true;
   }
 
   riArrangeResults();
+  riPrepareBundlerSection();
 
   analysis.classList.remove("hidden");
 
@@ -8372,6 +8373,10 @@ function riRenderHolderOverview(
 
   info = info || {};
 
+  riBundlerSetPercentage(
+    info.bundler_holding_percent
+  );
+
   const count =
     riOverviewNumber(info.holders);
 
@@ -9319,4 +9324,347 @@ function riOpenSharePreview(blob, data, contract) {
 
   document.body.appendChild(dialog);
   dialog.showModal();
+}
+
+
+const riBundlerState = {
+  contract: null,
+  analysis: null,
+  controller: null,
+  loadedAt: 0
+};
+
+function riBundlerSetPercentage(value) {
+  const element = document.getElementById(
+    "riBundlerPercentage"
+  );
+
+  if (element) {
+    element.textContent =
+      riOverviewPercentText(value);
+  }
+}
+
+function riPrepareBundlerSection() {
+  const section = document.getElementById(
+    "bundlerHoldersSection"
+  );
+
+  const details = section?.closest(
+    ".ri-analysis-accordion"
+  );
+
+  if (!section || !details) return;
+
+  if (!section.dataset.riBundlerReady) {
+    details.addEventListener("toggle", () => {
+      if (details.open) {
+        riLoadBundlerHolders();
+      }
+    });
+
+    document.getElementById("riBundlerReload")
+      ?.addEventListener("click", () => {
+        riLoadBundlerHolders(true);
+      });
+
+    section.addEventListener("click", async event => {
+      const button = event.target.closest(
+        "button[data-bundler-copy]"
+      );
+
+      if (!button || !section.contains(button)) return;
+
+      const address = button.dataset.bundlerCopy;
+
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address || "")) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(address);
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Copy failed";
+      }
+
+      setTimeout(() => {
+        if (button.isConnected) {
+          button.textContent = "Copy";
+        }
+      }, 1800);
+    });
+
+    section.dataset.riBundlerReady = "true";
+  }
+
+  const contract = state.currentContract;
+  const analysis = state.currentAnalysis;
+
+  if (
+    riBundlerState.contract === contract &&
+    riBundlerState.analysis === analysis
+  ) {
+    return;
+  }
+
+  riBundlerState.controller?.abort();
+
+  riBundlerState.contract = contract;
+  riBundlerState.analysis = analysis;
+  riBundlerState.controller = null;
+  riBundlerState.loadedAt = 0;
+
+  document.getElementById("riBundlerRows")
+    ?.replaceChildren();
+
+  document.getElementById("riBundlerCount")
+    .textContent = "—";
+
+  const updated = document.getElementById(
+    "riBundlerUpdated"
+  );
+
+  updated.textContent = "—";
+  updated.removeAttribute("title");
+
+  document.getElementById("riBundlerStatus")
+    .textContent =
+      "Open this section to load bundler holders.";
+
+  document.getElementById("riBundlerReload")
+    .disabled = false;
+
+  riBundlerSetPercentage(
+    analysis?.providerTokenInfo
+      ?.token_info?.bundler_holding_percent
+  );
+}
+
+function riBundlerRenderRows(holders) {
+  const body = document.getElementById(
+    "riBundlerRows"
+  );
+
+  if (!body) return;
+
+  body.replaceChildren();
+
+  const fragment = document.createDocumentFragment();
+
+  holders.forEach((holder, index) => {
+    const row = document.createElement("tr");
+
+    const rank = document.createElement("td");
+    rank.textContent = String(index + 1);
+
+    const walletCell = document.createElement("td");
+    const wallet = document.createElement("div");
+
+    wallet.className = "ri-bundler-wallet";
+
+    const address = document.createElement("span");
+
+    address.textContent =
+      `${holder.address.slice(0, 6)}…` +
+      holder.address.slice(-5);
+
+    address.title = holder.address;
+
+    const copy = document.createElement("button");
+
+    copy.type = "button";
+    copy.className = "ri-bundler-copy";
+    copy.dataset.bundlerCopy = holder.address;
+    copy.textContent = "Copy";
+
+    copy.setAttribute(
+      "aria-label",
+      `Copy wallet address ${holder.address}`
+    );
+
+    wallet.append(address, copy);
+    walletCell.append(wallet);
+
+    const percentage = document.createElement("td");
+
+    percentage.className = "ri-bundler-percent";
+
+    percentage.textContent =
+      riOverviewPercentText(
+        holder.supplyPercentage
+      );
+
+    percentage.title =
+      `${holder.supplyPercentage}% of token supply`;
+
+    const explorerCell = document.createElement("td");
+    const explorer = document.createElement("a");
+
+    explorer.href =
+      `https://solscan.io/account/${holder.address}`;
+
+    explorer.target = "_blank";
+    explorer.rel = "noopener noreferrer";
+    explorer.textContent = "Solscan ↗";
+
+    explorerCell.append(explorer);
+
+    row.append(
+      rank,
+      walletCell,
+      percentage,
+      explorerCell
+    );
+
+    fragment.append(row);
+  });
+
+  body.append(fragment);
+}
+
+async function riLoadBundlerHolders(force = false) {
+  const contract = state.currentContract;
+
+  const status = document.getElementById(
+    "riBundlerStatus"
+  );
+
+  const button = document.getElementById(
+    "riBundlerReload"
+  );
+
+  if (!contract || !status || !button) return;
+
+  if (riBundlerState.contract !== contract) {
+    riPrepareBundlerSection();
+  }
+
+  if (riBundlerState.controller) return;
+
+  if (
+    !force &&
+    riBundlerState.loadedAt > 0 &&
+    Date.now() - riBundlerState.loadedAt < 180000
+  ) {
+    return;
+  }
+
+  // Uses the same token information as the upper rings.
+  void loadWebsiteTokenInfo(force);
+
+  const controller = new AbortController();
+
+  riBundlerState.controller = controller;
+
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 18000);
+
+  const isCurrent = () =>
+    state.currentContract === contract &&
+    riBundlerState.controller === controller;
+
+  button.disabled = true;
+  status.textContent = "Loading bundler holders…";
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE}/api/bundler-holders?ca=` +
+      encodeURIComponent(contract),
+      {
+        headers: {
+          Accept: "application/json"
+        },
+        signal: controller.signal,
+        cache: "no-store"
+      }
+    );
+
+    const result = await response.json();
+
+    if (
+      !response.ok ||
+      result?.success !== true ||
+      result.contract !== contract ||
+      !Array.isArray(result.holders)
+    ) {
+      throw new Error(
+        "Bundler holders are unavailable."
+      );
+    }
+
+    if (!isCurrent()) return;
+
+    const valid = result.holders.every(holder =>
+      /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(
+        holder?.address || ""
+      ) &&
+      typeof holder?.supplyPercentage === "number" &&
+      Number.isFinite(holder.supplyPercentage) &&
+      holder.supplyPercentage >= 0 &&
+      holder.supplyPercentage <= 100
+    );
+
+    if (!valid) {
+      throw new Error(
+        "Invalid bundler holder data."
+      );
+    }
+
+    const holders = [...result.holders].sort(
+      (a, b) =>
+        b.supplyPercentage - a.supplyPercentage
+    );
+
+    riBundlerRenderRows(holders);
+
+    document.getElementById("riBundlerCount")
+      .textContent = String(holders.length);
+
+    const updated = document.getElementById(
+      "riBundlerUpdated"
+    );
+
+    const timestamp = Date.parse(
+      result.measured_at
+    );
+
+    if (Number.isFinite(timestamp)) {
+      const date = new Date(timestamp);
+
+      updated.textContent =
+        date.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+      updated.title = date.toLocaleString();
+    } else {
+      updated.textContent = "—";
+      updated.removeAttribute("title");
+    }
+
+    riBundlerState.loadedAt = Date.now();
+
+    status.textContent = holders.length
+      ? "Available bundler wallets."
+      : "No bundler wallets were returned. This does not confirm zero bundler holdings.";
+  } catch (error) {
+    if (!isCurrent()) return;
+
+    status.textContent =
+      riBundlerState.loadedAt > 0
+        ? "Refresh failed. Previously loaded wallets are still shown."
+        : controller.signal.aborted
+          ? "Loading timed out. Click Refresh to try again."
+          : "Bundler holders are unavailable. Click Refresh to try again.";
+  } finally {
+    clearTimeout(timeout);
+
+    if (riBundlerState.controller === controller) {
+      riBundlerState.controller = null;
+      button.disabled = false;
+    }
+  }
 }
