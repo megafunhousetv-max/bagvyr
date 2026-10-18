@@ -14501,3 +14501,105 @@ table.ri-overview-compact-table tbody > tr:hover {
     font-size: 11px;
   }
 }
+
+/* TRENDING — COPY CA + ATH DROP */
+
+#trendingRoot .ri-trend-table {
+  min-width: 1000px;
+}
+
+#trendingRoot .ri-trend-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#trendingRoot .ri-trend-name-row .ri-trend-name {
+  min-width: 0;
+  max-width: 180px;
+  color: inherit;
+  text-decoration: none;
+}
+
+#trendingRoot .ri-trend-name-row .ri-trend-name:hover {
+  color: #3ce691;
+}
+
+#trendingRoot .ri-trend-avatar-link {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+#trendingRoot .ri-trend-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  flex-shrink: 0;
+
+  width: 68px;
+  min-width: 68px;
+  height: 30px;
+  min-height: 30px;
+
+  margin: 0;
+  padding: 4px 7px;
+
+  border: 1px solid rgba(60, 230, 145, 0.24);
+  border-radius: 7px;
+
+  background: rgba(60, 230, 145, 0.035);
+  color: #a9c8b8;
+
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+
+  box-shadow: none;
+  cursor: pointer;
+}
+
+#trendingRoot .ri-trend-copy svg {
+  width: 15px;
+  height: 15px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#trendingRoot .ri-trend-copy:hover {
+  color: #3ce691;
+  border-color: #3ce691;
+  background: rgba(60, 230, 145, 0.08);
+}
+
+#trendingRoot .ri-trend-copy:focus-visible {
+  outline: 2px solid #3ce691;
+  outline-offset: 3px;
+}
+
+#trendingRoot .ri-trend-copy:disabled {
+  cursor: default;
+}
+
+#trendingRoot .ri-trend-ath {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#trendingRoot .ri-trend-ath--drop {
+  color: #f28b75;
+}
+
+#trendingRoot .ri-trend-ath--unknown {
+  color: #82978d;
+  font-weight: 400;
+}

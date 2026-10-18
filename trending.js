@@ -1131,6 +1131,279 @@ function trendingScoreBadge(item) {
   return badge;
 }
 
+function riTrendingCopyButton(item) {
+  const button = element(
+    "button",
+    "ri-trend-copy"
+  );
+
+  button.type = "button";
+  button.title =
+    "Copy contract address";
+
+  button.setAttribute(
+    "aria-label",
+    "Copy contract address for " +
+    (
+      item.name ||
+      item.symbol ||
+      item.contract
+    )
+  );
+
+  button.innerHTML = `
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <rect
+        x="8"
+        y="8"
+        width="12"
+        height="12"
+        rx="2"
+      />
+      <path d="M16 8V4H4v12h4"/>
+    </svg>
+
+    <span>CA</span>
+  `;
+
+  button.addEventListener(
+    "click",
+    async event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (
+        !validContract(item.contract)
+      ) {
+        return;
+      }
+
+      button.disabled = true;
+
+      let copied = false;
+
+      try {
+        if (
+          navigator.clipboard?.writeText
+        ) {
+          await navigator.clipboard
+            .writeText(item.contract);
+
+          copied = true;
+        }
+      } catch {}
+
+      if (!copied) {
+        const input =
+          document.createElement(
+            "textarea"
+          );
+
+        input.value =
+          item.contract;
+
+        input.readOnly = true;
+
+        input.style.cssText =
+          "position:fixed;" +
+          "left:-9999px;" +
+          "top:0;";
+
+        document.body.append(input);
+
+        try {
+          input.select();
+
+          copied =
+            document.execCommand(
+              "copy"
+            );
+        } catch {
+        } finally {
+          input.remove();
+        }
+
+        button.focus({
+          preventScroll: true
+        });
+      }
+
+      button.querySelector(
+        "span"
+      ).textContent =
+        copied
+          ? "Copied"
+          : "Failed";
+
+      button.title =
+        copied
+          ? "Contract address copied"
+          : "Could not copy. Try again.";
+
+      setTimeout(() => {
+        button.querySelector(
+          "span"
+        ).textContent = "CA";
+
+        button.title =
+          "Copy contract address";
+
+        button.disabled = false;
+      }, 1500);
+    }
+  );
+
+  return button;
+}
+
+
+function riTrendingTokenCell(item) {
+  const cell = element("td");
+
+  const content = element(
+    "span",
+    "ri-trend-token"
+  );
+
+  const avatar = scannerLink(
+    item,
+    "ri-trend-avatar-link"
+  );
+
+  avatar.append(
+    tokenIcon(item)
+  );
+
+  const details = element(
+    "span",
+    "ri-trend-token-details"
+  );
+
+  const nameRow = element(
+    "span",
+    "ri-trend-name-row"
+  );
+
+  const name = scannerLink(
+    item,
+    "ri-trend-name"
+  );
+
+  name.textContent =
+    item.name ||
+    item.symbol ||
+    "Unknown token";
+
+  nameRow.append(
+    name,
+    riTrendingCopyButton(item)
+  );
+
+  details.append(
+    nameRow,
+
+    element(
+      "span",
+      "ri-trend-symbol",
+
+      item.symbol ||
+      `${item.contract.slice(0, 6)}…`
+    )
+  );
+
+  if (item.featured) {
+    details.append(
+      element(
+        "span",
+        "ri-trend-badge",
+        "FEATURED"
+      )
+    );
+  }
+
+  content.append(
+    avatar,
+    details,
+    trendingScoreBadge(item)
+  );
+
+  cell.append(content);
+
+  return cell;
+}
+
+
+function riTrendingAthCell(item) {
+  const cell = element(
+    "td",
+    "ri-trend-ath"
+  );
+
+  const value =
+    numeric(
+      item.ath_drop_percent
+    );
+
+  const measured =
+    Date.parse(
+      item.ath_measured_at || ""
+    );
+
+  const now = Date.now();
+
+  if (
+    value === null ||
+    value > 100 ||
+    !Number.isFinite(measured) ||
+    measured > now ||
+    now - measured >= 180000
+  ) {
+    cell.textContent = "—";
+
+    cell.classList.add(
+      "ri-trend-ath--unknown"
+    );
+
+    cell.title =
+      "ATH drop unavailable or " +
+      "awaiting a fresh analysis.";
+
+    return cell;
+  }
+
+  cell.textContent =
+    value === 0
+      ? "0%"
+      : value < 0.01
+        ? "<0.01%"
+        : "−" +
+          new Intl.NumberFormat(
+            "en-US",
+            {
+              maximumFractionDigits: 2
+            }
+          ).format(value) +
+          "%";
+
+  if (value > 0) {
+    cell.classList.add(
+      "ri-trend-ath--drop"
+    );
+  }
+
+  cell.title =
+    "Market cap decline from ATH. " +
+    "Last checked: " +
+    new Date(
+      measured
+    ).toLocaleString();
+
+  return cell;
+}
+
 function tokenContent(item) {
   const content = element("span", "ri-trend-token");
 
@@ -1525,8 +1798,15 @@ for (const [board, label] of [
     const heading = element("tr");
 
     for (const label of [
-      "#", "Token", "Market Cap", "Liquidity",
-      "24h Volume", "Holders", "Age", ""
+      "#",
+      "Token",
+      "Market Cap",
+      "Liquidity",
+      "24h Volume",
+      "Holders",
+      "Age",
+      "ATH DROP",
+      ""
     ]) {
       const cell = element("th", "", label);
       cell.scope = "col";
@@ -1547,11 +1827,9 @@ for (const [board, label] of [
   );
       row.append(element("td", "", String(index + 1)));
 
-      const tokenCell = element("td");
-      const link = scannerLink(item, "ri-trend-token");
-      link.append(tokenContent(item));
-      tokenCell.append(link);
-      row.append(tokenCell);
+      row.append(
+        riTrendingTokenCell(item)
+      );
 
       for (const value of [
         money(item.market_cap_usd),
@@ -1564,6 +1842,9 @@ for (const [board, label] of [
       }
 
       const actionCell = element("td");
+            row.append(
+        riTrendingAthCell(item)
+      );
       const analyzeLink = scannerLink(item, "ri-trend-row-analyze");
 
       analyzeLink.textContent = "Analyze";
