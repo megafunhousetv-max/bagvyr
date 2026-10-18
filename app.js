@@ -4631,10 +4631,6 @@ async function riLoadDevActivity(
 
   box.dataset.request = key;
 
-  box.textContent = wallet
-    ? "Checking recent dev activity…"
-    : "Dev wallet unavailable.";
-
   state.riDevActivity = null;
   state.transactionsLoaded = false;
 
@@ -4645,6 +4641,15 @@ async function riLoadDevActivity(
     elements.loadTransactionsButton,
     "LOAD CREATOR TRANSACTIONS →"
   );
+
+  riRenderDevActivity({
+    state: wallet
+      ? "checking"
+      : "no_wallet",
+
+    fresh: false,
+    result: null
+  });
 
   const start = Date.now();
 
@@ -4678,12 +4683,10 @@ async function riLoadDevActivity(
       if (
         Date.now() - start > 90000
       ) {
-        box.append(
-          document.createTextNode(
-            " Check is still pending. " +
-            "Use Refresh to check again."
-          )
-        );
+        riRenderDevActivity({
+          ...data,
+          state: "timeout"
+        });
 
         return;
       }
@@ -4692,9 +4695,12 @@ async function riLoadDevActivity(
         box.dataset.request === key &&
         state.currentContract === contract
       ) {
-        box.textContent =
-          "Analysis unavailable. " +
-          "Use Refresh to retry.";
+        riRenderDevActivity({
+          ...state.riDevActivity,
+
+          fresh: false,
+          state: "unavailable"
+        });
       }
 
       return;
@@ -4706,6 +4712,7 @@ async function riLoadDevActivity(
   }
 }
 
+
 function riRenderDevActivity(data) {
   const box =
     document.getElementById(
@@ -4714,106 +4721,417 @@ function riRenderDevActivity(data) {
 
   if (!box) return;
 
-  const a = data.result;
-
-  box.replaceChildren();
-
-  const line = (
-    text,
-    strong = false
-  ) => {
-    const element =
-      document.createElement(
-        strong ? "strong" : "div"
-      );
-
-    element.textContent = text;
-    box.append(element);
-  };
-
-  line(
-    "DEV ACTIVITY · RECENT SAMPLE",
-    true
+  box.classList.add(
+    "ri-dev-card"
   );
 
-  if (!a) {
-    line(
-      data.state === "busy"
-        ? "Queue busy. Retrying…"
-        : "Check queued…"
-    );
-
-    return;
-  }
+  const a = data?.result;
 
   const complete =
-    a.status === "sample_complete";
+    a?.status === "sample_complete";
 
-  const status = count =>
-    count > 0
-      ? String(count)
-      : complete
-        ? "None in checked sample"
-        : "Not established";
+  const paths = {
+    wallet:
+      '<path d="M4 6h14a2 2 0 0 1 2 2v11H4a2 2 0 0 1-2-2V6l12-4 3 4"/>' +
+      '<path d="M20 11h-5v5h5"/>',
 
-  line(
-    `Sells detected: ${
-      status(a.sellsDetected)
-    }`
-  );
+    sell:
+      '<path d="M12 3v18m-7-7 7 7 7-7"/>',
 
-  line(
-    `Transfers out: ${
-      status(a.transfersDetected)
-    }`
-  );
+    transfer:
+      '<path d="M3 7h18m-5-5 5 5-5 5M21 17H3m5-5-5 5 5 5"/>',
 
-  if (a.unknownOutflows) {
-    line(
-      "⚠ Unclassified token outflows: " +
-      a.unknownOutflows
+    list:
+      '<path d="M7 3h10l3 3v15H4V3h3m1 5h8M8 12h8m-8 4h6"/>',
+
+    clock:
+      '<circle cx="12" cy="12" r="9"/>' +
+      '<path d="M12 6v6l4 2"/>',
+
+    info:
+      '<circle cx="12" cy="12" r="9"/>' +
+      '<path d="M12 11v6m0-10h.01"/>'
+  };
+
+  const icon = name => `
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      ${paths[name]}
+    </svg>
+  `;
+
+  box.innerHTML = `
+    <div class="ri-dev-header">
+
+      <div class="ri-dev-heading">
+        ${icon("wallet")}
+
+        <div>
+          <h4 class="ri-dev-title">
+            Dev activity
+          </h4>
+
+          <p class="ri-dev-subtitle">
+            Recent wallet activity
+          </p>
+        </div>
+      </div>
+
+      <span
+        class="ri-dev-badge"
+        data-role="badge"
+      ></span>
+
+    </div>
+
+    <div class="ri-dev-grid">
+
+      <div
+        class="ri-dev-metric"
+        data-role="sell-card"
+      >
+        ${icon("sell")}
+
+        <div>
+          <span class="ri-dev-label">
+            SELLS DETECTED
+          </span>
+
+          <strong
+            class="ri-dev-value"
+            data-role="sells"
+          ></strong>
+
+          <span
+            class="ri-dev-caption"
+            data-role="sell-caption"
+          ></span>
+        </div>
+      </div>
+
+      <div
+        class="ri-dev-metric"
+        data-role="transfer-card"
+      >
+        ${icon("transfer")}
+
+        <div>
+          <span class="ri-dev-label">
+            TRANSFERS OUT
+          </span>
+
+          <strong
+            class="ri-dev-value"
+            data-role="transfers"
+          ></strong>
+
+          <span
+            class="ri-dev-caption"
+            data-role="transfer-caption"
+          ></span>
+        </div>
+      </div>
+
+    </div>
+
+    <p
+      class="ri-dev-note"
+      data-role="note"
+      hidden
+    ></p>
+
+    <div class="ri-dev-stats">
+
+      <span>
+        ${icon("list")}
+
+        <strong
+          data-role="checked"
+        ></strong>
+      </span>
+
+      <span
+        class="ri-dev-stat-details"
+        data-role="details"
+      ></span>
+
+    </div>
+
+    <div class="ri-dev-footer">
+
+      <span class="ri-dev-time">
+        ${icon("clock")}
+
+        <span>Last checked</span>
+
+        <strong
+          data-role="time"
+        ></strong>
+      </span>
+
+      <button
+        type="button"
+        class="ri-dev-view"
+        data-role="view"
+        aria-controls="creatorTransactionsSection"
+      >
+        View transactions ↗
+      </button>
+
+    </div>
+
+    <div class="ri-dev-scope">
+      ${icon("info")}
+
+      <p>
+        Last 20 wallet transactions only.
+        <br>
+        Full token history and linked
+        wallets are not covered.
+      </p>
+    </div>
+  `;
+
+  const el = role =>
+    box.querySelector(
+      `[data-role="${role}"]`
+    );
+
+  const notes = [];
+
+  let badge = "Checking…";
+  let tone = "pending";
+
+  if (
+    data.state === "ready"
+  ) {
+    badge = complete
+      ? "Sample checked"
+      : "Analysis incomplete";
+
+    tone = complete
+      ? "checked"
+      : "warning";
+  } else if (
+    data.state === "no_wallet"
+  ) {
+    badge = "Wallet unavailable";
+    tone = "warning";
+  } else if (
+    data.state === "unavailable"
+  ) {
+    badge = "Check unavailable";
+    tone = "warning";
+
+    notes.push(
+      "Could not refresh the analysis. " +
+      "Use Refresh to retry."
+    );
+  } else if (
+    data.state === "timeout"
+  ) {
+    badge = "Check pending";
+
+    notes.push(
+      "The check is still pending. " +
+      "Use Refresh to check again."
+    );
+  } else if (
+    data.state === "busy"
+  ) {
+    badge = "Queue busy";
+  } else if (a) {
+    badge = "Refreshing…";
+  } else if (
+    data.state === "pending"
+  ) {
+    badge = "Queued";
+  }
+
+  el("badge").textContent =
+    badge;
+
+  el("badge").dataset.tone =
+    tone;
+
+  const metrics = [
+    [
+      "sellsDetected",
+      "sells",
+      "sell-card",
+      "sell-caption"
+    ],
+
+    [
+      "transfersDetected",
+      "transfers",
+      "transfer-card",
+      "transfer-caption"
+    ]
+  ];
+
+  for (
+    const [
+      field,
+      valueRole,
+      cardRole,
+      captionRole
+    ] of metrics
+  ) {
+    const count = a?.[field];
+
+    const detected =
+      Number.isFinite(count) &&
+      count > 0;
+
+    el(valueRole).textContent =
+      detected
+        ? `${count} detected`
+        : complete && count === 0
+          ? "None detected"
+          : a
+            ? "Not established"
+            : "—";
+
+    el(cardRole).dataset.tone =
+      detected
+        ? "warning"
+        : "neutral";
+
+    el(captionRole).textContent =
+      a
+        ? "In checked sample"
+        : "Awaiting analysis";
+  }
+
+  if (
+    a &&
+    !data.fresh
+  ) {
+    notes.push(
+      "Showing a previous result " +
+      "while a new check is pending."
     );
   }
 
-  line(
-    `Checked ${a.signaturesChecked}/20 ` +
-    `wallet signatures · ` +
-    `${a.failedTransactions} failed`
-  );
-
-  line(
-    "Last checked: " +
-    (
-      a.checkedAt
-        ? new Date(
-            a.checkedAt
-          ).toLocaleString()
-        : "Unavailable"
-    )
-  );
-
-  line(
-    !data.fresh
-      ? "Previous result · refresh pending"
-      : complete
-        ? "Recent sample checked"
-        : "Analysis incomplete"
-  );
-
-  line(
-    "Only recent activity of the displayed wallet. " +
-    "Full token history and linked wallets are not covered."
-  );
+  if (
+    a &&
+    !complete
+  ) {
+    notes.push(
+      "Analysis incomplete. " +
+      "Missing or unclassified activity " +
+      "prevents a full result for this sample."
+    );
+  }
 
   if (
-    a.currentHolding !== null
+    a?.unknownOutflows > 0
   ) {
-    setText(
-      elements.creatorHolding,
-      formatTokenAmount(
-        a.currentHolding
-      )
+    notes.push(
+      `Unclassified token outflows: ` +
+      `${a.unknownOutflows}. ` +
+      "These are not confirmed sales."
     );
+  }
+
+  el("note").hidden =
+    notes.length === 0;
+
+  el("note").textContent =
+    notes.join(" ");
+
+  el("checked").textContent =
+    a
+      ? `${a.signaturesChecked} signatures checked`
+      : "Analysis not available yet";
+
+  const missing =
+    a
+      ? Math.max(
+          0,
+          a.signaturesChecked -
+          a.parsedTransactions -
+          a.failedTransactions
+        )
+      : 0;
+
+  el("details").textContent =
+    a
+      ? `${a.parsedTransactions} analyzed` +
+        ` · ${a.failedTransactions} failed on-chain` +
+        (
+          missing
+            ? ` · ${missing} unavailable`
+            : ""
+        )
+      : "Results will appear here";
+
+  const date =
+    a?.checkedAt
+      ? new Date(a.checkedAt)
+      : null;
+
+  el("time").textContent =
+    date &&
+    Number.isFinite(date.getTime())
+      ? date.toLocaleString(
+          undefined,
+          {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          }
+        )
+      : "—";
+
+  const button =
+    el("view");
+
+  button.disabled =
+    !a ||
+    !state.creatorWallet;
+
+  const syncButton = () => {
+    const open =
+      !!state.transactionsLoaded &&
+      !!elements.transactionsSection &&
+      !elements.transactionsSection
+        .classList.contains("hidden");
+
+    button.textContent =
+      open
+        ? "Hide transactions ↑"
+        : "View transactions ↗";
+
+    button.setAttribute(
+      "aria-expanded",
+      String(open)
+    );
+  };
+
+  syncButton();
+
+  button.onclick = async () => {
+    await loadCreatorTransactions();
+    syncButton();
+  };
+
+  if (a) {
+    if (
+      a.currentHolding !== null
+    ) {
+      setText(
+        elements.creatorHolding,
+        formatTokenAmount(
+          a.currentHolding
+        )
+      );
+    }
 
     if (
       a.supplyOwned !== null
@@ -4825,14 +5143,14 @@ function riRenderDevActivity(data) {
         )
       );
     }
-  }
 
-  if (
-    state.transactionsLoaded
-  ) {
-    riRenderDevTransactions(
-      a.transactions || []
-    );
+    if (
+      state.transactionsLoaded
+    ) {
+      riRenderDevTransactions(
+        a.transactions || []
+      );
+    }
   }
 }
 
