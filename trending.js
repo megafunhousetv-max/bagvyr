@@ -1338,6 +1338,52 @@ function renderHomeAdvertisements(items) {
   }
 }
 
+function riTrendingAllowed(item) {
+  const cached =
+    trendingScoreCache.get(
+      item.contract
+    );
+
+  const listedTime =
+    Date.parse(
+      item.score_measured_at || ""
+    );
+
+  const cachedTime =
+    Date.parse(
+      cached?.measuredAt || ""
+    );
+
+  const useCached =
+    Number.isFinite(cachedTime) &&
+    (
+      !Number.isFinite(listedTime) ||
+      cachedTime > listedTime
+    );
+
+  const score =
+    useCached
+      ? cached.score
+      : item.score;
+
+  const measured =
+    useCached
+      ? cachedTime
+      : listedTime;
+
+  const now = Date.now();
+
+  return (
+    typeof score === "number" &&
+    Number.isFinite(score) &&
+    score >= 80 &&
+    score <= 100 &&
+    Number.isFinite(measured) &&
+    measured <= now &&
+    now - measured < 180000
+  );
+}
+
   function render() {
     root.replaceChildren();
 
@@ -1420,6 +1466,13 @@ for (const [board, label] of [
       Array.isArray(board?.items) ? board.items : []
     ).filter(item => {
       if (!validContract(item.contract) || !notExpired(item)) {
+        return false;
+      }
+
+      if (
+        activeBoard === "trending" &&
+        !riTrendingAllowed(item)
+      ) {
         return false;
       }
 
