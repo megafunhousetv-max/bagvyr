@@ -15308,3 +15308,383 @@ table.ri-overview-compact-table tbody > tr:hover {
   height: 22px;
   stroke-width: 1.8;
 }
+
+
+/* Sell simulation */
+
+#riSellSimulation {
+  margin: 22px 0;
+  overflow: hidden;
+  border: 1px solid #194a36;
+  border-radius: 20px;
+  background: rgba(3, 20, 13, .92);
+  color: #effff5;
+}
+
+#riSellSimulation,
+#riSellSimulation * {
+  box-sizing: border-box;
+}
+
+#riSellSimulation .ri-sell-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  cursor: pointer;
+  list-style: none;
+}
+
+#riSellSimulation .ri-sell-heading::-webkit-details-marker {
+  display: none;
+}
+
+#riSellSimulation .ri-sell-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: 1px solid #246448;
+  border-radius: 13px;
+  color: #36edb0;
+  font-size: 30px;
+}
+
+#riSellSimulation .ri-sell-heading strong {
+  display: block;
+  font-size: 23px;
+  letter-spacing: -.025em;
+}
+
+#riSellSimulation .ri-sell-heading small {
+  display: block;
+  margin-top: 6px;
+  color: #91b6a3;
+  font-size: 13px;
+}
+
+#riSellSimulation .ri-sell-chevron {
+  margin-left: auto;
+  color: #9bcab2;
+  font-size: 23px;
+}
+
+#riSellSimulation[open] .ri-sell-chevron {
+  transform: rotate(180deg);
+}
+
+#riSellSimulation .ri-sell-body {
+  padding: 0 24px 20px;
+}
+
+#riSellSimulation .ri-sell-layout {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 18px;
+}
+
+#riSellSimulation .ri-sell-input-panel,
+#riSellSimulation .ri-sell-proceeds-panel,
+#riSellSimulation .ri-sell-mc-panel {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #194a36;
+  border-radius: 15px;
+  background: rgba(0, 13, 7, .36);
+}
+
+#riSellSimulation .ri-sell-input-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+#riSellSimulation h4,
+#riSellSimulation h5 {
+  margin: 0;
+  color: #effff5;
+}
+
+#riSellSimulation h4 {
+  font-size: 18px;
+}
+
+#riSellSimulation h5 {
+  margin-top: 25px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+#riSellSimulation button {
+  font: inherit;
+  cursor: pointer;
+}
+
+#riSellSimulation .ri-sell-toggle {
+  display: flex;
+  padding: 3px;
+  border: 1px solid #1c4c36;
+  border-radius: 10px;
+}
+
+#riSellSimulation .ri-sell-toggle button {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #a1c5b1;
+  font-size: 11px;
+}
+
+#riSellSimulation button[aria-pressed="true"] {
+  background: #36eeb0;
+  color: #032417;
+  font-weight: 750;
+}
+
+#riSellSimulation #riSellAmountLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #92b5a2;
+  font-size: 12px;
+}
+
+#riSellSimulation #riSellAmount {
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #286b4a;
+  border-radius: 11px;
+  background: #02130b;
+  color: #f0fff7;
+  font: inherit;
+  font-size: 28px;
+  font-weight: 650;
+}
+
+#riSellSimulation #riSellInputHint {
+  min-height: 34px;
+  margin: 10px 0 0;
+  color: #8eae9d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#riSellSimulation .ri-sell-portions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+#riSellSimulation .ri-sell-portions button {
+  padding: 13px;
+  border: 1px solid #286648;
+  border-radius: 10px;
+  background: transparent;
+  color: #b0e4cb;
+  font-size: 15px;
+}
+
+#riSellSimulation .ri-sell-primary {
+  width: 100%;
+  margin-top: 25px;
+  padding: 16px;
+  border: 1px solid #69f4c3;
+  border-radius: 11px;
+  background: linear-gradient(115deg, #57f4be, #25e4a6);
+  color: #022719;
+  font-weight: 750;
+  font-size: 15px;
+}
+
+#riSellSimulation button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+#riSellSimulation button:focus-visible,
+#riSellSimulation input:focus-visible,
+#riSellSimulation summary:focus-visible {
+  outline: 2px solid #69f4c3;
+  outline-offset: 3px;
+}
+
+#riSellSimulation .ri-sell-wallet-note {
+  display: block;
+  margin-top: 15px;
+  color: #8eae9d;
+  text-align: center;
+  font-size: 11px;
+}
+
+#riSellSimulation .ri-sell-results {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+#riSellSimulation .ri-sell-eyebrow {
+  color: #9fc7b2;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 1px;
+}
+
+#riSellSimulation #riSellProceeds {
+  display: block;
+  margin: 16px 0 8px;
+  color: #37efb0;
+  font-size: clamp(26px, 3vw, 43px);
+  letter-spacing: -.04em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+#riSellSimulation .ri-sell-proceeds-panel > small,
+#riSellSimulation .ri-sell-mc-panel > small,
+#riSellSimulation .ri-sell-mc-panel > p {
+  color: #91b3a0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+#riSellSimulation .ri-sell-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 23px;
+}
+
+#riSellSimulation .ri-sell-metrics > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #173e2c;
+  border-radius: 10px;
+}
+
+#riSellSimulation .ri-sell-metrics span,
+#riSellSimulation .ri-sell-mc-values span {
+  display: block;
+  color: #93b7a2;
+  font-size: 11px;
+}
+
+#riSellSimulation .ri-sell-metrics strong,
+#riSellSimulation .ri-sell-mc-values strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+#riSellSimulation .ri-sell-mc-values {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(80px, .8fr);
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+#riSellSimulation .ri-sell-mc-arrow {
+  color: #e5b956;
+  font-size: 24px;
+}
+
+#riSellSimulation .ri-sell-drop {
+  padding: 12px;
+  border: 1px solid rgba(239, 182, 65, .24);
+  border-radius: 10px;
+  background: rgba(239, 182, 65, .055);
+}
+
+#riSellSimulation #riSellMcDrop {
+  margin: 0 0 8px;
+  color: #efbc58;
+  font-size: 22px;
+}
+
+#riSellSimulation .ri-sell-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid #194a36;
+  border-radius: 12px;
+  color: #a4ccb5;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+#riSellSimulation #riSellUpdated {
+  color: #87a996;
+  font-size: 11px;
+}
+
+#riSellSimulation .ri-sell-disclaimer {
+  margin: 16px 0 0;
+  padding-top: 15px;
+  border-top: 1px solid #173e2c;
+  color: #7f9f8c;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+  #riSellSimulation .ri-sell-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  #riSellSimulation .ri-sell-heading {
+    padding: 18px 14px;
+    gap: 12px;
+  }
+
+  #riSellSimulation .ri-sell-heading strong {
+    font-size: 20px;
+  }
+
+  #riSellSimulation .ri-sell-body {
+    padding: 0 12px 15px;
+  }
+
+  #riSellSimulation .ri-sell-input-panel,
+  #riSellSimulation .ri-sell-proceeds-panel,
+  #riSellSimulation .ri-sell-mc-panel {
+    padding: 16px;
+  }
+
+  #riSellSimulation .ri-sell-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  #riSellSimulation .ri-sell-metrics > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  #riSellSimulation .ri-sell-metrics strong {
+    margin: 0;
+    text-align: right;
+  }
+
+  #riSellSimulation .ri-sell-mc-values {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  #riSellSimulation .ri-sell-drop {
+    grid-column: 1 / -1;
+  }
+}

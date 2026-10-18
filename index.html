@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=31">
 
   <style>
     html {
@@ -1388,6 +1388,153 @@
     <small id="riFeeUpdated">—</small>
   </details>
 </section>
+
+
+<details id="riSellSimulation" class="ri-sell">
+  <summary class="ri-sell-heading">
+    <span class="ri-sell-icon" aria-hidden="true">⇄</span>
+
+    <span>
+      <strong>Sell simulation</strong>
+      <small>What could you receive if you sold now?</small>
+    </span>
+
+    <span class="ri-sell-chevron" aria-hidden="true">⌄</span>
+  </summary>
+
+  <div class="ri-sell-body">
+    <div class="ri-sell-layout">
+
+      <div class="ri-sell-input-panel">
+        <div class="ri-sell-input-heading">
+          <h4>Your position</h4>
+
+          <div class="ri-sell-toggle" role="group"
+            aria-label="Position input type">
+            <button type="button" data-sell-mode="tokens"
+              aria-pressed="true">Token amount</button>
+
+            <button type="button" data-sell-mode="usd"
+              aria-pressed="false">USD value</button>
+          </div>
+        </div>
+
+        <label for="riSellAmount" id="riSellAmountLabel">
+          Number of tokens
+        </label>
+
+        <input
+          id="riSellAmount"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          placeholder="Enter token amount"
+        >
+
+        <p id="riSellInputHint">
+          Enter the size of your position.
+        </p>
+
+        <h5>Sell portion</h5>
+
+        <div class="ri-sell-portions" role="group"
+          aria-label="Portion of entered position">
+          <button type="button" data-sell-portion="25"
+            aria-pressed="false">25%</button>
+
+          <button type="button" data-sell-portion="50"
+            aria-pressed="false">50%</button>
+
+          <button type="button" data-sell-portion="100"
+            aria-pressed="true">100%</button>
+        </div>
+
+        <button id="riSellCheck" type="button"
+          class="ri-sell-primary">
+          Check sell value
+        </button>
+
+        <small class="ri-sell-wallet-note">
+          No wallet connection required.
+        </small>
+      </div>
+
+      <div class="ri-sell-results">
+        <div class="ri-sell-proceeds-panel">
+          <span class="ri-sell-eyebrow">
+            ESTIMATED SELL PROCEEDS
+          </span>
+
+          <strong id="riSellProceeds">—</strong>
+
+          <small>Before wallet-specific network costs.</small>
+
+          <div class="ri-sell-metrics">
+            <div>
+              <span>Displayed value</span>
+              <strong id="riSellReferenceValue">—</strong>
+            </div>
+
+            <div>
+              <span>Difference</span>
+              <strong id="riSellDifference">—</strong>
+            </div>
+
+            <div>
+              <span>Price impact</span>
+              <strong id="riSellImpact">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="ri-sell-mc-panel">
+          <h4>Estimated market cap after sale</h4>
+
+          <p>
+            Selected pool model · based on scan MC
+          </p>
+
+          <div class="ri-sell-mc-values">
+            <div>
+              <span>Reference market cap</span>
+              <strong id="riSellMcBefore">—</strong>
+            </div>
+
+            <span class="ri-sell-mc-arrow" aria-hidden="true">→</span>
+
+            <div>
+              <span>After your sale</span>
+              <strong id="riSellMcAfter">—</strong>
+            </div>
+
+            <div class="ri-sell-drop">
+              <strong id="riSellMcDrop">—</strong>
+              <span>Estimated MC drop</span>
+            </div>
+          </div>
+
+          <small id="riSellMcNote">
+            Available for supported pool routes.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="ri-sell-status-row">
+      <span id="riSellStatus" role="status">
+        Enter an amount and check its sell value.
+      </span>
+
+      <span id="riSellUpdated">—</span>
+    </div>
+
+    <p class="ri-sell-disclaimer">
+      Quotes are estimates, not guaranteed sales.
+      The MC model assumes fixed supply and quote-asset price.
+      It excludes fee effects, arbitrage and other trades.
+    </p>
+  </div>
+</details>
 
 
 <!-- ANALYSIS HIGHLIGHTS -->
@@ -3361,7 +3508,7 @@
   <script src="supabase-config.js"></script>
   <script src="promo.js?v=1" data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"></script>
   <script src="analytics.js"></script>
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
