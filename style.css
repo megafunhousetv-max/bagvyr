@@ -15301,3 +15301,10 @@ table.ri-overview-compact-table tbody > tr:hover {
     overflow-wrap: anywhere;
   }
 }
+
+
+#resultsSection .ri-token-header-v2 .ri-header-refresh svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+}
