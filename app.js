@@ -2026,6 +2026,11 @@ function renderCreator(
       ? wallet
       : null;
 
+  void riLoadDevActivity(
+    state.currentContract,
+    state.creatorWallet
+  );
+
   renderCreatorWallet(
     wallet,
     creator
@@ -4609,110 +4614,417 @@ async function marketRequest(
    CREATOR TRANSACTIONS
    ========================================================= */
 
-async function loadCreatorTransactions() {
-  if (!state.creatorWallet) {
+async function riLoadDevActivity(
+  contract,
+  wallet
+) {
+  const box =
+    document.getElementById(
+      "riDevActivity"
+    );
+
+  if (!box) return;
+
+  const key =
+    `${contract}:${wallet}:` +
+    `${Date.now()}:${Math.random()}`;
+
+  box.dataset.request = key;
+
+  box.textContent = wallet
+    ? "Checking recent dev activity…"
+    : "Dev wallet unavailable.";
+
+  state.riDevActivity = null;
+  state.transactionsLoaded = false;
+
+  elements.transactionsSection
+    ?.classList.add("hidden");
+
+  setText(
+    elements.loadTransactionsButton,
+    "LOAD CREATOR TRANSACTIONS →"
+  );
+
+  const start = Date.now();
+
+  while (
+    wallet &&
+    box.dataset.request === key &&
+    state.currentContract === contract
+  ) {
+    try {
+      const data = await apiRequest(
+        "/api/dev-activity" +
+        `?ca=${encodeURIComponent(contract)}` +
+        `&wallet=${encodeURIComponent(wallet)}`
+      );
+
+      if (
+        box.dataset.request !== key ||
+        state.currentContract !== contract
+      ) {
+        return;
+      }
+
+      state.riDevActivity = data;
+
+      riRenderDevActivity(data);
+
+      if (data.state === "ready") {
+        return;
+      }
+
+      if (
+        Date.now() - start > 90000
+      ) {
+        box.append(
+          document.createTextNode(
+            " Check is still pending. " +
+            "Use Refresh to check again."
+          )
+        );
+
+        return;
+      }
+    } catch {
+      if (
+        box.dataset.request === key &&
+        state.currentContract === contract
+      ) {
+        box.textContent =
+          "Analysis unavailable. " +
+          "Use Refresh to retry.";
+      }
+
+      return;
+    }
+
+    await new Promise(resolve => {
+      setTimeout(resolve, 5000);
+    });
+  }
+}
+
+function riRenderDevActivity(data) {
+  const box =
+    document.getElementById(
+      "riDevActivity"
+    );
+
+  if (!box) return;
+
+  const a = data.result;
+
+  box.replaceChildren();
+
+  const line = (
+    text,
+    strong = false
+  ) => {
+    const element =
+      document.createElement(
+        strong ? "strong" : "div"
+      );
+
+    element.textContent = text;
+    box.append(element);
+  };
+
+  line(
+    "DEV ACTIVITY · RECENT SAMPLE",
+    true
+  );
+
+  if (!a) {
+    line(
+      data.state === "busy"
+        ? "Queue busy. Retrying…"
+        : "Check queued…"
+    );
+
     return;
   }
 
-  /*
-    Ak už boli transakcie načítané,
-    tlačidlo iba otvára / zatvára sekciu.
-  */
-  if (state.transactionsLoaded) {
+  const complete =
+    a.status === "sample_complete";
 
-    const isHidden =
-      elements.transactionsSection?.classList.contains(
-        "hidden"
+  const status = count =>
+    count > 0
+      ? String(count)
+      : complete
+        ? "None in checked sample"
+        : "Not established";
+
+  line(
+    `Sells detected: ${
+      status(a.sellsDetected)
+    }`
+  );
+
+  line(
+    `Transfers out: ${
+      status(a.transfersDetected)
+    }`
+  );
+
+  if (a.unknownOutflows) {
+    line(
+      "⚠ Unclassified token outflows: " +
+      a.unknownOutflows
+    );
+  }
+
+  line(
+    `Checked ${a.signaturesChecked}/20 ` +
+    `wallet signatures · ` +
+    `${a.failedTransactions} failed`
+  );
+
+  line(
+    "Last checked: " +
+    (
+      a.checkedAt
+        ? new Date(
+            a.checkedAt
+          ).toLocaleString()
+        : "Unavailable"
+    )
+  );
+
+  line(
+    !data.fresh
+      ? "Previous result · refresh pending"
+      : complete
+        ? "Recent sample checked"
+        : "Analysis incomplete"
+  );
+
+  line(
+    "Only recent activity of the displayed wallet. " +
+    "Full token history and linked wallets are not covered."
+  );
+
+  if (
+    a.currentHolding !== null
+  ) {
+    setText(
+      elements.creatorHolding,
+      formatTokenAmount(
+        a.currentHolding
+      )
+    );
+
+    if (
+      a.supplyOwned !== null
+    ) {
+      setText(
+        elements.creatorPercentage,
+        formatPercentage(
+          a.supplyOwned
+        )
       );
-
-    if (isHidden) {
-      elements.transactionsSection?.classList.remove(
-        "hidden"
-      );
-
-      elements.loadTransactionsButton.innerHTML =
-        "HIDE CREATOR TRANSACTIONS ↑";
-
-    } else {
-      elements.transactionsSection?.classList.add(
-        "hidden"
-      );
-
-      elements.loadTransactionsButton.innerHTML =
-        "LOAD CREATOR TRANSACTIONS →";
     }
+  }
 
+  if (
+    state.transactionsLoaded
+  ) {
+    riRenderDevTransactions(
+      a.transactions || []
+    );
+  }
+}
+
+function riRenderDevTransactions(
+  transactions
+) {
+  const body =
+    elements.transactionsList;
+
+  if (!body) return;
+
+  body.replaceChildren();
+
+  setText(
+    elements.transactionCount,
+    `${transactions.length} token activity records`
+  );
+
+  if (
+    !transactions.length
+  ) {
+    const row = body.insertRow();
+    const cell = row.insertCell();
+
+    cell.colSpan = 5;
+
+    cell.textContent =
+      "No token balance changes found " +
+      "in the checked sample. " +
+      "See analysis status above.";
+
+    return;
+  }
+
+  transactions.forEach(
+    (tx, index) => {
+      const row =
+        body.insertRow();
+
+      row.insertCell().textContent =
+        String(index + 1);
+
+      const typeCell =
+        row.insertCell();
+
+      typeCell.textContent =
+        tx.type.replaceAll(
+          "_",
+          " "
+        );
+
+      for (
+        const target of
+        tx.destinations || []
+      ) {
+        if (
+          !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+            .test(target.address)
+        ) {
+          continue;
+        }
+
+        const link =
+          document.createElement(
+            "a"
+          );
+
+        link.href =
+          "https://solscan.io/account/" +
+          target.address;
+
+        link.target = "_blank";
+        link.rel =
+          "noopener noreferrer";
+
+        link.textContent =
+          (
+            target.kind === "wallet"
+              ? "Recipient"
+              : "Token account"
+          ) +
+          ": " +
+          shortenAddress(
+            target.address,
+            5,
+            5
+          );
+
+        typeCell.append(
+          document.createElement(
+            "br"
+          ),
+          link
+        );
+      }
+
+      row.insertCell().textContent =
+        formatTokenAmount(
+          tx.amount
+        );
+
+      row.insertCell().textContent =
+        tx.timestamp
+          ? new Date(
+              tx.timestamp * 1000
+            ).toLocaleString()
+          : "Unavailable";
+
+      const linkCell =
+        row.insertCell();
+
+      if (
+        /^[1-9A-HJ-NP-Za-km-z]{80,90}$/
+          .test(tx.signature)
+      ) {
+        const link =
+          document.createElement(
+            "a"
+          );
+
+        link.href =
+          "https://solscan.io/tx/" +
+          tx.signature;
+
+        link.target = "_blank";
+
+        link.rel =
+          "noopener noreferrer";
+
+        link.textContent =
+          "View transaction ↗";
+
+        linkCell.append(link);
+      }
+    }
+  );
+}
+
+async function loadCreatorTransactions() {
+  if (
+    !state.creatorWallet
+  ) {
     return;
   }
 
   if (
-    elements.loadTransactionsButton
+    state.transactionsLoaded
   ) {
-    elements.loadTransactionsButton.disabled =
-      true;
+    const hidden =
+      elements.transactionsSection
+        ?.classList.toggle("hidden");
+
+    setText(
+      elements.loadTransactionsButton,
+
+      hidden
+        ? "LOAD CREATOR TRANSACTIONS →"
+        : "HIDE CREATOR TRANSACTIONS ↑"
+    );
+
+    return;
   }
 
-  elements.transactionsSection?.classList.remove(
-    "hidden"
+  elements.transactionsSection
+    ?.classList.remove("hidden");
+
+  state.transactionsLoaded = true;
+
+  setText(
+    elements.loadTransactionsButton,
+    "HIDE CREATOR TRANSACTIONS ↑"
   );
 
-  elements.transactionsLoading?.classList.remove(
-    "hidden"
-  );
-
-  try {
-const data =
-  await apiRequest(
-    `${CONFIG.ENDPOINTS.walletTransactions}` +
-    `?wallet=${encodeURIComponent(state.creatorWallet)}` +
-    `&ca=${encodeURIComponent(state.currentContract)}` +
-    `&limit=${CONFIG.TRANSACTION_LIMIT}`
-  );
-
-    const transactions =
-      Array.isArray(data)
-        ? data
-        : data.transactions ||
-          data.items ||
-          [];
-
-    renderTransactions(
-      transactions
+  if (
+    state.riDevActivity?.result
+  ) {
+    riRenderDevTransactions(
+      state.riDevActivity.result
+        .transactions || []
     );
+  } else {
+    riRenderDevTransactions([]);
 
-    state.transactionsLoaded =
-      true;
-
-if (elements.loadTransactionsButton) {
-  elements.loadTransactionsButton.disabled =
-    false;
-
-  elements.loadTransactionsButton.innerHTML =
-    "HIDE CREATOR TRANSACTIONS ↑";
-}
-
-  } catch (error) {
-    if (
+    const cell =
       elements.transactionsList
-    ) {
-      elements.transactionsList.innerHTML = `
-        <div class="empty-state">
-          ${escapeHTML(friendlyErrorMessage(error))}
-        </div>
-      `;
-    }
+        ?.rows[0]?.cells[0];
 
-    if (
-      elements.loadTransactionsButton
-    ) {
-      elements.loadTransactionsButton.disabled =
-        false;
+    if (cell) {
+      cell.textContent =
+        "Analysis pending or unavailable. " +
+        "See the status above.";
     }
-
-  } finally {
-    elements.transactionsLoading?.classList.add(
-      "hidden"
-    );
   }
 }
 
