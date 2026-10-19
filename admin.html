@@ -1035,6 +1035,20 @@ transition:
 
   <nav class="admin-nav" aria-label="Admin navigation">
 
+    <button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="lab"
+  aria-controls="labSection"
+>
+  <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 3h6M10 3v7L4 20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l-6-10V3"></path>
+    <path d="M8 15h8"></path>
+  </svg>
+
+  <span>Lab</span>
+</button>
+
 <button
   type="button"
   class="admin-nav-button"
@@ -1150,6 +1164,50 @@ transition:
           </button>
         </div>
       </div>
+
+<section
+  id="labSection"
+  class="admin-section"
+  aria-label="Exit Lab settings"
+  hidden
+>
+  <div
+    id="riLabAdmin"
+    style="
+      padding: 26px;
+      border: 1px solid rgba(130, 238, 184, .2);
+      border-radius: 16px;
+      background: rgba(9, 24, 18, .9);
+    "
+  >
+    <h2>Exit Lab</h2>
+
+    <p id="riLabAdminState" role="status" aria-live="polite">
+      Klikni na Refresh status.
+    </p>
+
+    <p>
+      Zapnutie sprístupní Lab návštevníkom.
+      Vypnutie skryje navigáciu a zablokuje Lab API aj simulácie.
+    </p>
+
+    <div class="actions">
+      <button id="riLabOn" type="button">
+        Zapnúť Lab
+      </button>
+
+      <button id="riLabOff" type="button">
+        Vypnúť Lab
+      </button>
+
+      <button id="riLabRead" type="button">
+        Refresh status
+      </button>
+    </div>
+
+    <p id="riLabAdminTime"></p>
+  </div>
+</section>
 
 <section
   id="aiTemplateSection"
@@ -1535,6 +1593,7 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
+    lab: $("labSection"),
   monitoring: $("monitoringSection"),
   overview: $("overviewSection"),
   trending: $("trendingSection"),
@@ -1548,6 +1607,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+    lab: "Exit Lab",
   monitoring: "Monitoring",
   overview: "Dashboard",
   trending: "Trending",
@@ -3230,5 +3290,6 @@ const fields = {
   </script>
   <script src="trend.js"></script>
   <script src="admin-ai-template.js"></script>
+  <script src="lab.js?v=1"></script>
 </body>
 </html>
