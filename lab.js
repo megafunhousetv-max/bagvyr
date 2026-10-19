@@ -464,6 +464,86 @@
             </div>
           </section>
 
+<section class="lab-card">
+  <span class="lab-kicker">
+    POSITION CALCULATOR
+  </span>
+
+  <h2>What would my tokens be worth?</h2>
+
+  <form
+    id="labTargetForm"
+    class="lab-own-inputs"
+  >
+    <label>
+      Tokens I hold
+
+      <input
+        id="labTargetTokens"
+        inputmode="decimal"
+        autocomplete="off"
+        placeholder="e.g. 1000000"
+        required
+      >
+    </label>
+
+    <label>
+      Target market cap (USD)
+
+      <input
+        id="labTargetMC"
+        inputmode="decimal"
+        autocomplete="off"
+        placeholder="e.g. 5000000"
+        required
+      >
+    </label>
+
+    <button type="submit">
+      Calculate value
+    </button>
+  </form>
+
+  <div
+    class="lab-result"
+    role="status"
+    aria-live="polite"
+  >
+    <div>
+      <span>Token price at target MC</span>
+      <strong id="labTargetPrice">—</strong>
+    </div>
+
+    <div>
+      <span>Your position at target MC</span>
+      <strong id="labTargetValue">—</strong>
+    </div>
+
+    <div>
+      <span>Current position value</span>
+      <strong id="labTargetCurrent">—</strong>
+    </div>
+
+    <div>
+      <span>Change from current value</span>
+      <strong id="labTargetChange">—</strong>
+    </div>
+  </div>
+
+  <p
+    id="labTargetStatus"
+    class="lab-muted"
+  >
+    Enter your token amount and a target market cap.
+  </p>
+
+  <p class="lab-muted">
+    Estimated position value assuming unchanged circulating supply.
+    Actual sale proceeds depend on liquidity, fees and price impact.
+    Use a decimal point and enter numbers without thousands separators.
+  </p>
+</section>
+
           <p class="lab-muted">
             Hypothetical estimates only.
             No trades are executed.
@@ -820,9 +900,14 @@
 
       const generation = state.generation;
 
-      state.ca = ca;
-      state.token = null;
-      state.market = null;
+state.ca = ca;
+state.token = null;
+state.market = null;
+
+$("labTargetTokens").value = "";
+$("labTargetMC").value = "";
+
+updateTargetValue();
       state.selected.clear();
       state.portions.clear();
       state.marketFailures = 0;
@@ -1005,8 +1090,10 @@
           );
         }
 
-        state.market = data;
-        state.marketFailures = 0;
+state.market = data;
+state.marketFailures = 0;
+
+updateTargetValue();
 
         text(
           "labPrice",
@@ -1032,6 +1119,7 @@
       } catch {
         if (generation === state.generation) {
           state.marketFailures++;
+          updateTargetValue();
 
           text(
             "labMarketTime",
@@ -1063,6 +1151,169 @@
         }
       }
     }
+
+function updateTargetValue() {
+  const outputIDs = [
+    "labTargetPrice",
+    "labTargetValue",
+    "labTargetCurrent",
+    "labTargetChange"
+  ];
+
+  outputIDs.forEach(id => text(id, "—"));
+
+  const holding =
+    $("labTargetTokens").value.trim();
+
+  const targetText =
+    $("labTargetMC").value.trim();
+
+  if (!holding || !targetText) {
+    text(
+      "labTargetStatus",
+      "Enter your token amount and a target market cap."
+    );
+
+    return;
+  }
+
+  try {
+    if (!state.enabled || !state.token) {
+      throw new Error(
+        "Load a token first."
+      );
+    }
+
+    if (
+      !/^\d+(?:\.\d+)?$/.test(targetText) ||
+      targetText.length > 40
+    ) {
+      throw new Error(
+        "Enter a positive target market cap without separators."
+      );
+    }
+
+    const targetMC = Number(targetText);
+
+    if (
+      !Number.isFinite(targetMC) ||
+      targetMC <= 0
+    ) {
+      throw new Error(
+        "Target market cap must be greater than zero."
+      );
+    }
+
+    const decimals =
+      state.token.token.decimals;
+
+    const raw = toRaw(
+      holding,
+      decimals
+    );
+
+    const supply =
+      state.token.token.supply_raw;
+
+    if (
+      supply &&
+      raw > BigInt(supply)
+    ) {
+      throw new Error(
+        "Your holding exceeds the reported token supply."
+      );
+    }
+
+    const market = state.market;
+
+    const fetchedAt =
+      Date.parse(market?.fetched_at);
+
+    if (
+      !market ||
+      !finite(market.price) ||
+      market.price <= 0 ||
+      !finite(market.market_cap) ||
+      market.market_cap <= 0 ||
+      !Number.isFinite(fetchedAt) ||
+      Date.now() - fetchedAt > 15000
+    ) {
+      throw new Error(
+        "Waiting for a fresh reference price and market cap."
+      );
+    }
+
+    const quantity =
+      Number(raw) / 10 ** decimals;
+
+    const targetPrice =
+      market.price *
+      (targetMC / market.market_cap);
+
+    const targetValue =
+      quantity * targetPrice;
+
+    const currentValue =
+      quantity * market.price;
+
+    const change =
+      targetValue - currentValue;
+
+    const changePct =
+      (targetMC / market.market_cap - 1) * 100;
+
+    if (
+      !finite(targetPrice) ||
+      targetPrice <= 0 ||
+      !finite(targetValue) ||
+      !finite(currentValue) ||
+      !Number.isFinite(changePct)
+    ) {
+      throw new Error(
+        "These inputs are outside the supported range."
+      );
+    }
+
+    const sign =
+      change < 0 ? "−" : "+";
+
+    text(
+      "labTargetPrice",
+      money(targetPrice)
+    );
+
+    text(
+      "labTargetValue",
+      money(targetValue)
+    );
+
+    text(
+      "labTargetCurrent",
+      money(currentValue)
+    );
+
+    text(
+      "labTargetChange",
+
+      sign +
+      money(Math.abs(change)) +
+      ` (${sign}${Math.abs(changePct).toFixed(2)}%)`
+    );
+
+    text(
+      "labTargetStatus",
+
+      `Target MC: ${money(targetMC)} · ` +
+      `Reference MC: ${money(market.market_cap)} · ` +
+      `Reference fetched: ${time(market.fetched_at)}`
+    );
+  } catch (error) {
+    text(
+      "labTargetStatus",
+      error.message || "Calculation unavailable."
+    );
+  }
+}
 
     function ownRaw() {
       const decimals =
@@ -1484,6 +1735,20 @@ note.textContent =
         resetResult("own");
       }
     );
+
+$("labTargetForm").addEventListener(
+  "input",
+  updateTargetValue
+);
+
+$("labTargetForm").addEventListener(
+  "submit",
+  event => {
+    event.preventDefault();
+
+    updateTargetValue();
+  }
+);
 
     $("labCopy").onclick = async () => {
       try {
