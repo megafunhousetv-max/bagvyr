@@ -15818,3 +15818,269 @@ table.ri-overview-compact-table tbody > tr:hover {
   padding-top: 11px;
   font-size: 10px;
 }
+
+
+[data-lab-link][hidden],
+#lab [hidden] {
+  display: none !important;
+}
+
+#lab {
+  color: #edf7f2;
+}
+
+#riLabRoot {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 42px 20px 70px;
+}
+
+#lab .lab-heading {
+  margin-bottom: 28px;
+}
+
+#lab h1 {
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -.04em;
+  margin: 8px 0;
+}
+
+#lab h2 {
+  font-size: 20px;
+  margin: 8px 0 14px;
+}
+
+#lab p {
+  line-height: 1.6;
+}
+
+#lab .lab-kicker {
+  color: #82eeb8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+#lab .lab-muted,
+#lab small,
+#lab .lab-heading p {
+  color: #a2b6ac;
+  font-size: 12px;
+}
+
+#lab .lab-card {
+  background: rgba(9, 24, 18, .94);
+  border: 1px solid rgba(137, 209, 168, .18);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+#lab .lab-search {
+  display: flex;
+  gap: 12px;
+}
+
+#lab input,
+#lab select {
+  background: #0d1d16;
+  border: 1px solid #294638;
+  border-radius: 9px;
+  color: #edf7f2;
+  padding: 12px;
+  min-width: 0;
+  font: inherit;
+}
+
+#lab input:focus,
+#lab select:focus,
+#lab button:focus-visible {
+  outline: 2px solid #78e7aa;
+  outline-offset: 2px;
+}
+
+#lab .lab-search input {
+  flex: 1;
+  width: 100%;
+}
+
+#lab button {
+  cursor: pointer;
+  background: #8af0b5;
+  border: 1px solid transparent;
+  color: #072113;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+}
+
+#lab button:hover {
+  filter: brightness(1.08);
+}
+
+#lab button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+#lab .lab-quiet {
+  color: #bce9cf;
+  background: transparent;
+  border-color: #294638;
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+#lab .lab-market {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+#lab .lab-market small {
+  display: block;
+  margin: 6px 0;
+}
+
+#lab .lab-market p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+#lab .lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+#lab .lab-grid .lab-card {
+  min-width: 0;
+}
+
+#lab .lab-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#lab .lab-table-wrap {
+  overflow-x: auto;
+}
+
+#lab table {
+  border-collapse: collapse;
+  width: 100%;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+#lab th,
+#lab td {
+  text-align: left;
+  padding: 13px 8px;
+  border-bottom: 1px solid #23382d;
+}
+
+#lab th {
+  color: #9ab2a4;
+  font-weight: 500;
+}
+
+#lab td a {
+  color: #d5eadd;
+  text-decoration: none;
+}
+
+#lab td input {
+  accent-color: #86edb1;
+  width: 17px;
+  height: 17px;
+}
+
+#lab td select {
+  padding: 6px;
+  font-size: 12px;
+}
+
+#lab .lab-result {
+  margin-top: 22px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#lab .lab-result > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #23382d;
+}
+
+#lab .lab-result > div > span {
+  color: #a9bdb1;
+}
+
+#lab .lab-result strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+#lab .lab-result > div:nth-child(2) strong {
+  color: #8af0b5;
+  font-size: 18px;
+}
+
+#lab .lab-own-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px;
+}
+
+#lab label {
+  display: grid;
+  gap: 7px;
+  color: #a9bdb1;
+  font-size: 12px;
+  flex: 1;
+}
+
+#lab .lab-own-inputs input,
+#lab .lab-own-inputs select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 850px) {
+  #lab .lab-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  #lab .lab-market {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #lab .lab-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 500px) {
+  #riLabRoot {
+    padding: 26px 12px 50px;
+  }
+
+  #lab .lab-search {
+    flex-direction: column;
+  }
+
+  #lab .lab-own-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

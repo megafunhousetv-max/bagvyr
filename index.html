@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" href="lupa.png">
 <link rel="apple-touch-icon" href="lupa.png">
 
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=33">
 
   <style>
     html {
@@ -175,12 +175,25 @@
       <span>Scanner</span>
     </a>
 
-    <a href="#trending" class="nav-link">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M13 3c1 5-4 6-4 10-2-1-3-3-3-3-3 5-1 11 6 11 6 0 9-5 6-10-1 2-2 3-3 3 1-4 0-8-2-11Z"/>
-      </svg>
-      <span>Trending</span>
-    </a>
+<a href="#trending" class="nav-link">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M13 3c1 5-4 6-4 10-2-1-3-3-3-3-3 5-1 11 6 11 6 0 9-5 6-10-1 2-2 3-3 3 1-4 0-8-2-11Z"/>
+  </svg>
+  <span>Trending</span>
+</a>
+
+<a
+  href="#lab"
+  class="nav-link"
+  data-lab-link
+  hidden
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 3h6M10 3v7L4 20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l-6-10V3"/>
+    <path d="M8 15h8"/>
+  </svg>
+  <span>Exit Lab</span>
+</a>
 
     <a
       href="https://t.me/RugInspect_Bot"
@@ -1388,153 +1401,6 @@
     <small id="riFeeUpdated">—</small>
   </details>
 </section>
-
-
-<details id="riSellSimulation" class="ri-sell">
-  <summary class="ri-sell-heading">
-    <span class="ri-sell-icon" aria-hidden="true">⇄</span>
-
-    <span>
-      <strong>Sell simulation</strong>
-      <small>What could you receive if you sold now?</small>
-    </span>
-
-    <span class="ri-sell-chevron" aria-hidden="true">⌄</span>
-  </summary>
-
-  <div class="ri-sell-body">
-    <div class="ri-sell-layout">
-
-      <div class="ri-sell-input-panel">
-        <div class="ri-sell-input-heading">
-          <h4>Your position</h4>
-
-          <div class="ri-sell-toggle" role="group"
-            aria-label="Position input type">
-            <button type="button" data-sell-mode="tokens"
-              aria-pressed="true">Token amount</button>
-
-            <button type="button" data-sell-mode="usd"
-              aria-pressed="false">USD value</button>
-          </div>
-        </div>
-
-        <label for="riSellAmount" id="riSellAmountLabel">
-          Number of tokens
-        </label>
-
-        <input
-          id="riSellAmount"
-          type="text"
-          inputmode="decimal"
-          autocomplete="off"
-          placeholder="Enter token amount"
-        >
-
-        <p id="riSellInputHint">
-          Enter the size of your position.
-        </p>
-
-        <h5>Sell portion</h5>
-
-        <div class="ri-sell-portions" role="group"
-          aria-label="Portion of entered position">
-          <button type="button" data-sell-portion="25"
-            aria-pressed="false">25%</button>
-
-          <button type="button" data-sell-portion="50"
-            aria-pressed="false">50%</button>
-
-          <button type="button" data-sell-portion="100"
-            aria-pressed="true">100%</button>
-        </div>
-
-        <button id="riSellCheck" type="button"
-          class="ri-sell-primary">
-          Check sell value
-        </button>
-
-        <small class="ri-sell-wallet-note">
-          No wallet connection required.
-        </small>
-      </div>
-
-      <div class="ri-sell-results">
-        <div class="ri-sell-proceeds-panel">
-          <span class="ri-sell-eyebrow">
-            ESTIMATED SELL PROCEEDS
-          </span>
-
-          <strong id="riSellProceeds">—</strong>
-
-          <small>Before wallet-specific network costs.</small>
-
-          <div class="ri-sell-metrics">
-            <div>
-              <span>Displayed value</span>
-              <strong id="riSellReferenceValue">—</strong>
-            </div>
-
-            <div>
-              <span>Difference</span>
-              <strong id="riSellDifference">—</strong>
-            </div>
-
-            <div>
-              <span>Price impact</span>
-              <strong id="riSellImpact">—</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="ri-sell-mc-panel">
-          <h4>Estimated market cap after sale</h4>
-
-          <p>
-            Selected pool model · based on scan MC
-          </p>
-
-          <div class="ri-sell-mc-values">
-            <div>
-              <span>Reference market cap</span>
-              <strong id="riSellMcBefore">—</strong>
-            </div>
-
-            <span class="ri-sell-mc-arrow" aria-hidden="true">→</span>
-
-            <div>
-              <span>After your sale</span>
-              <strong id="riSellMcAfter">—</strong>
-            </div>
-
-            <div class="ri-sell-drop">
-              <strong id="riSellMcDrop">—</strong>
-              <span>Estimated MC drop</span>
-            </div>
-          </div>
-
-          <small id="riSellMcNote">
-            Available for supported pool routes.
-          </small>
-        </div>
-      </div>
-    </div>
-
-    <div class="ri-sell-status-row">
-      <span id="riSellStatus" role="status">
-        Enter an amount and check its sell value.
-      </span>
-
-      <span id="riSellUpdated">—</span>
-    </div>
-
-    <p class="ri-sell-disclaimer">
-      Quotes are estimates, not guaranteed sales.
-      The MC model assumes fixed supply and quote-asset price.
-      It excludes fee effects, arbitrage and other trades.
-    </p>
-  </div>
-</details>
 
 
 <!-- ANALYSIS HIGHLIGHTS -->
@@ -3117,6 +2983,14 @@
   </div>
 </section>
 
+<section
+  id="lab"
+  class="app-page"
+  aria-label="RugInspect Exit Lab"
+>
+  <div id="riLabRoot"></div>
+</section>
+
   </main>
 
 
@@ -3419,6 +3293,7 @@
           if (
             hash === "scanner" ||
             hash === "trending" ||
+            hash === "lab" ||
             hash === "about" ||
             hash === "home"
           ) {
@@ -3449,7 +3324,7 @@
 
 
         document.querySelectorAll(
-          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#about"]'
+          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#lab"], a[href="#about"]'
         ).forEach(
           function (link) {
 
@@ -3508,7 +3383,7 @@
   <script src="supabase-config.js"></script>
   <script src="promo.js?v=1" data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"></script>
   <script src="analytics.js"></script>
-  <script src="app.js?v=25"></script>
+  <script src="app.js?v=26"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -3624,6 +3499,8 @@
   </script>
 
   <script src="trending.js?v=16"></script>
+
+<script src="lab.js?v=1"></script>
 
 </body>
 </html>
