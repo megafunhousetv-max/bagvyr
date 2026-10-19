@@ -1242,15 +1242,26 @@
           );
         }
 
-        const model = result.mcModel;
+const mcReport = result.mcModel;
 
-        const modeled =
-          freshMarket &&
-          finite(market.market_cap) &&
-          market.market_cap > 0 &&
-          model?.method === "constant_product_no_fee" &&
-          finite(model.priceRatio) &&
-          model.priceRatio <= 1;
+const model =
+  mcReport?.method ===
+    "per_pool_constant_product_no_fee" &&
+  Array.isArray(mcReport.pools)
+
+    ? mcReport.pools.find(
+        pool => pool.pool === market?.pair
+      )
+
+    : null;
+
+const modeled =
+  freshMarket &&
+  finite(market.market_cap) &&
+  market.market_cap > 0 &&
+  model?.protocol === "PumpSwap" &&
+  finite(model.priceRatio) &&
+  model.priceRatio <= 1;
 
         const quantity =
           Number(raw) /
@@ -1263,62 +1274,71 @@
               ? quantity * market.price
               : null;
 
-        const fields = [
-          [
-            "Amount sold ≈",
-            number(quantity) + " tokens"
-          ],
+const fields = [
+  [
+    "Amount sold ≈",
+    number(quantity) + " tokens"
+  ],
 
-          [
-            "Estimated proceeds",
-            number(proceeds) + " USDC"
-          ],
+  [
+    "Estimated proceeds",
+    number(proceeds) + " USDC"
+  ],
 
-          [
-            "Reference value",
-            money(reference)
-          ],
+  [
+    "Reference value",
+    money(reference)
+  ],
 
-          [
-            "Quote price impact",
+  [
+    "Quote price impact",
 
-            typeof quote.priceImpact === "number" &&
-            Number.isFinite(quote.priceImpact)
-              ? quote.priceImpact.toFixed(2) + "%"
-              : "—"
-          ],
+    typeof quote.priceImpact === "number" &&
+    Number.isFinite(quote.priceImpact)
 
-          [
-            "Reference MC",
+      ? quote.priceImpact.toFixed(2) + "%"
+      : "—"
+  ],
 
-            freshMarket
-              ? money(market.market_cap)
-              : "—"
-          ],
+  [
+    "Reference MC",
 
-          [
-            "Modeled MC after",
+    freshMarket
+      ? money(market.market_cap)
+      : "—"
+  ],
 
-            modeled
-              ? money(
-                  market.market_cap *
-                  model.priceRatio
-                )
-              : "—"
-          ],
+  [
+    "Sale through reference pool",
 
-          [
-            "Modeled drop",
+    modeled && finite(model.inputSharePct)
+      ? model.inputSharePct.toFixed(2) + "%"
+      : "—"
+  ],
 
-            modeled
-              ? "−" +
-                (
-                  (1 - model.priceRatio) * 100
-                ).toFixed(2) +
-                "%"
-              : "—"
-          ]
-        ];
+  [
+    "Reference pool MC after",
+
+    modeled
+      ? money(
+          market.market_cap *
+          model.priceRatio
+        )
+      : "—"
+  ],
+
+  [
+    "Reference pool drop",
+
+    modeled
+      ? "−" +
+        (
+          (1 - model.priceRatio) * 100
+        ).toFixed(2) +
+        "%"
+      : "—"
+  ]
+];
 
         $(resultID).replaceChildren();
 
@@ -1345,17 +1365,27 @@
 
         note.className = "lab-muted";
 
-        note.textContent =
-          (
-            modeled
-              ? "PumpSwap constant-product model; " +
-                "excludes fees, arbitrage and other trades. "
-              : "MC model unavailable for this route " +
-                "or market snapshot. "
-          ) +
-          `Quote: ${time(result.measured_at)}. ` +
-          `Reference fetched: ${time(market?.fetched_at)}. ` +
-          "Fixed snapshot; run again to refresh.";
+note.textContent =
+  (
+    modeled
+      ? `MC is modeled only for the reference PumpSwap pool (${model.pool}). ` +
+        "Uses the share of this sale routed into that pool. " +
+        "Not a combined market-wide price. "
+
+      : "MC model unavailable: the reference pool may be " +
+        "unsupported, absent from this route, " +
+        "or its data unavailable. "
+  ) +
+
+  "USDC proceeds cover the full quoted route. " +
+
+  "MC model excludes fees, arbitrage and other trades. " +
+
+  `Quote: ${time(result.measured_at)}. ` +
+
+  `Reference fetched: ${time(market?.fetched_at)}. ` +
+
+  "Fixed snapshot; run again to refresh.";
 
         $(resultID).append(note);
       } catch (error) {
