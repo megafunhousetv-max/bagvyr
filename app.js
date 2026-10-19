@@ -624,7 +624,7 @@ void riLoadLaunchRiskSignals(
 
 window.BagVyrAnalytics?.tokenSearch(contract);
 
-await loadExitAnalysis(contract);
+void loadExitAnalysis(contract);
 
 updateBrowserURL(contract);
 
