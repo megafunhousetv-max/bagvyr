@@ -520,12 +520,12 @@
     </div>
 
     <div>
-      <span>Current position value</span>
+      <span>Position at reference price</span>
       <strong id="labTargetCurrent">—</strong>
     </div>
 
     <div>
-      <span>Change from current value</span>
+      <span>Change from reference value</span>
       <strong id="labTargetChange">—</strong>
     </div>
   </div>
@@ -1194,19 +1194,17 @@ function updateTargetValue() {
     const fetchedAt =
       Date.parse(market?.fetched_at);
 
-    if (
-      !market ||
-      !finite(market.price) ||
-      market.price <= 0 ||
-      !finite(market.market_cap) ||
-      market.market_cap <= 0 ||
-      !Number.isFinite(fetchedAt) ||
-      Date.now() - fetchedAt > 15000
-    ) {
-      throw new Error(
-        "Waiting for a fresh reference price and market cap."
-      );
-    }
+if (
+  !market ||
+  !finite(market.price) ||
+  market.price <= 0 ||
+  !finite(market.market_cap) ||
+  market.market_cap <= 0
+) {
+  throw new Error(
+    "Reference price or market cap unavailable."
+  );
+}
 
     const quantity =
       Number(raw) / 10 ** decimals;
@@ -1265,13 +1263,25 @@ function updateTargetValue() {
       ` (${sign}${Math.abs(changePct).toFixed(2)}%)`
     );
 
-    text(
-      "labTargetStatus",
+const referenceAge =
+  Date.now() - fetchedAt;
 
-      `Target MC: ${money(targetMC)} · ` +
-      `Reference MC: ${money(market.market_cap)} · ` +
-      `Reference fetched: ${time(market.fetched_at)}`
-    );
+const freshReference =
+  Number.isFinite(referenceAge) &&
+  referenceAge >= 0 &&
+  referenceAge <= 15000;
+
+text(
+  "labTargetStatus",
+  `Target MC: ${money(targetMC)} · ` +
+  `Reference MC: ${money(market.market_cap)} · ` +
+  `Reference fetched: ${time(market.fetched_at)}` +
+  (
+    freshReference
+      ? ""
+      : " · Using an older reference snapshot."
+  )
+);
   } catch (error) {
     text(
       "labTargetStatus",
