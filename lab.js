@@ -1393,15 +1393,15 @@ text(
       const revision = state.revisions[kind];
       const ca = state.ca;
 
-      const market = state.market
-        ? { ...state.market }
-        : null;
+      let market = state.market
+  ? { ...state.market }
+  : null;
 
-      const freshMarket =
-        market &&
-        Date.now() -
-          Date.parse(market.fetched_at) <=
-          15000;
+let freshMarket =
+  market &&
+  Date.now() -
+    Date.parse(market.fetched_at) <=
+    15000;
 
       state[busyKey] = true;
       button.disabled = true;
@@ -1468,7 +1468,112 @@ text(
           );
         }
 
+const snapshot = result.referenceMarket;
+
+if (
+  snapshot?.success === true &&
+  snapshot.contract === ca &&
+  ADDRESS.test(snapshot.pair) &&
+  finite(snapshot.price) &&
+  snapshot.price > 0
+) {
+  market = { ...snapshot };
+
+  const age =
+    Date.now() -
+    Date.parse(market.fetched_at);
+
+  freshMarket =
+    Number.isFinite(age) &&
+    age >= 0 &&
+    age <= 15000;
+
+  if (freshMarket) {
+    state.market = market;
+    state.marketFailures = 0;
+
+    text(
+      "labPrice",
+      money(market.price)
+    );
+
+    text(
+      "labMC",
+      money(market.market_cap)
+    );
+
+    text(
+      "labLiquidity",
+      money(market.liquidity)
+    );
+
+    text(
+      "labMarketTime",
+      `Reference fetched: ${time(market.fetched_at)}`
+    );
+
+    updateTargetValue();
+  }
+}
+
 const mcReport = result.mcModel;
+
+const unsupportedPool =
+  mcReport?.unsupportedPools?.find(
+    pool => pool.pool === market?.pair
+  );
+
+const modelErrors = {
+  rpc_unavailable:
+    "Pool data could not be loaded.",
+
+  unsupported_pool_type:
+    "The reference pool type is not supported by this model.",
+
+  unsupported_quote_mint:
+    "The reference pool uses an unsupported quote token.",
+
+  invalid_pool_account:
+    "The reference pool could not be validated.",
+
+  invalid_pool_or_vault:
+    "The reference pool reserves could not be validated.",
+
+  unsupported_or_invalid_mint:
+    "This token is not supported by the pool model.",
+
+  pool_reused_downstream:
+    "This route reuses the reference pool.",
+
+  route_not_supported:
+    "Swap route details are missing or unsupported.",
+
+  model_failed:
+    "The pool model could not be calculated.",
+
+  model_timeout:
+    "Loading pool data timed out. Try again."
+};
+
+const modelReason = !freshMarket
+  ? "A fresh market reference could not be loaded."
+
+  : !finite(market?.market_cap) ||
+    market.market_cap <= 0
+
+    ? "The provider did not report a market cap."
+
+    : unsupportedPool
+
+      ? modelErrors[unsupportedPool.reason] ||
+        "The reference pool is unsupported."
+
+      : result.mcModelError
+
+        ? modelErrors[result.mcModelError] ||
+          "The pool model is unavailable."
+
+        : "The reference pool is absent from the supported route, or its result could not be validated.";
 
 const model =
   mcReport?.method ===
@@ -1598,9 +1703,7 @@ note.textContent =
         "Uses the share of this sale routed into that pool. " +
         "Not a combined market-wide price. "
 
-      : "MC model unavailable: the reference pool may be " +
-        "unsupported, absent from this route, " +
-        "or its data unavailable. "
+: "MC model unavailable: " + modelReason + " "
   ) +
 
   "USDC proceeds cover the full quoted route. " +
