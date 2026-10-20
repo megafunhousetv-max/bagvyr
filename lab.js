@@ -579,10 +579,10 @@
       ownBusy: false
     };
 
-    const active = () =>
-      state.enabled &&
-      location.hash === "#lab" &&
-      !document.hidden;
+const active = () =>
+  state.enabled &&
+  window.RI_PREMIUM?.isActive("lab") === true &&
+  !document.hidden;
 
     const text = (id, value) => {
       $(id).textContent = value;
@@ -607,8 +607,10 @@
           `${API}${path}?${new URLSearchParams(params)}`,
           {
             headers: {
-              Accept: "application/json"
-            },
+  Accept: "application/json",
+
+  ...(await window.RI_PREMIUM.getHeaders())
+},
 
             cache: "no-store",
             signal: controller.signal
@@ -702,47 +704,10 @@
     }
 
     async function checkStatus() {
-      if (
-        state.statusBusy ||
-        document.hidden
-      ) {
-        return;
-      }
-
-      state.statusBusy = true;
-
-      try {
-        const response = await fetch(
-          `${API}/api/lab/status`,
-          {
-            cache: "no-store",
-
-            signal: AbortSignal.timeout(7000)
-          }
-        );
-
-        const data = await response.json();
-
-        if (
-          !response.ok ||
-          data.success !== true ||
-          typeof data.enabled !== "boolean"
-        ) {
-          throw new Error();
-        }
-
-        setEnabled(data.enabled);
-      } catch {
-        setEnabled(false);
-
-        text(
-          "labLocked",
-          "Unable to check Lab availability. Retrying automatically…"
-        );
-      } finally {
-        state.statusBusy = false;
-      }
-    }
+  setEnabled(
+    window.RI_PREMIUM?.isAvailable("lab") === true
+  );
+}
 
     function resetResult(kind) {
       text(
@@ -1777,10 +1742,15 @@ $("labTargetForm").addEventListener(
       }
     }
 
-    window.addEventListener(
-      "hashchange",
-      visibilityChanged
-    );
+document.addEventListener(
+  "ri:premium-change",
+  visibilityChanged
+);
+
+window.addEventListener(
+  "hashchange",
+  visibilityChanged
+);
 
     document.addEventListener(
       "visibilitychange",

@@ -183,25 +183,27 @@
 </a>
 
 <a
-  href="#lab"
+  href="#premium"
   class="nav-link"
-  data-lab-link
+  data-premium-link
   hidden
 >
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M9 3h6M10 3v7L4 20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l-6-10V3"/>
-    <path d="M8 15h8"/>
+    <path d="m3 7 4 4 5-7 5 7 4-4-2 13H5L3 7Z"/>
+    <path d="M6 16h12"/>
   </svg>
-  <span>Exit Lab</span>
+  <span>Premium</span>
 </a>
 
     <a
-      href="https://t.me/RugInspect_Bot"
-      class="nav-link"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Open RugInspect Telegram bot"
-    >
+  href="https://t.me/RugInspect_Bot"
+  class="nav-link"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Open RugInspect Telegram bot"
+  data-premium-bot
+  hidden
+>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 3v3"/>
         <circle cx="12" cy="2" r="1"/>
@@ -2984,11 +2986,11 @@
 </section>
 
 <section
-  id="lab"
+  id="premium"
   class="app-page"
-  aria-label="RugInspect Exit Lab"
+  aria-label="RugInspect Premium"
 >
-  <div id="riLabRoot"></div>
+  <div id="riPremiumRoot"></div>
 </section>
 
   </main>
@@ -3293,7 +3295,7 @@
           if (
             hash === "scanner" ||
             hash === "trending" ||
-            hash === "lab" ||
+            hash === "premium" ||
             hash === "about" ||
             hash === "home"
           ) {
@@ -3324,7 +3326,7 @@
 
 
         document.querySelectorAll(
-          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#lab"], a[href="#about"]'
+          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#premium"], a[href="#about"]'
         ).forEach(
           function (link) {
 
@@ -3500,7 +3502,8 @@
 
   <script src="trending.js?v=16"></script>
 
-<script src="lab.js?v=3"></script>
+<script src="premium.js?v=1"></script>
+<script src="lab.js?v=4"></script>
 
 </body>
 </html>
