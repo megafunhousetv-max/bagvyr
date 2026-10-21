@@ -70,14 +70,6 @@
             <tbody id="riEarlyRows"></tbody>
           </table>
         </div>
-
-        <p class="lab-muted">
-          Sources: Pump.fun · Shrine.trade.
-          Currently supports Pump.fun tokens
-          with launch-aligned history.
-          A zero balance does not prove a sale.
-          Missing balances appear as —.
-        </p>
       </div>
     `;
 
