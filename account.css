@@ -1,0 +1,322 @@
+#riAccountRoot {
+  width: min(1180px, calc(100% - 40px));
+  margin: auto;
+  padding: 65px 0;
+  color: #edf8f2;
+  font: 15px/1.6 system-ui, sans-serif;
+}
+
+#riAccountRoot [hidden] {
+  display: none !important;
+}
+
+#riAccountRoot * {
+  box-sizing: border-box;
+}
+
+#riAccountRoot h1 {
+  margin: 12px 0;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+}
+
+#riAccountRoot h2 {
+  margin: 12px 0;
+  font-size: 27px;
+}
+
+#riAccountRoot h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+#riAccountRoot em {
+  color: #34edba;
+  font-style: normal;
+}
+
+#riAccountRoot p {
+  margin: 10px 0;
+  color: #a9bfb3;
+}
+
+#riAccountRoot .ra-eyebrow {
+  display: inline-block;
+  padding: 7px 15px;
+  border: 1px solid #17664e;
+  border-radius: 30px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #44efc2;
+}
+
+#riAccountRoot .ra-auth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
+  align-items: center;
+  min-height: 650px;
+}
+
+#riAccountRoot .ra-intro h1 {
+  font-size: clamp(40px, 5vw, 65px);
+}
+
+#riAccountRoot .ra-intro ul {
+  list-style: none;
+  padding: 0;
+  margin: 35px 0;
+}
+
+#riAccountRoot .ra-intro li {
+  padding: 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#riAccountRoot .ra-intro li::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 15px;
+  border: 1px solid #17664e;
+  border-radius: 12px;
+  color: #34edba;
+  background: #062118;
+}
+
+#riAccountRoot .ra-card {
+  padding: 28px;
+  border: 1px solid #18513e;
+  border-radius: 20px;
+  background: rgba(2, 18, 12, .96);
+  box-shadow: 0 15px 45px #0003;
+}
+
+#riAccountRoot .ra-tabs {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  margin-bottom: 28px;
+  border: 1px solid #18513e;
+  border-radius: 14px;
+}
+
+#riAccountRoot .ra-tabs button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+}
+
+#riAccountRoot .ra-tabs .ra-selected {
+  background: #25e8af;
+  color: #02180f;
+}
+
+#riAccountRoot label {
+  display: block;
+  margin: 22px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#riAccountRoot input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 15px;
+  background: #06150f;
+  border: 1px solid #285441;
+  border-radius: 11px;
+  color: #edf8f2;
+  font: inherit;
+}
+
+#riAccountRoot input:focus {
+  outline: 2px solid #28dca9;
+  outline-offset: 2px;
+}
+
+#riAccountRoot button,
+#riAccountRoot a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 17px;
+  border: 1px solid #277455;
+  border-radius: 11px;
+  background: #062117;
+  color: #b9f8dd;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#riAccountRoot button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+#riAccountRoot .ra-primary {
+  background: #25e8af;
+  color: #02180f;
+  border-color: #25e8af;
+  font-weight: 700;
+}
+
+#riAccountRoot #raSubmit {
+  width: 100%;
+  margin-top: 23px;
+  padding: 15px;
+}
+
+#riAccountRoot .ra-text {
+  background: transparent;
+  border: 0;
+  color: #34edba;
+  padding: 10px 0;
+}
+
+#riAccountRoot #raForgot {
+  display: flex;
+  margin-left: auto;
+}
+
+#riAccountRoot .ra-password {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#riAccountRoot .ra-password input {
+  min-width: 0;
+  flex: 1;
+}
+
+#riAccountRoot .ra-password button {
+  margin-top: 8px;
+  padding: 12px 10px;
+  font-size: 12px;
+}
+
+#riAccountRoot .ra-small {
+  font-size: 12px;
+  margin-top: 22px;
+}
+
+#riAccountRoot .ra-heading,
+#riAccountRoot .ra-actions,
+#riAccountRoot .ra-telegram,
+#riAccountRoot .ra-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+#riAccountRoot .ra-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 28px 0 16px;
+}
+
+#riAccountRoot .ra-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+#riAccountRoot .ra-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 25px 0;
+}
+
+#riAccountRoot .ra-tools span {
+  padding: 10px;
+  background: #092319;
+  border-radius: 8px;
+}
+
+#riAccountRoot .ra-notice {
+  padding: 15px;
+  margin: 24px 0;
+  border: 1px solid #685a28;
+  border-radius: 10px;
+  color: #dfc67e;
+  background: #241f0a66;
+}
+
+#riAccountRoot .ra-telegram,
+#riAccountRoot #raEdit {
+  margin-top: 16px;
+}
+
+#riAccountRoot .ra-badge {
+  padding: 5px 12px;
+  border: 1px solid #685a28;
+  border-radius: 20px;
+  color: #dfc67e;
+}
+
+#riAccountRoot .ra-bottom {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #18513e;
+  color: #a9bfb3;
+  font-size: 13px;
+}
+
+#riAccountRoot #raMessage {
+  padding: 14px 0;
+  overflow-wrap: anywhere;
+  color: #cfeddf;
+}
+
+#riAccountRoot #raMessage:empty {
+  display: none;
+}
+
+#riAccountRoot #raProfileForm .ra-actions {
+  margin-top: 20px;
+  justify-content: flex-start;
+}
+
+#riAccountLabel {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  #riAccountRoot {
+    padding: 30px 0;
+  }
+
+  #riAccountRoot .ra-auth {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    min-height: auto;
+  }
+
+  #riAccountRoot .ra-intro ul {
+    display: none;
+  }
+
+  #riAccountRoot .ra-summary,
+  #riAccountRoot .ra-columns {
+    grid-template-columns: 1fr;
+  }
+
+  #riAccountRoot .ra-card {
+    padding: 22px;
+  }
+}

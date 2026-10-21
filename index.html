@@ -22,6 +22,7 @@
 <link rel="apple-touch-icon" href="lupa.png">
 
   <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="account.css?v=1">
 
   <style>
     html {
@@ -215,23 +216,16 @@
       <span>Bot</span>
     </a>
 
-    <a href="#about" class="nav-link">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 11v6"/>
-        <path d="M12 7h.01"/>
-      </svg>
-      <span>About</span>
-    </a>
-
   </div>
 
-  <a href="#scanner" class="header-scan-button">
-    <span>Scan Token</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 12h16m-6-6 6 6-6 6"/>
-    </svg>
-  </a>
+<a href="#account" class="header-scan-button">
+  <span id="riAccountLabel">Sign in</span>
+
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
+  </svg>
+</a>
 
 </nav>
 
@@ -2991,6 +2985,14 @@
   <div id="riPremiumRoot"></div>
 </section>
 
+<section
+  id="account"
+  class="app-page"
+  aria-label="RugInspect account"
+>
+  <div id="riAccountRoot"></div>
+</section>
+
   </main>
 
 
@@ -3294,6 +3296,7 @@
             hash === "scanner" ||
             hash === "trending" ||
             hash === "premium" ||
+            hash === "account" ||
             hash === "about" ||
             hash === "home"
           ) {
@@ -3324,7 +3327,7 @@
 
 
         document.querySelectorAll(
-          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#premium"], a[href="#about"]'
+          'a[href="#home"], a[href="#scanner"], a[href="#trending"], a[href="#premium"], a[href="#account"], a[href="#about"]'
         ).forEach(
           function (link) {
 
@@ -3500,7 +3503,9 @@
 
   <script src="trending.js?v=16"></script>
 
-<script src="premium.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="account.js?v=1"></script>
+<script src="premium.js?v=3"></script>
 <script src="lab.js?v=27"></script>
 
 </body>
