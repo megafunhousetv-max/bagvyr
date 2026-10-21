@@ -34,11 +34,11 @@
         "Early Buyers",
         "Inspect the first token buyers."
       ],
-      [
-        "telegram_bot",
-        "Telegram bot",
-        "Open RugInspect on Telegram."
-      ]
+[
+  "telegram_bot",
+  "Premium Telegram bot",
+  "A new Telegram bot. Coming soon."
+]
     ];
 
     const keys = [
@@ -389,14 +389,9 @@
                   ${
                     key === "telegram_bot"
                       ? `
-                        <a
-                          class="rp-link"
-                          href="https://t.me/RugInspect_Bot"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Open Telegram bot
-                        </a>
+                        <p>
+  The Premium Telegram bot is in development.
+</p>
                       `
                       : `
                         <p>
@@ -529,15 +524,6 @@
           "[data-premium-link]"
         ).forEach(link => {
           link.hidden = !flags.premium;
-        });
-
-        document.querySelectorAll(
-          "[data-premium-bot]"
-        ).forEach(link => {
-          link.hidden = !(
-            flags.premium &&
-            flags.telegram_bot
-          );
         });
       }
 
