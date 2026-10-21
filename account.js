@@ -350,8 +350,53 @@
 
     window.RI_ACCOUNT = { isAdmin };
 
-    function message(value) {
-      $("raMessage").textContent = value;
+    function message(value, type = "info") {
+      const box = $("raMessage");
+
+      box.textContent = value;
+      box.dataset.type = type;
+
+      if (!$("raAuth").hidden) {
+        $("raAuthForm").before(box);
+      } else {
+        $("raProfile").prepend(box);
+      }
+    }
+
+    function authErrorMessage(error) {
+      const code = error?.code || "";
+
+      const hints = {
+        email_not_confirmed:
+          "Confirm your email using the link in your inbox before signing in.",
+
+        invalid_credentials:
+          "Email or password is incorrect. Use your email address, not your display name.",
+
+        email_address_not_authorized:
+          "Confirmation email could not be sent. Website email delivery needs configuration.",
+
+        over_email_send_rate_limit:
+          "Email sending limit reached. Please wait before requesting another email.",
+
+        over_request_rate_limit:
+          "Too many attempts. Please wait a few minutes and try again.",
+
+        signup_disabled:
+          "New account registration is currently disabled.",
+
+        email_provider_disabled:
+          "Email registration is currently disabled."
+      };
+
+      const text =
+        hints[code] ||
+        error?.message ||
+        "Request failed. Please try again.";
+
+      return code
+        ? text + " [" + code + "]"
+        : text;
     }
 
     function setBusy(value) {
@@ -716,9 +761,11 @@
               password
             });
 
-          if (error || !data.session) {
+          if (error) throw error;
+
+          if (!data?.session) {
             throw new Error(
-              "Sign in failed. Check your email, password and email confirmation."
+              "Sign in returned no session. Please try again."
             );
           }
 
@@ -789,10 +836,7 @@
         $("raPassword").value = "";
 
       } catch (error) {
-        message(
-          error.message ||
-          "Request failed. Please try again."
-        );
+                message(authErrorMessage(error), "error");
 
       } finally {
         setBusy(false);
