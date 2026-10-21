@@ -564,3 +564,49 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+#riAccountRoot .ra-password-settings {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(65, 221, 163, .2);
+}
+
+#riAccountRoot .ra-password-settings summary {
+  width: fit-content;
+  padding: 10px 0;
+  color: #34edba;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#riAccountRoot .ra-password-settings summary:focus-visible {
+  outline: 2px solid #34edba;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+#riAccountRoot #raChangePasswordForm {
+  max-width: 480px;
+  margin-top: 10px;
+}
+
+#riAccountRoot #raChangePasswordForm > button {
+  margin-top: 8px;
+}
+
+#riAccountRoot #raPasswordMessage {
+  margin: 16px 0 0;
+  color: #9cf0c7;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+#riAccountRoot #raPasswordMessage:empty {
+  display: none;
+}
+
+#riAccountRoot #raPasswordMessage[data-type="error"] {
+  color: #ffc7bf;
+}

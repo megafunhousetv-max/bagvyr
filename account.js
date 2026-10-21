@@ -298,13 +298,10 @@
 
         <div id="raEdit" class="ra-card" hidden>
           <h2>Account settings</h2>
-
           <p id="raAccountEmail"></p>
 
           <form id="raProfileForm">
-            <label>
-              Display name
-
+            <label>Display name
               <input
                 id="raEditName"
                 minlength="2"
@@ -323,6 +320,61 @@
               </button>
             </div>
           </form>
+
+          <details
+            id="raPasswordSettings"
+            class="ra-password-settings"
+          >
+            <summary>Change password</summary>
+
+            <form id="raChangePasswordForm">
+              <label>Current password
+                <input
+                  id="raCurrentPassword"
+                  type="password"
+                  autocomplete="current-password"
+                  maxlength="128"
+                  required
+                >
+              </label>
+
+              <label>New password
+                <input
+                  id="raNewPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  minlength="12"
+                  maxlength="128"
+                  required
+                >
+              </label>
+
+              <label>Confirm new password
+                <input
+                  id="raConfirmPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  minlength="12"
+                  maxlength="128"
+                  required
+                >
+              </label>
+
+              <p class="ra-small">
+                Use at least 12 characters.
+              </p>
+
+              <button type="submit" class="ra-primary">
+                Save new password
+              </button>
+
+              <p
+                id="raPasswordMessage"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+          </details>
         </div>
 
         <div class="ra-bottom">
@@ -571,6 +623,7 @@
         [
           "INITIAL_SESSION",
           "SIGNED_IN",
+          "USER_UPDATED",
           "TOKEN_REFRESHED"
         ].includes(event) &&
         !!nextSession &&
@@ -581,6 +634,11 @@
       }
 
       const current = ++version;
+
+      if (session?.user.id !== nextSession?.user.id) {
+        clearPasswordForm();
+        $("raEdit").hidden = true;
+      }
 
       session = nextSession;
       profile = null;
@@ -718,6 +776,7 @@
     };
 
     $("raCloseSettings").onclick = () => {
+      clearPasswordForm();
       $("raEdit").hidden = true;
     };
 
@@ -837,6 +896,98 @@
 
       } catch (error) {
                 message(authErrorMessage(error), "error");
+
+      } finally {
+        setBusy(false);
+      }
+    };
+
+        function clearPasswordForm() {
+      $("raChangePasswordForm").reset();
+      $("raPasswordMessage").textContent = "";
+      $("raPasswordSettings").open = false;
+    }
+
+    $("raChangePasswordForm").onsubmit = async event => {
+      event.preventDefault();
+
+      if (busy || !session || !profile) return;
+
+      const form = $("raChangePasswordForm");
+      const status = $("raPasswordMessage");
+
+      if (!form.reportValidity()) return;
+
+      const owner = session.user.id;
+      const currentPassword = $("raCurrentPassword").value;
+      const newPassword = $("raNewPassword").value;
+      const confirmation = $("raConfirmPassword").value;
+
+      status.dataset.type = "error";
+
+      if (!currentPassword || newPassword.length < 12) {
+        status.textContent =
+          "Enter your current password and a new password of at least 12 characters.";
+        return;
+      }
+
+      if (newPassword !== confirmation) {
+        status.textContent = "New passwords do not match.";
+        $("raConfirmPassword").focus();
+        return;
+      }
+
+      if (newPassword === currentPassword) {
+        status.textContent =
+          "Choose a password different from your current password.";
+        return;
+      }
+
+      setBusy(true);
+      status.dataset.type = "info";
+      status.textContent = "Saving password…";
+
+      try {
+        const active = await client.auth.getSession();
+
+        if (active.error) throw active.error;
+
+        if (
+          active.data.session?.user.id !== owner ||
+          session?.user.id !== owner
+        ) {
+          throw new Error(
+            "Your account session changed. Please sign in again."
+          );
+        }
+
+        const { data, error } = await client.auth.updateUser({
+          current_password: currentPassword,
+          password: newPassword
+        });
+
+        if (error) throw error;
+
+        if (session?.user.id !== owner) return;
+
+        if (data.user?.id !== owner) {
+          throw new Error(
+            "Password change could not be confirmed."
+          );
+        }
+
+        form.reset();
+        status.textContent = "Password changed successfully.";
+
+      } catch (error) {
+        if (session?.user.id === owner) {
+          status.dataset.type = "error";
+
+          status.textContent =
+            error?.code === "invalid_credentials"
+              ? "Current password is incorrect."
+              : authErrorMessage(error);
+        }
 
       } finally {
         setBusy(false);

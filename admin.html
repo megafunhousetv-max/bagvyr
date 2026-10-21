@@ -3596,15 +3596,11 @@ function showLogin(message = "") {
             response.status === 401 ||
             response.status === 403
           ) {
-            const message =
-              "Account does not have admin access or login " +
-              "has expired. Please check the admin account in Supabase.";
-
-            showLogin(message);
-
-            await client.auth.signOut({
-              scope: "local"
-            });
+            showLogin(
+              "This account does not have admin access, " +
+              "or the session has expired. " +
+              "You can continue using the main website."
+            );
 
             return;
           }
