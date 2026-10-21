@@ -1002,6 +1002,24 @@ updateTargetValue();
       }
     }
 
+function marketIsFresh(market) {
+  if (
+    !market ||
+    market.contract !== state.ca ||
+    !finite(market.price) ||
+    market.price <= 0 ||
+    !Number.isFinite(market.received_at_ms) ||
+    !Number.isFinite(Date.parse(market.fetched_at))
+  ) {
+    return false;
+  }
+
+  const age =
+    performance.now() - market.received_at_ms;
+
+  return age >= 0 && age <= 15000;
+}
+
     function scheduleMarket(delay = 1000) {
       clearTimeout(state.marketTimer);
 
@@ -1055,7 +1073,10 @@ updateTargetValue();
           );
         }
 
-state.market = data;
+state.market = {
+  ...data,
+  received_at_ms: performance.now()
+};
 state.marketFailures = 0;
 
 updateTargetValue();
@@ -1263,13 +1284,8 @@ if (
       ` (${sign}${Math.abs(changePct).toFixed(2)}%)`
     );
 
-const referenceAge =
-  Date.now() - fetchedAt;
-
 const freshReference =
-  Number.isFinite(referenceAge) &&
-  referenceAge >= 0 &&
-  referenceAge <= 15000;
+  marketIsFresh(market);
 
 text(
   "labTargetStatus",
@@ -1304,12 +1320,7 @@ text(
           );
         }
 
-        if (
-          !state.market ||
-          Date.now() -
-            Date.parse(state.market.fetched_at) >
-            15000
-        ) {
+        if (!marketIsFresh(state.market)) {
           throw new Error(
             "Wait for a fresh reference price."
           );
@@ -1397,11 +1408,7 @@ text(
   ? { ...state.market }
   : null;
 
-let freshMarket =
-  market &&
-  Date.now() -
-    Date.parse(market.fetched_at) <=
-    15000;
+let freshMarket = marketIsFresh(market);
 
       state[busyKey] = true;
       button.disabled = true;
@@ -1475,45 +1482,49 @@ if (
   snapshot.contract === ca &&
   ADDRESS.test(snapshot.pair) &&
   finite(snapshot.price) &&
-  snapshot.price > 0
+  snapshot.price > 0 &&
+  Number.isFinite(
+    Date.parse(snapshot.fetched_at)
+  )
 ) {
-  market = { ...snapshot };
+  market = {
+    ...snapshot,
+    received_at_ms: performance.now()
+  };
 
-  const age =
-    Date.now() -
-    Date.parse(market.fetched_at);
+} else if (
+  state.market?.contract === ca
+) {
+  market = { ...state.market };
+}
 
-  freshMarket =
-    Number.isFinite(age) &&
-    age >= 0 &&
-    age <= 15000;
+freshMarket = marketIsFresh(market);
 
-  if (freshMarket) {
-    state.market = market;
-    state.marketFailures = 0;
+if (freshMarket) {
+  state.market = market;
+  state.marketFailures = 0;
 
-    text(
-      "labPrice",
-      money(market.price)
-    );
+  text(
+    "labPrice",
+    money(market.price)
+  );
 
-    text(
-      "labMC",
-      money(market.market_cap)
-    );
+  text(
+    "labMC",
+    money(market.market_cap)
+  );
 
-    text(
-      "labLiquidity",
-      money(market.liquidity)
-    );
+  text(
+    "labLiquidity",
+    money(market.liquidity)
+  );
 
-    text(
-      "labMarketTime",
-      `Reference fetched: ${time(market.fetched_at)}`
-    );
+  text(
+    "labMarketTime",
+    `Reference fetched: ${time(market.fetched_at)}`
+  );
 
-    updateTargetValue();
-  }
+  updateTargetValue();
 }
 
 const mcReport = result.mcModel;
