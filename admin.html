@@ -1530,6 +1530,114 @@ main:has(#dashboard:not([hidden])) > header {
 }
 </style>
 
+<style>
+#usersSection .ri-users-heading,
+#usersSection .ri-users-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+#usersSection h2 {
+  margin: 0;
+}
+
+#usersSection #usersCount,
+#usersSection .ri-users-note {
+  color: #a5bdb0;
+  font-size: 13px;
+}
+
+#usersSection #usersStatus {
+  color: #dfc67e;
+  overflow-wrap: anywhere;
+}
+
+#usersSection #usersStatus:empty {
+  display: none;
+}
+
+#usersSection .ri-users-scroll {
+  margin: 22px 0;
+  overflow-x: auto;
+  border: 1px solid #20543e;
+  border-radius: 14px;
+  background: #04170f;
+}
+
+#usersSection .ri-users-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+#usersSection th,
+#usersSection td {
+  padding: 18px 16px;
+  border-bottom: 1px solid #163c2d;
+  text-align: center;
+}
+
+#usersSection th {
+  background: #092419;
+  color: #a8c6b6;
+  font-size: 12px;
+}
+
+#usersSection th:first-child,
+#usersSection td:first-child {
+  text-align: left;
+}
+
+#usersSection td:first-child {
+  min-width: 230px;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+}
+
+#usersSection td:last-child {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+#usersSection td strong,
+#usersSection td small {
+  display: block;
+}
+
+#usersSection td small {
+  margin-top: 5px;
+  color: #9bb9a8;
+}
+
+#usersSection tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+#usersSection .ri-user-flag {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+#usersSection .is-yes {
+  color: #39ecaa;
+  background: #123b29;
+  border-color: #276c49;
+}
+
+#usersSection .is-no {
+  color: #fa9696;
+  background: #341b1d;
+  border-color: #693436;
+}
+</style>
 </head>
 
 <body>
@@ -1664,6 +1772,23 @@ aria-controls="premiumSection"
     <button
       type="button"
       class="admin-nav-button"
+      data-admin-section="users"
+      aria-controls="usersSection"
+    >
+      <svg
+        class="nav-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <circle cx="9" cy="8" r="3"></circle>
+        <path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-3-5"></path>
+      </svg>
+      <span>Users</span>
+    </button>
+
+    <button
+      type="button"
+      class="admin-nav-button"
       data-admin-section="trending"
       aria-controls="trendingSection"
     >
@@ -1748,6 +1873,64 @@ aria-controls="premiumSection"
           </button>
         </div>
       </div>
+
+<section
+  id="usersSection"
+  class="admin-section"
+  aria-label="Users"
+  hidden
+>
+  <div class="ri-users-heading">
+    <div>
+      <h2>Registered users</h2>
+      <p id="usersCount">10 users per page</p>
+    </div>
+
+    <button id="usersReload" type="button">
+      Refresh users
+    </button>
+  </div>
+
+  <p
+    id="usersStatus"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <div class="ri-users-scroll">
+    <table class="ri-users-table">
+      <thead>
+        <tr>
+          <th scope="col">User</th>
+          <th scope="col">Email verified</th>
+          <th scope="col">Wallet verified</th>
+          <th scope="col">Premium access</th>
+          <th scope="col">Premium bot verified</th>
+          <th scope="col">Token balance</th>
+        </tr>
+      </thead>
+
+      <tbody id="usersRows"></tbody>
+    </table>
+  </div>
+
+  <div class="ri-users-pagination">
+    <button id="usersPrev" type="button" disabled>
+      Previous
+    </button>
+
+    <span id="usersPage">Page 1 of 1</span>
+
+    <button id="usersNext" type="button" disabled>
+      Next
+    </button>
+  </div>
+
+  <p class="ri-users-note">
+    ✓ Yes · ✕ No · — Balance not checked yet.
+    Token balances show the last verified holding.
+  </p>
+</section>
 
 <section
   id="premiumSection"
@@ -2145,6 +2328,7 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
+  users: $("usersSection"),
   premium: $("premiumSection"),
   monitoring: $("monitoringSection"),
   overview: $("overviewSection"),
@@ -2159,6 +2343,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+  users: "Users",
   premium: "Premium",
   monitoring: "Monitoring",
   overview: "Dashboard",
@@ -2211,6 +2396,281 @@ for (const button of adminNavigation) {
 }
 
 selectAdminSection("overview");
+
+let usersPage = 1;
+let usersPages = 1;
+let usersLoading = false;
+let usersOwner = null;
+let usersGeneration = 0;
+let usersController = null;
+
+function usersButtons() {
+  $("usersReload").disabled = usersLoading;
+
+  $("usersPrev").disabled =
+    usersLoading || usersPage <= 1;
+
+  $("usersNext").disabled =
+    usersLoading || usersPage >= usersPages;
+}
+
+function clearUsers() {
+  usersGeneration++;
+
+  usersController?.abort();
+  usersController = null;
+
+  usersLoading = false;
+  usersOwner = null;
+  usersPage = usersPages = 1;
+
+  $("usersRows").replaceChildren();
+  $("usersStatus").textContent = "";
+  $("usersCount").textContent = "10 users per page";
+  $("usersPage").textContent = "Page 1 of 1";
+
+  usersButtons();
+}
+
+function usersBalance(value) {
+  if (
+    typeof value !== "string" ||
+    !/^\d+(\.\d+)?$/.test(value)
+  ) {
+    return "—";
+  }
+
+  const [whole, decimal = ""] = value.split(".");
+  const fraction = decimal.replace(/0+$/, "");
+
+  return (
+    whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+    (fraction ? "." + fraction : "")
+  );
+}
+
+function usersFlag(value) {
+  const badge = document.createElement("span");
+  const yes = value === true;
+
+  badge.className =
+    "ri-user-flag " + (yes ? "is-yes" : "is-no");
+
+  badge.textContent = yes ? "✓" : "✕";
+  badge.setAttribute("role", "img");
+  badge.setAttribute("aria-label", yes ? "Yes" : "No");
+  badge.title = yes ? "Yes" : "No";
+
+  return badge;
+}
+
+async function loadUsers(page = usersPage) {
+  if (
+    usersLoading ||
+    !session ||
+    $("dashboard").hidden ||
+    $("usersSection").hidden
+  ) {
+    return;
+  }
+
+  const owner = session.user.id;
+  const generation = ++usersGeneration;
+
+  usersOwner = owner;
+  usersLoading = true;
+  usersButtons();
+
+  $("usersRows").replaceChildren();
+  $("usersStatus").textContent = "Loading users…";
+
+  const controller = new AbortController();
+  usersController = controller;
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    12000
+  );
+
+  try {
+    const response = await fetch(
+      config.url.replace(/\/$/, "") +
+        "/rest/v1/rpc/ri_admin_users",
+      {
+        method: "POST",
+
+        headers: {
+          apikey: config.publishableKey,
+          Authorization: "Bearer " + session.access_token,
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({ p_page: page }),
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      throw new Error(
+        "Admin access required. Please sign in with your admin account."
+      );
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "HTTP " + response.status
+      );
+    }
+
+    if (
+      generation !== usersGeneration ||
+      session?.user.id !== owner
+    ) {
+      return;
+    }
+
+    if (
+      data.success !== true ||
+      data.page_size !== 10 ||
+      !Array.isArray(data.rows) ||
+      data.rows.length > 10 ||
+      !Number.isInteger(data.page) ||
+      data.page < 1 ||
+      !Number.isInteger(data.pages) ||
+      data.pages < data.page ||
+      !Number.isInteger(data.total) ||
+      data.total < 0
+    ) {
+      throw new Error("Invalid users response.");
+    }
+
+    usersPage = data.page;
+    usersPages = data.pages;
+
+    const fragment = document.createDocumentFragment();
+
+    for (const user of data.rows) {
+      const row = document.createElement("tr");
+      const identity = document.createElement("td");
+      const name = document.createElement("strong");
+      const email = document.createElement("small");
+
+      name.textContent = user.display_name || "Member";
+      email.textContent = user.email || "—";
+
+      identity.append(name, email);
+      row.append(identity);
+
+      for (const key of [
+        "email_verified",
+        "wallet_verified",
+        "premium_active",
+        "telegram_verified"
+      ]) {
+        const cell = document.createElement("td");
+
+        cell.append(usersFlag(user[key]));
+        row.append(cell);
+      }
+
+      const balance = document.createElement("td");
+
+      balance.textContent =
+        usersBalance(user.token_balance);
+
+      const checked = new Date(user.token_checked_at);
+
+      if (
+        user.token_checked_at &&
+        Number.isFinite(checked.getTime())
+      ) {
+        balance.title =
+          "Last checked: " + checked.toLocaleString();
+      }
+
+      row.append(balance);
+      fragment.append(row);
+    }
+
+    $("usersRows").replaceChildren(fragment);
+
+    const first =
+      data.total ? (usersPage - 1) * 10 + 1 : 0;
+
+    const last =
+      Math.min(usersPage * 10, data.total);
+
+    $("usersCount").textContent =
+      `${first}–${last} of ${data.total} registered users`;
+
+    $("usersPage").textContent =
+      `Page ${usersPage} of ${usersPages}`;
+
+    $("usersStatus").textContent =
+      data.rows.length ? "" : "No registered users yet.";
+
+  } catch (error) {
+    if (
+      generation === usersGeneration &&
+      session?.user.id === owner
+    ) {
+      $("usersRows").replaceChildren();
+
+      $("usersStatus").textContent =
+        error.name === "AbortError"
+          ? "Request timed out. Try Refresh users."
+          : error.message || "Users could not be loaded.";
+    }
+
+  } finally {
+    clearTimeout(timeout);
+
+    if (generation === usersGeneration) {
+      usersLoading = false;
+      usersController = null;
+
+      usersButtons();
+    }
+  }
+}
+
+$("usersReload").onclick =
+  () => void loadUsers();
+
+$("usersPrev").onclick =
+  () => void loadUsers(usersPage - 1);
+
+$("usersNext").onclick =
+  () => void loadUsers(usersPage + 1);
+
+document.addEventListener(
+  "bagvyr:admin-section",
+  event => {
+    if (event.detail?.section === "users") {
+      void loadUsers(1);
+    } else {
+      clearUsers();
+    }
+  }
+);
+
+client.auth.onAuthStateChange((event, nextSession) => {
+  if (
+    event === "SIGNED_OUT" ||
+    (
+      usersOwner &&
+      nextSession?.user.id !== usersOwner
+    )
+  ) {
+    clearUsers();
+  }
+});
 
 const monitorAPI =
   "https://bagvyr-api.megafunhousetv.workers.dev";
