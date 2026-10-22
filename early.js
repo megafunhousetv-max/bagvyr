@@ -18,7 +18,7 @@
         <h2>Early Buyers</h2>
 
         <p>
-          First 20 distinct wallets buying at launch.
+          First 50 distinct wallets buying at launch.
         </p>
 
         <form
@@ -178,7 +178,7 @@
 
         const timeout = setTimeout(
           () => controller.abort(),
-          120000
+          180000
         );
 
         button.disabled = true;
@@ -199,29 +199,115 @@
             return;
           }
 
-          const response = await fetch(
-            API +
-              "/api/early-buyers?ca=" +
-              encodeURIComponent(mint),
-            {
-              headers,
-              signal: controller.signal,
-              cache: "no-store"
+          const collected = [];
+          const seenWallets = new Set();
+
+          let data = null;
+          let offset = 0;
+          let balancesComplete = true;
+          let labelChecksComplete = true;
+
+          for (let batch = 0; batch < 3; batch++) {
+            if (
+              controller.signal.aborted ||
+              !active() ||
+              current !== controller
+            ) {
+              return;
             }
-          );
 
-          const data =
-            await response.json();
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-            throw new Error(
-              data.error ||
-              "Early Buyers unavailable."
+            const response = await fetch(
+              API +
+                "/api/early-buyers?ca=" +
+                encodeURIComponent(mint) +
+                "&offset=" +
+                offset,
+              {
+                headers,
+                signal: controller.signal,
+                cache: "no-store"
+              }
             );
+
+            const chunk = await response.json();
+
+            if (
+              !response.ok ||
+              chunk?.success !== true
+            ) {
+              throw new Error(
+                chunk?.error ||
+                "Early Buyers unavailable."
+              );
+            }
+
+            if (
+              chunk.contract !== mint ||
+              chunk.offset !== offset ||
+              chunk.requested !== 50 ||
+              !Array.isArray(chunk.rows) ||
+              chunk.rows.length > 20
+            ) {
+              throw new Error(
+                "Invalid Early Buyers response."
+              );
+            }
+
+            for (const item of chunk.rows) {
+              if (
+                !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+                  .test(item.wallet || "") ||
+                seenWallets.has(item.wallet) ||
+                item.rank !== collected.length + 1
+              ) {
+                throw new Error(
+                  "Invalid wallet order."
+                );
+              }
+
+              seenWallets.add(item.wallet);
+              collected.push(item);
+            }
+
+            balancesComplete =
+              balancesComplete &&
+              chunk.balances_complete === true;
+
+            labelChecksComplete =
+              labelChecksComplete &&
+              chunk.label_checks_complete === true;
+
+            data = chunk;
+
+            message.textContent =
+              "Loaded " +
+              collected.length +
+              " / 50 wallets…";
+
+            if (chunk.next_offset === null) {
+              break;
+            }
+
+            if (
+              chunk.rows.length !== 20 ||
+              chunk.next_offset !== offset + 20 ||
+              ![20, 40].includes(chunk.next_offset)
+            ) {
+              throw new Error(
+                "Invalid wallet pagination."
+              );
+            }
+
+            offset = chunk.next_offset;
           }
+
+          data = {
+            ...data,
+            rows: collected,
+            count: collected.length,
+            balances_complete: balancesComplete,
+            label_checks_complete: labelChecksComplete
+          };
 
           if (
             !active() ||
@@ -262,6 +348,41 @@
                   " · DEV"
                 )
               );
+            }
+
+                        const allowedTags = new Set([
+              "BUNDLE",
+              "KOL",
+              "SMART MONEY",
+              "INSIDER"
+            ]);
+
+            const tags = Array.isArray(item.tags)
+              ? [...new Set(item.tags)]
+              : [];
+
+            for (const tag of tags) {
+              if (!allowedTags.has(tag)) continue;
+
+              const badge =
+                document.createElement("span");
+
+              badge.textContent = tag;
+
+              badge.style.cssText = [
+                "display:inline-block",
+                "margin:3px 0 3px 6px",
+                "padding:3px 7px",
+                "border:1px solid rgba(51,239,179,.25)",
+                "border-radius:6px",
+                "background:rgba(51,239,179,.08)",
+                "color:#83f6ce",
+                "font-size:10px",
+                "font-weight:700",
+                "line-height:1.3"
+              ].join(";");
+
+              wallet.append(badge);
             }
 
             const first = cell(
@@ -309,7 +430,7 @@
             (data.symbol || "Token") +
             " · " +
             data.count +
-            "/20 wallets · launch-aligned Pump.fun history · updated " +
+                        "/50 wallets · updated " +
             new Date(
               data.fetched_at
             ).toLocaleTimeString() +
