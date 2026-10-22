@@ -2525,7 +2525,8 @@ aria-controls="premiumSection"
           <th scope="col">Wallet verified</th>
           <th scope="col">Premium access</th>
           <th scope="col">Premium bot verified</th>
-          <th scope="col">Token balance</th>
+<th scope="col">Token balance</th>
+<th scope="col">Manual Premium</th>
         </tr>
       </thead>
 
@@ -3214,6 +3215,102 @@ async function loadUsers(page = usersPage) {
       }
 
       row.append(balance);
+
+      const manualCell =
+        document.createElement("td");
+
+      const manualButton =
+        document.createElement("button");
+
+      const granted =
+        user.manual_premium === true;
+
+      manualCell.style.textAlign = "center";
+
+      manualButton.type = "button";
+
+      manualButton.textContent = granted
+        ? "Odobrať ručné"
+        : "Zapnúť Premium";
+
+      manualButton.setAttribute(
+        "aria-pressed",
+        String(granted)
+      );
+
+      manualButton.title =
+        "Changes manual Premium only. Token-based access and admin access remain independent.";
+
+      manualButton.addEventListener(
+        "click",
+        async () => {
+          if (
+            usersLoading ||
+            generation !== usersGeneration ||
+            session?.user.id !== owner
+          ) {
+            return;
+          }
+
+          manualButton.disabled = true;
+
+          try {
+            const current =
+              await client.auth.getSession();
+
+            if (current.error) {
+              throw current.error;
+            }
+
+            if (
+              current.data?.session?.user.id !== owner
+            ) {
+              throw new Error("Sign in again.");
+            }
+
+            const result = await client.rpc(
+              "ri_admin_set_manual_premium",
+              {
+                p_user_id: user.id,
+                p_enabled: !granted
+              }
+            );
+
+            if (result.error) {
+              throw result.error;
+            }
+
+            if (result.data?.success !== true) {
+              throw new Error(
+                "Premium could not be updated."
+              );
+            }
+
+            if (
+              generation === usersGeneration &&
+              session?.user.id === owner
+            ) {
+              await loadUsers(usersPage);
+            }
+
+          } catch (error) {
+            if (
+              generation === usersGeneration &&
+              session?.user.id === owner
+            ) {
+              $("usersStatus").textContent =
+                error.message ||
+                "Premium could not be updated.";
+            }
+          } finally {
+            manualButton.disabled = false;
+          }
+        }
+      );
+
+      manualCell.append(manualButton);
+      row.append(manualCell);
+
       fragment.append(row);
     }
 
@@ -4939,7 +5036,7 @@ const fields = {
   </script>
   <script src="trend.js"></script>
   <script src="admin-ai-template.js"></script>
-  <script src="premium.js?v=4"></script>
+  <script src="premium.js?v=5"></script>
 <script src="lab.js?v=27"></script>
 <script src="early.js?v=4"></script>
 </body>

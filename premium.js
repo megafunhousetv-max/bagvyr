@@ -53,6 +53,7 @@
 
     let flags = empty();
     let verified = false;
+    let premiumAccess = false;
     let selected = null;
     let busy = false;
     let again = false;
@@ -409,6 +410,7 @@
 const available = key =>
   verified || (
     !adminMode &&
+    premiumAccess &&
     flags.premium === true &&
     flags[key] === true
   );
@@ -424,7 +426,10 @@ const available = key =>
 $("rpBody").hidden =
   adminMode
     ? !verified
-    : !(flags.premium || verified);
+    : !(
+        verified ||
+        (flags.premium && premiumAccess)
+      );
 
       $("rpMaster").hidden =
         !adminMode || !verified;
@@ -524,13 +529,18 @@ $("rpBody").hidden =
         document.querySelectorAll(
           "[data-premium-link]"
         ).forEach(link => {
-          link.hidden = !(flags.premium || verified);
+          link.hidden = !(
+            flags.premium ||
+            verified ||
+            premiumAccess
+          );
         });
       }
 
       const next = JSON.stringify([
         flags,
         verified,
+        premiumAccess,
         selected
       ]);
 
@@ -544,61 +554,38 @@ $("rpBody").hidden =
     }
 
     async function headers() {
-      if (!adminMode && !verified) return {};
-
-      if (!verified) {
+      if (!verified && !premiumAccess) {
         throw new Error(
-          "Admin access required."
+          "Premium access required."
         );
       }
 
+      const authClient = adminMode
+        ? window.BAGVYR_ADMIN_CLIENT
+        : window.RI_ACCOUNT_CLIENT;
+
+      if (!authClient) {
+        throw new Error("Sign in again.");
+      }
+
       const { data, error } =
-        await client.auth.getSession();
+        await authClient.auth.getSession();
 
       if (error || !data?.session) {
-        throw new Error(
-          "Sign in again."
-        );
+        throw new Error("Sign in again.");
       }
 
       return {
         Authorization:
-          `Bearer ${data.session.access_token}`
+          "Bearer " + data.session.access_token
       };
     }
 
-    window.RI_PREMIUM = {
-      isAvailable: available,
-
-      isActive: key =>
-        available(key) &&
-        selected === key &&
-        (
-          adminMode
-            ? (
-                !root.closest(
-                  ".admin-section"
-                ).hidden &&
-                !document.getElementById(
-                  "dashboard"
-                ).hidden
-              )
-            : location.hash === "#premium"
-        ),
-
-      getHeaders: headers
-    };
-
 async function refresh(feature = null) {
-  if (feature !== null && !adminMode) {
-    return;
-  }
+  if (feature !== null && !adminMode) return;
 
   if (busy) {
-    if (feature === null) {
-      again = true;
-    }
-
+    if (feature === null) again = true;
     return;
   }
 
@@ -606,72 +593,67 @@ async function refresh(feature = null) {
 
   const version = generation;
 
-  const wantAdmin =
-    adminMode ||
-    window.RI_ACCOUNT?.isAdmin() === true;
-
   publish();
 
   try {
+    client = adminMode
+      ? window.BAGVYR_ADMIN_CLIENT
+      : window.RI_ACCOUNT_CLIENT;
+
     let authHeaders = {};
-    let saved = null;
 
-    if (wantAdmin) {
-      client = adminMode
-        ? window.BAGVYR_ADMIN_CLIENT
-        : window.RI_ACCOUNT_CLIENT;
-
-      if (!client) {
-        throw new Error(
-          "Sign in to your admin account."
-        );
-      }
-
-      const { data, error } =
+    if (client) {
+      const result =
         await client.auth.getSession();
 
-      if (error || !data?.session) {
-        throw new Error(
-          "Sign in to your admin account."
-        );
+      if (result.error) throw result.error;
+
+      if (result.data?.session) {
+        authHeaders.Authorization =
+          "Bearer " +
+          result.data.session.access_token;
       }
+    }
 
-      authHeaders = {
-        Authorization:
-          `Bearer ${data.session.access_token}`
-      };
+    if (
+      adminMode &&
+      !authHeaders.Authorization
+    ) {
+      throw new Error(
+        "Sign in to your admin account."
+      );
+    }
 
-      if (adminMode) {
-        const result = await client.rpc(
-          "ri_premium_settings",
-          {
-            p_feature: feature,
+    let saved = null;
 
-            p_enabled:
-              feature === null
-                ? null
-                : !flags[feature]
-          }
-        );
+    if (adminMode) {
+      const result = await client.rpc(
+        "ri_premium_settings",
+        {
+          p_feature: feature,
 
-        if (result.error) {
-          throw result.error;
+          p_enabled:
+            feature === null
+              ? null
+              : !flags[feature]
         }
+      );
 
-        saved = result.data;
-      }
+      if (result.error) throw result.error;
+
+      saved = result.data;
     }
 
     const response = await fetch(
       API + (
-        wantAdmin
+        adminMode
           ? "/api/premium/admin/status"
           : "/api/premium/status"
       ),
       {
         headers: authHeaders,
         cache: "no-store",
-        signal: AbortSignal.timeout(8000)
+        signal: AbortSignal.timeout(12000)
       }
     );
 
@@ -689,46 +671,45 @@ async function refresh(feature = null) {
 
     if (
       !response.ok ||
-      data.success !== true ||
+      data?.success !== true ||
       keys.some(
         key => typeof data[key] !== "boolean"
       ) ||
-      (
-        wantAdmin &&
-        data.admin !== true
-      )
+      typeof data.admin !== "boolean" ||
+      typeof data.premium_active !== "boolean" ||
+      (adminMode && data.admin !== true)
     ) {
       throw new Error(
-        data.error ||
+        data?.error ||
         "Premium settings unavailable."
       );
     }
 
-    if (version !== generation) {
-      return;
-    }
+    if (version !== generation) return;
 
     flags = Object.fromEntries(
       keys.map(key => [key, data[key]])
     );
 
-    verified =
-      wantAdmin &&
-      data.admin === true;
+    verified = data.admin === true;
+
+    premiumAccess =
+      data.premium_active === true;
 
     $("rpMessage").textContent =
       verified
         ? "Admin access active. All tools are available regardless of public switches."
-        : flags.premium
-          ? ""
-          : "Premium is not available yet.";
+        : !flags.premium
+          ? "Premium is temporarily unavailable."
+          : !premiumAccess
+            ? "Sign in with a Premium account to access these tools."
+            : "";
 
   } catch (error) {
-    if (version !== generation) {
-      return;
-    }
+    if (version !== generation) return;
 
     verified = false;
+    premiumAccess = false;
     flags = empty();
 
     $("rpMessage").textContent =
@@ -789,6 +770,8 @@ document.addEventListener(
 
     generation++;
     verified = false;
+    premiumAccess = false;
+    flags = empty();
 
     publish();
     void refresh();
