@@ -18,7 +18,7 @@
         <h2>Early Buyers</h2>
 
         <p>
-          First 50 distinct wallets buying at launch.
+       Earliest 50 distinct buyers in available launch history.
         </p>
 
         <form
