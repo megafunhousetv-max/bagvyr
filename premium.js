@@ -41,10 +41,11 @@
 ]
     ];
 
-    const keys = [
-      "premium",
-      ...modules.map(([key]) => key)
-    ];
+const keys = [
+  "premium",
+  "public_access",
+  ...modules.map(([key]) => key)
+];
 
     const empty = () =>
       Object.fromEntries(
@@ -324,9 +325,18 @@
           Zapnúť Premium
         </button>
 
-        <button type="button" id="rpRefresh">
-          Obnoviť stav
-        </button>
+<button
+  type="button"
+  role="switch"
+  aria-checked="false"
+  data-toggle="public_access"
+>
+  Zapnúť verejné Premium bez prihlásenia
+</button>
+
+<button type="button" id="rpRefresh">
+  Obnoviť stav
+</button>
       </div>
 
       <div id="rpBody" hidden>
@@ -410,7 +420,10 @@
 const available = key =>
   verified || (
     !adminMode &&
-    premiumAccess &&
+    (
+      premiumAccess ||
+      flags.public_access === true
+    ) &&
     flags.premium === true &&
     flags[key] === true
   );
@@ -428,7 +441,13 @@ $("rpBody").hidden =
     ? !verified
     : !(
         verified ||
-        (flags.premium && premiumAccess)
+        (
+          flags.premium === true &&
+          (
+            premiumAccess ||
+            flags.public_access === true
+          )
+        )
       );
 
       $("rpMaster").hidden =
@@ -494,18 +513,19 @@ $("rpBody").hidden =
           String(on)
         );
 
-        button.textContent =
-          button.dataset.toggle === "premium"
-            ? (
-                on
-                  ? "Vypnúť Premium"
-                  : "Zapnúť Premium"
-              )
-            : (
-                on
-                  ? "Vypnúť na webe"
-                  : "Zapnúť na webe"
-              );
+if (button.dataset.toggle === "premium") {
+  button.textContent = on
+    ? "Vypnúť Premium"
+    : "Zapnúť Premium";
+} else if (button.dataset.toggle === "public_access") {
+  button.textContent = on
+    ? "Vypnúť verejné Premium bez prihlásenia"
+    : "Zapnúť verejné Premium bez prihlásenia";
+} else {
+  button.textContent = on
+    ? "Vypnúť na webe"
+    : "Zapnúť na webe";
+}
       });
 
       root.querySelectorAll(
@@ -553,33 +573,40 @@ $("rpBody").hidden =
       }
     }
 
-    async function headers() {
-      if (!verified && !premiumAccess) {
-        throw new Error(
-          "Premium access required."
-        );
-      }
+async function headers() {
+  if (
+    !adminMode &&
+    !verified &&
+    flags.premium === true &&
+    flags.public_access === true
+  ) {
+    return {};
+  }
 
-      const authClient = adminMode
-        ? window.BAGVYR_ADMIN_CLIENT
-        : window.RI_ACCOUNT_CLIENT;
+  if (!verified && !premiumAccess) {
+    throw new Error("Premium access required.");
+  }
 
-      if (!authClient) {
-        throw new Error("Sign in again.");
-      }
+  const authClient = adminMode
+    ? window.BAGVYR_ADMIN_CLIENT
+    : window.RI_ACCOUNT_CLIENT;
 
-      const { data, error } =
-        await authClient.auth.getSession();
+  if (!authClient) {
+    throw new Error("Sign in again.");
+  }
 
-      if (error || !data?.session) {
-        throw new Error("Sign in again.");
-      }
+  const { data, error } =
+    await authClient.auth.getSession();
 
-      return {
-        Authorization:
-          "Bearer " + data.session.access_token
-      };
-    }
+  if (error || !data?.session) {
+    throw new Error("Sign in again.");
+  }
+
+  return {
+    Authorization:
+      "Bearer " + data.session.access_token
+  };
+}
 
 async function refresh(feature = null) {
   if (feature !== null && !adminMode) return;
@@ -696,14 +723,16 @@ async function refresh(feature = null) {
     premiumAccess =
       data.premium_active === true;
 
-    $("rpMessage").textContent =
-      verified
-        ? "Admin access active. All tools are available regardless of public switches."
-        : !flags.premium
-          ? "Premium is temporarily unavailable."
-          : !premiumAccess
-            ? "Sign in with a Premium account to access these tools."
-            : "";
+$("rpMessage").textContent =
+  verified
+    ? "Admin access active. All tools are available regardless of public switches."
+    : flags.premium !== true
+      ? "Premium is temporarily unavailable."
+      : flags.public_access === true
+        ? "Premium is currently open to everyone. No sign-in required."
+        : !premiumAccess
+          ? "Sign in with a Premium account to access these tools."
+          : "";
 
   } catch (error) {
     if (version !== generation) return;
