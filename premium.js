@@ -608,6 +608,24 @@ async function headers() {
   };
 }
 
+window.RI_PREMIUM = {
+  isAvailable: available,
+
+  isActive: key =>
+    available(key) &&
+    selected === key &&
+    (
+      adminMode
+        ? (
+            !root.closest(".admin-section").hidden &&
+            !document.getElementById("dashboard").hidden
+          )
+        : location.hash === "#premium"
+    ),
+
+  getHeaders: headers
+};
+
 async function refresh(feature = null) {
   if (feature !== null && !adminMode) return;
 
