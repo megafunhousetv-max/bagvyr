@@ -2257,6 +2257,391 @@ main:has(#dashboard:not([hidden])) > header {
   }
 </style>
 
+<style id="ri-lab-redesign">
+  body #riPremiumRoot #riLabRoot {
+    --lab-line: #244336;
+    --lab-accent: #25e6ac;
+    color: #edfff6;
+    min-width: 0;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-heading {
+    margin: 4px 0 18px;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-heading h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin: 6px 0 10px;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-kicker {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #7fae98;
+  }
+
+  /* Dve kalkulačky vedľa seba. */
+  body #riPremiumRoot #riLabRoot #labToken:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  /* Holderi a simulácia. */
+  body #riPremiumRoot #riLabRoot #labToken > .lab-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.25fr)
+      minmax(0, .85fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  body #riPremiumRoot #riLabRoot #labToken > .lab-muted {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-card {
+    min-width: 0;
+    margin: 0;
+    padding: 22px;
+    background: linear-gradient(
+      145deg,
+      #0a1b13,
+      #06120d
+    );
+    border: 1px solid var(--lab-line);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px #00000012;
+  }
+
+  body #riPremiumRoot #riLabRoot h2 {
+    font-size: 21px;
+    line-height: 1.25;
+    letter-spacing: -.5px;
+    margin: 0 0 10px;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-title h2 {
+    margin: 0;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-title > div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  body #riPremiumRoot #riLabRoot #labAll,
+  body #riPremiumRoot #riLabRoot #labClear {
+    padding: 4px 0;
+    min-height: 0;
+    border: 0;
+    background: none;
+    color: var(--lab-accent);
+    font-size: 12px;
+    box-shadow: none;
+    cursor: pointer;
+  }
+
+  /* Poznámky presunieme pod tabuľku. */
+  body #riPremiumRoot #riLabRoot
+  .lab-grid > .lab-card:first-child {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  .lab-grid > .lab-card:first-child .lab-title {
+    order: 0;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-table-wrap {
+    order: 1;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    border-top: 1px solid var(--lab-line);
+  }
+
+  body #riPremiumRoot #riLabRoot #labHolderTime {
+    order: 2;
+  }
+
+  body #riPremiumRoot #riLabRoot #labHolderNote {
+    order: 3;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  .lab-grid > .lab-card:first-child > p:last-child {
+    order: 4;
+  }
+
+  body #riPremiumRoot #riLabRoot #labHolderTime,
+  body #riPremiumRoot #riLabRoot #labHolderNote,
+  body #riPremiumRoot #riLabRoot
+  .lab-grid > .lab-card:first-child > p:last-child {
+    font-size: 11px;
+    line-height: 1.6;
+    color: #88a394;
+    margin: 10px 0 0;
+  }
+
+  /* Kompaktnejšia tabuľka. */
+  body #riPremiumRoot #riLabRoot table {
+    width: 100%;
+    min-width: 490px;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  body #riPremiumRoot #riLabRoot th {
+    padding: 12px 7px;
+    color: #89a797;
+    font-size: 10px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--lab-line);
+    white-space: nowrap;
+  }
+
+  body #riPremiumRoot #riLabRoot td {
+    padding: 9px 7px;
+    border-bottom: 1px solid #1b3328;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  body #riPremiumRoot #riLabRoot tbody tr:hover {
+    background: #25e6ac08;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  tbody tr:has(input:checked) {
+    background: #25e6ac05;
+  }
+
+  body #riPremiumRoot #riLabRoot td:first-child,
+  body #riPremiumRoot #riLabRoot th:first-child {
+    width: 35px;
+    text-align: center;
+  }
+
+  body #riPremiumRoot #riLabRoot input[type="checkbox"] {
+    appearance: auto;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--lab-accent);
+    cursor: pointer;
+  }
+
+  body #riPremiumRoot #riLabRoot td select {
+    width: 72px;
+    min-height: 32px;
+    padding: 5px 7px;
+    font-size: 11px;
+    border-radius: 7px;
+    background: #06100c;
+    border: 1px solid #2a493a;
+  }
+
+  body #riPremiumRoot #riLabRoot a {
+    color: #d5eee2;
+    text-decoration: none;
+  }
+
+  body #riPremiumRoot #riLabRoot a:hover {
+    color: var(--lab-accent);
+  }
+
+  /* Simulácia vybraných holderov. */
+  body #riPremiumRoot #riLabRoot #labSelection {
+    padding: 12px 14px;
+    margin: 18px 0 14px;
+    background: #10302366;
+    border: 1px solid #24503c;
+    border-radius: 9px;
+    color: #bcdfce;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  body #riPremiumRoot #riLabRoot #labRun {
+    width: 100%;
+    min-height: 46px;
+    background: var(--lab-accent);
+    border: 1px solid var(--lab-accent);
+    border-radius: 9px;
+    color: #032016;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  body #riPremiumRoot #riLabRoot button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+
+  /* Výsledky simulácií a kalkulačiek. */
+  body #riPremiumRoot #riLabRoot .lab-result {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--lab-line);
+    color: #a3c3b2;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-result > div {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #1b3328;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  .lab-result > div strong {
+    text-align: right;
+    color: #edfff6;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  #labCombinedResult > div:nth-child(2) {
+    padding: 16px 0;
+  }
+
+  body #riPremiumRoot #riLabRoot
+  #labCombinedResult > div:nth-child(2) strong {
+    color: var(--lab-accent);
+    font-size: 22px;
+    letter-spacing: -.6px;
+  }
+
+  /* Spodné formuláre. */
+  body #riPremiumRoot #riLabRoot .lab-own-inputs {
+    display: grid;
+    gap: 12px;
+    align-items: end;
+    margin-top: 18px;
+  }
+
+  body #riPremiumRoot #riLabRoot #labOwnForm {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body #riPremiumRoot #riLabRoot #labTargetForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-own-inputs label {
+    min-width: 0;
+    font-size: 12px;
+    color: #adc9ba;
+    line-height: 1.6;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-own-inputs input,
+  body #riPremiumRoot #riLabRoot .lab-own-inputs select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin-top: 6px;
+    padding: 11px 12px;
+    background: #06100c;
+    border: 1px solid #2a493a;
+    border-radius: 9px;
+    color: #edfff6;
+    font-size: 13px;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-own-inputs button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 2px;
+    border: 1px solid #2e7656;
+    border-radius: 9px;
+    background: #103023;
+    color: #bfffe2;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  body #riPremiumRoot #riLabRoot .lab-muted {
+    font-size: 12px;
+    line-height: 1.65;
+    color: #8ea99a;
+  }
+
+  body #riPremiumRoot #riLabRoot input:focus-visible,
+  body #riPremiumRoot #riLabRoot select:focus-visible,
+  body #riPremiumRoot #riLabRoot button:focus-visible {
+    outline: 2px solid var(--lab-accent);
+    outline-offset: 3px;
+  }
+
+  @media(max-width: 1000px) {
+    body #riPremiumRoot #riLabRoot #labToken > .lab-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media(max-width: 700px) {
+    body #riPremiumRoot #riLabRoot #labToken:not([hidden]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    body #riPremiumRoot #riLabRoot .lab-card {
+      padding: 17px;
+    }
+
+    body #riPremiumRoot #riLabRoot .lab-heading h1 {
+      font-size: 28px;
+    }
+
+    body #riPremiumRoot #riLabRoot h2 {
+      font-size: 20px;
+    }
+  }
+
+  @media(max-width: 440px) {
+    body #riPremiumRoot #riLabRoot #labOwnForm,
+    body #riPremiumRoot #riLabRoot #labTargetForm {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    body #riPremiumRoot #riLabRoot .lab-title {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+</style>
+
 </head>
 
 <body>
