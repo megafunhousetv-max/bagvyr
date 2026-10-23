@@ -133,6 +133,99 @@
       return td;
     }
 
+function renderEarlyRows(rows) {
+  body.replaceChildren();
+
+  const allowed = new Set([
+    "BUNDLE",
+    "KOL",
+    "SMART MONEY",
+    "INSIDER"
+  ]);
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    cell(row, String(item.rank));
+
+    const wallet = cell(
+      row,
+      short(item.wallet),
+      "https://solscan.io/account/" +
+        encodeURIComponent(item.wallet)
+    );
+
+    if (item.developer) {
+      wallet.append(
+        document.createTextNode(" · DEV")
+      );
+    }
+
+    const tags = Array.isArray(item.tags)
+      ? [...new Set(item.tags)]
+      : [];
+
+    for (const tag of tags) {
+      if (!allowed.has(tag)) continue;
+
+      const badge =
+        document.createElement("span");
+
+      badge.textContent = tag;
+
+      badge.style.cssText = [
+        "display:inline-block",
+        "margin:3px 0 3px 6px",
+        "padding:3px 7px",
+        "border:1px solid rgba(51,239,179,.25)",
+        "border-radius:6px",
+        "background:rgba(51,239,179,.08)",
+        "color:#83f6ce",
+        "font-size:10px",
+        "font-weight:700",
+        "line-height:1.3"
+      ].join(";");
+
+      wallet.append(badge);
+    }
+
+    const first = cell(
+      row,
+      amount(item.first_tokens)
+    );
+
+    first.title = item.first_tokens;
+
+    const held = cell(
+      row,
+      amount(item.current_tokens)
+    );
+
+    held.title =
+      item.current_tokens === null
+        ? "Balance unavailable"
+        : item.current_tokens +
+          " · checked " +
+          item.balance_checked_at;
+
+    cell(
+      row,
+      new Date(item.first_at).toLocaleString()
+    );
+
+    cell(
+      row,
+      "View",
+      "https://solscan.io/tx/" +
+        encodeURIComponent(item.transaction)
+    );
+
+    body.append(row);
+  }
+
+  results.hidden = rows.length === 0;
+}
+
     function sync() {
       const enabled = active();
 
@@ -277,12 +370,14 @@
               labelChecksComplete &&
               chunk.label_checks_complete === true;
 
-            data = chunk;
+data = chunk;
 
-            message.textContent =
-              "Loaded " +
-              collected.length +
-              " / 50 wallets…";
+renderEarlyRows(collected);
+
+message.textContent =
+  "Loaded " +
+  collected.length +
+  " / 50 wallets…";
 
             if (chunk.next_offset === null) {
               break;
@@ -324,107 +419,7 @@
             );
           }
 
-          for (const item of data.rows) {
-            const row =
-              document.createElement("tr");
-
-            cell(
-              row,
-              String(item.rank)
-            );
-
-            const wallet = cell(
-              row,
-              short(item.wallet),
-              "https://solscan.io/account/" +
-                encodeURIComponent(
-                  item.wallet
-                )
-            );
-
-            if (item.developer) {
-              wallet.append(
-                document.createTextNode(
-                  " · DEV"
-                )
-              );
-            }
-
-                        const allowedTags = new Set([
-              "BUNDLE",
-              "KOL",
-              "SMART MONEY",
-              "INSIDER"
-            ]);
-
-            const tags = Array.isArray(item.tags)
-              ? [...new Set(item.tags)]
-              : [];
-
-            for (const tag of tags) {
-              if (!allowedTags.has(tag)) continue;
-
-              const badge =
-                document.createElement("span");
-
-              badge.textContent = tag;
-
-              badge.style.cssText = [
-                "display:inline-block",
-                "margin:3px 0 3px 6px",
-                "padding:3px 7px",
-                "border:1px solid rgba(51,239,179,.25)",
-                "border-radius:6px",
-                "background:rgba(51,239,179,.08)",
-                "color:#83f6ce",
-                "font-size:10px",
-                "font-weight:700",
-                "line-height:1.3"
-              ].join(";");
-
-              wallet.append(badge);
-            }
-
-            const first = cell(
-              row,
-              amount(item.first_tokens)
-            );
-
-            first.title =
-              item.first_tokens;
-
-            const held = cell(
-              row,
-              amount(item.current_tokens)
-            );
-
-            held.title =
-              item.current_tokens === null
-                ? "Balance unavailable"
-                : item.current_tokens +
-                  " · checked " +
-                  item.balance_checked_at;
-
-            cell(
-              row,
-              new Date(
-                item.first_at
-              ).toLocaleString()
-            );
-
-            cell(
-              row,
-              "View",
-              "https://solscan.io/tx/" +
-                encodeURIComponent(
-                  item.transaction
-                )
-            );
-
-            body.append(row);
-          }
-
-          results.hidden = false;
+renderEarlyRows(data.rows);
 
           message.textContent =
             (data.symbol || "Token") +
@@ -450,13 +445,17 @@
             current === controller &&
             active()
           ) {
-            body.replaceChildren();
-            results.hidden = true;
+const loaded = body.children.length;
 
-            message.textContent =
-              error.name === "AbortError"
-                ? "Request timed out. Try again."
-                : error.message;
+results.hidden = loaded === 0;
+
+message.textContent =
+  loaded > 0
+    ? "Loaded " + loaded +
+      "/50 wallets. Remaining wallets could not be loaded. Click Load token to retry."
+    : error.name === "AbortError"
+      ? "Request timed out. Click Load token to retry."
+      : error.message;
           }
 
         } finally {
