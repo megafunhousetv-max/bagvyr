@@ -1079,6 +1079,12 @@ state.market = {
 };
 state.marketFailures = 0;
 
+document.dispatchEvent(
+  new CustomEvent("ri:premium-market", {
+    detail: state.market
+  })
+);
+
 updateTargetValue();
 
         text(
@@ -1099,7 +1105,7 @@ updateTargetValue();
         text(
           "labMarketTime",
 
-          `DexScreener fetched ${time(data.fetched_at)} · ` +
+          `${time(data.fetched_at)} · ` +
           "Refresh target 1s; provider may update slower."
         );
       } catch {
@@ -1502,6 +1508,11 @@ freshMarket = marketIsFresh(market);
 
 if (freshMarket) {
   state.market = market;
+  document.dispatchEvent(
+  new CustomEvent("ri:premium-market", {
+    detail: market
+  })
+);
   state.marketFailures = 0;
 
   text(
@@ -1888,6 +1899,79 @@ window.addEventListener(
     }, 15000);
 
     void checkStatus();
+
+    let sharedLabAttempt = "";
+
+    function syncSharedLab(event) {
+      if (
+        typeof window.RI_PREMIUM?.getContract
+          !== "function"
+      ) {
+        return;
+      }
+
+      const contract =
+        window.RI_PREMIUM.getContract();
+
+      const reload =
+        event?.type === "ri:premium-token";
+
+      if (state.ca !== contract || reload) {
+        stop();
+
+        state.ca = contract;
+        state.token = null;
+        state.market = null;
+        sharedLabAttempt = "";
+
+        $("labToken").hidden = true;
+      }
+
+      if (!contract) {
+        text(
+          "labStatus",
+          "Enter a token address at the top of Premium."
+        );
+
+        return;
+      }
+
+      if (!active()) {
+        sharedLabAttempt = "";
+        return;
+      }
+
+      if (
+        state.token?.contract === contract ||
+        sharedLabAttempt === contract
+      ) {
+        return;
+      }
+
+      sharedLabAttempt = contract;
+      $("labCA").value = contract;
+
+      void loadToken({
+        preventDefault() {}
+      });
+    }
+
+    document.addEventListener(
+      "ri:premium-token",
+      syncSharedLab
+    );
+
+    document.addEventListener(
+      "ri:premium-change",
+      syncSharedLab
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      syncSharedLab
+    );
+
+    syncSharedLab();
   }
 
   function init() {
