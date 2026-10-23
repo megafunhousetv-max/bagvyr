@@ -290,6 +290,167 @@ const keys = [
       }
     `;
 
+style.textContent += `
+  #riPremiumRoot .rp-token-search {
+    display:flex;
+    gap:12px;
+    margin:22px 0 0;
+  }
+
+  #riPremiumRoot .rp-token-search input {
+    flex:1;
+    min-width:0;
+    padding:15px 16px;
+    border:1px solid #285244;
+    border-radius:10px;
+    background:#06100c;
+    color:#e9fff5;
+    font:inherit;
+  }
+
+  #riPremiumRoot .rp-token-search button {
+    padding:14px 24px;
+    background:#25e6ac;
+    color:#032017;
+    border:0;
+    border-radius:10px;
+    font:inherit;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  #riPremiumRoot #rpTokenMessage {
+    color:#9db7ab;
+    font-size:13px;
+    margin:10px 0 18px;
+  }
+
+  #riPremiumRoot .rp-token-summary {
+    display:grid;
+    grid-template-columns:
+      minmax(260px,2fr) repeat(3,minmax(115px,1fr));
+    align-items:center;
+    gap:24px;
+    padding:22px;
+    margin-bottom:24px;
+    background:#091a13;
+    border:1px solid #254438;
+    border-radius:14px;
+  }
+
+  #riPremiumRoot .rp-token-summary[hidden],
+  #riPremiumRoot .rp-token-avatar [hidden] {
+    display:none!important;
+  }
+
+  #riPremiumRoot .rp-token-identity {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    min-width:0;
+  }
+
+  #riPremiumRoot .rp-token-identity > div:last-child {
+    min-width:0;
+  }
+
+  #riPremiumRoot #rpTokenName {
+    overflow-wrap:anywhere;
+    font-size:17px;
+  }
+
+  #riPremiumRoot .rp-token-avatar {
+    width:52px;
+    height:52px;
+    flex-shrink:0;
+    border-radius:50%;
+    overflow:hidden;
+    background:#12442f;
+    display:grid;
+    place-items:center;
+    color:#ddfff1;
+    font-weight:700;
+  }
+
+  #riPremiumRoot .rp-token-avatar img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+
+  #riPremiumRoot .rp-token-meta {
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:6px;
+    font-size:12px;
+    color:#9db7ab;
+  }
+
+  #riPremiumRoot #rpTokenCopy {
+    background:transparent;
+    border:0;
+    color:#25e6ac;
+    padding:2px;
+    cursor:pointer;
+    font:inherit;
+  }
+
+  #riPremiumRoot .rp-token-summary small {
+    display:block;
+    color:#9db7ab;
+    font-size:11px;
+    margin-bottom:6px;
+  }
+
+  #riPremiumRoot .rp-token-summary strong {
+    display:block;
+    color:#edfff6;
+    font-variant-numeric:tabular-nums;
+  }
+
+  #riPremiumRoot #rpTokenTime {
+    grid-column:1/-1;
+    margin:0;
+  }
+
+  /* Pôvodné formuláre zostávajú prepojené s funkciami,
+     ale používateľ zadáva CA iba hore. */
+  #riPremiumRoot #labForm,
+  #riPremiumRoot #labToken > .lab-market,
+  #riPremiumRoot #riEarlyForm {
+    display:none!important;
+  }
+
+  @media(max-width:760px) {
+    #riPremiumRoot .rp-token-summary {
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px 10px;
+      padding:16px;
+    }
+
+    #riPremiumRoot .rp-token-identity {
+      grid-column:1/-1;
+    }
+
+    #riPremiumRoot .rp-token-summary strong {
+      overflow-wrap:anywhere;
+      font-size:14px;
+    }
+  }
+
+  @media(max-width:440px) {
+    #riPremiumRoot .rp-token-search {
+      flex-direction:column;
+    }
+
+    #riPremiumRoot .rp-token-search button {
+      width:100%;
+    }
+  }
+`;
+
     document.head.append(style);
 
     root.innerHTML = `
@@ -339,8 +500,89 @@ const keys = [
 </button>
       </div>
 
-      <div id="rpBody" hidden>
-        <div class="rp-grid">
+<div id="rpBody" hidden>
+
+  <div id="rpSharedToken">
+    <form id="rpTokenForm" class="rp-token-search">
+      <input
+        id="rpTokenCA"
+        aria-label="Solana contract address"
+        placeholder="Paste a Solana contract address"
+        maxlength="44"
+        autocomplete="off"
+        spellcheck="false"
+        required
+      >
+
+      <button type="submit">
+        Load token
+      </button>
+    </form>
+
+    <p
+      id="rpTokenMessage"
+      role="status"
+      aria-live="polite"
+    >
+      Enter a CA, then choose a tool below.
+    </p>
+
+    <section
+      id="rpTokenSummary"
+      class="rp-token-summary"
+      hidden
+    >
+      <div class="rp-token-identity">
+        <div class="rp-token-avatar">
+          <img
+            id="rpTokenImage"
+            alt="Token logo"
+            referrerpolicy="no-referrer"
+            hidden
+          >
+
+          <span id="rpTokenFallback">?</span>
+        </div>
+
+        <div>
+          <strong id="rpTokenName">—</strong>
+
+          <div class="rp-token-meta">
+            <span id="rpTokenSymbol">—</span>
+
+            <button
+              id="rpTokenCopy"
+              type="button"
+              aria-label="Copy contract address"
+            >
+              Copy CA
+            </button>
+
+            <span id="rpTokenAddress"></span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <small>PRICE</small>
+        <strong id="rpTokenPrice">—</strong>
+      </div>
+
+      <div>
+        <small>MARKET CAP</small>
+        <strong id="rpTokenMC">—</strong>
+      </div>
+
+      <div>
+        <small>LIQUIDITY</small>
+        <strong id="rpTokenLiquidity">—</strong>
+      </div>
+
+      <small id="rpTokenTime">—</small>
+    </section>
+  </div>
+
+  <div class="rp-grid">
           ${modules.map(
             ([key, title, description]) => `
               <article
@@ -608,7 +850,285 @@ async function headers() {
   };
 }
 
+let premiumContract = "";
+let premiumRequest = null;
+
+const sharedMoney = value =>
+  value !== null &&
+  value !== undefined &&
+  String(value).trim() !== "" &&
+  Number.isFinite(Number(value)) &&
+  Number(value) >= 0
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits:
+          Number(value) < 0.01 ? 10 : 2
+      }).format(Number(value))
+    : "—";
+
+function showPremiumMarket(data) {
+  $("rpTokenPrice").textContent =
+    sharedMoney(data.priceUsd ?? data.price);
+
+  $("rpTokenMC").textContent =
+    sharedMoney(
+      data.marketCapUsd ?? data.market_cap
+    );
+
+  $("rpTokenLiquidity").textContent =
+    sharedMoney(
+      data.liquidityUsd ?? data.liquidity
+    );
+
+  const stamp =
+    data.timestamp || data.fetched_at;
+
+  $("rpTokenTime").textContent =
+    stamp && Number.isFinite(Date.parse(stamp))
+      ? "Market snapshot · " +
+        new Date(stamp).toLocaleTimeString()
+      : "Market timestamp unavailable";
+}
+
+function showPremiumImages(values, contract) {
+  const candidates = [...new Set(values)].flatMap(
+    value => {
+      if (typeof value !== "string") return [];
+
+      let raw = value.trim()
+        .replace(
+          /^ipfs:\/\/(?:ipfs\/)?/,
+          "https://ipfs.io/ipfs/"
+        )
+        .replace(
+          /^ar:\/\//,
+          "https://arweave.net/"
+        );
+
+      if (raw.startsWith("//")) {
+        raw = "https:" + raw;
+      }
+
+      try {
+        const url = new URL(raw);
+
+        return (
+          url.protocol === "https:" &&
+          !url.username &&
+          !url.password
+        )
+          ? [url.href]
+          : [];
+      } catch {
+        return [];
+      }
+    }
+  );
+
+  const img = $("rpTokenImage");
+
+  img.hidden = true;
+  $("rpTokenFallback").hidden = false;
+  img.removeAttribute("src");
+
+  let index = 0;
+
+  const next = () => {
+    if (
+      premiumContract !== contract ||
+      index >= candidates.length
+    ) {
+      return;
+    }
+
+    img.src = candidates[index++];
+  };
+
+  img.onload = () => {
+    if (premiumContract !== contract) return;
+
+    img.hidden = false;
+    $("rpTokenFallback").hidden = true;
+  };
+
+  img.onerror = next;
+  next();
+}
+
+$("rpTokenForm").addEventListener(
+  "submit",
+  async event => {
+    event.preventDefault();
+
+    const contract =
+      $("rpTokenCA").value.trim();
+
+    if (
+      !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+        .test(contract)
+    ) {
+      $("rpTokenMessage").textContent =
+        "Enter a valid Solana contract address.";
+
+      return;
+    }
+
+    premiumRequest?.abort();
+
+    const controller = new AbortController();
+    premiumRequest = controller;
+
+    const timeout = setTimeout(
+      () => controller.abort(),
+      30000
+    );
+
+    premiumContract = contract;
+
+    $("rpTokenSummary").hidden = false;
+    $("rpTokenName").textContent = "Selected token";
+    $("rpTokenSymbol").textContent = "—";
+
+    $("rpTokenAddress").textContent =
+      contract.slice(0, 6) +
+      "…" +
+      contract.slice(-6);
+
+    $("rpTokenFallback").textContent = "?";
+
+    showPremiumImages([], contract);
+    showPremiumMarket({});
+
+    $("rpTokenMessage").textContent =
+      "Loading token details…";
+
+    document.dispatchEvent(
+      new CustomEvent("ri:premium-token", {
+        detail: { contract }
+      })
+    );
+
+    const get = async path => {
+      const response = await fetch(
+        API + path +
+        "?ca=" + encodeURIComponent(contract),
+        {
+          cache: "no-store",
+          signal: controller.signal
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        !response.ok ||
+        data?.success !== true ||
+        (data.contract || data.contractAddress)
+          !== contract
+      ) {
+        throw new Error(
+          "Token details unavailable."
+        );
+      }
+
+      return data;
+    };
+
+    try {
+      const results = await Promise.allSettled([
+        get("/api/market").then(data => {
+          if (premiumRequest !== controller) return;
+
+          showPremiumMarket(data);
+
+          if (
+            data.image &&
+            $("rpTokenImage").hidden
+          ) {
+            showPremiumImages(
+              [data.image],
+              contract
+            );
+          }
+        }),
+
+        get("/api/token-images").then(data => {
+          if (premiumRequest !== controller) return;
+
+          $("rpTokenName").textContent =
+            data.name || "Selected token";
+
+          $("rpTokenSymbol").textContent =
+            data.symbol
+              ? "$" + data.symbol.replace(/^\$/, "")
+              : "—";
+
+          $("rpTokenFallback").textContent =
+            (data.symbol || data.name || "?")
+              .slice(0, 2)
+              .toUpperCase();
+
+          showPremiumImages(
+            Array.isArray(data.images)
+              ? data.images
+              : [],
+            contract
+          );
+        })
+      ]);
+
+      if (premiumRequest !== controller) return;
+
+      $("rpTokenMessage").textContent =
+        results.some(
+          result => result.status === "rejected"
+        )
+          ? "Token selected. Some details are unavailable. Choose a tool below."
+          : "Token selected. Choose a tool below.";
+    } finally {
+      clearTimeout(timeout);
+
+      if (premiumRequest === controller) {
+        premiumRequest = null;
+      }
+    }
+  }
+);
+
+$("rpTokenCopy").addEventListener(
+  "click",
+  async () => {
+    if (!premiumContract) return;
+
+    try {
+      await navigator.clipboard.writeText(
+        premiumContract
+      );
+
+      $("rpTokenMessage").textContent =
+        "Contract address copied.";
+    } catch {
+      $("rpTokenMessage").textContent =
+        "Copy the address from the input above.";
+    }
+  }
+);
+
+document.addEventListener(
+  "ri:premium-market",
+  event => {
+    if (
+      event.detail?.contract === premiumContract
+    ) {
+      showPremiumMarket(event.detail);
+    }
+  }
+);
+
 window.RI_PREMIUM = {
+  getContract: () => premiumContract,
+
   isAvailable: available,
 
   isActive: key =>

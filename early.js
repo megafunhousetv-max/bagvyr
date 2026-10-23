@@ -478,6 +478,77 @@
       sync
     );
 
+    let sharedEarlyContract = "";
+    let sharedEarlyAttempt = "";
+
+    function syncSharedEarly(event) {
+      if (
+        typeof window.RI_PREMIUM?.getContract
+          !== "function"
+      ) {
+        return;
+      }
+
+      const contract =
+        window.RI_PREMIUM.getContract();
+
+      const reload =
+        event?.type === "ri:premium-token";
+
+      if (
+        sharedEarlyContract !== contract ||
+        reload
+      ) {
+        current?.abort();
+        current = null;
+
+        sharedEarlyContract = contract;
+        sharedEarlyAttempt = "";
+
+        body.replaceChildren();
+        results.hidden = true;
+        message.textContent = "";
+      }
+
+      sync();
+
+      if (!active()) {
+        sharedEarlyAttempt = "";
+        return;
+      }
+
+      if (!contract) {
+        message.textContent =
+          "Enter a token address at the top of Premium.";
+
+        return;
+      }
+
+      if (
+        current ||
+        sharedEarlyAttempt === contract
+      ) {
+        return;
+      }
+
+      sharedEarlyAttempt = contract;
+      input.value = contract;
+
+      form.requestSubmit();
+    }
+
+    document.addEventListener(
+      "ri:premium-token",
+      syncSharedEarly
+    );
+
+    document.addEventListener(
+      "ri:premium-change",
+      syncSharedEarly
+    );
+
+    syncSharedEarly();
+
     sync();
   }
 
