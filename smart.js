@@ -470,6 +470,256 @@
         "smart_money"
       ) === true;
 
+      const smartHelpText = {
+  "SM Buyers":
+    "The number of unique tracked Smart Money wallets that bought this token during the selected period. Each wallet counts once, even if it made multiple purchases. Wallets that only sold are excluded. Counts cover the tracked addresses returned in the data.",
+
+  "Buy Trades":
+    "The total number of buy trades made by tracked Smart Money wallets during the selected period. One wallet can make several purchases, so this number may be higher than SM Buyers.",
+
+  "Net Inflow":
+    "The USD value bought minus the USD value sold by tracked Smart Money wallets during the selected period. A positive value means buying exceeded selling. A negative value means selling exceeded buying."
+};
+
+style.textContent += `
+  body #riPremiumRoot button.sm-help-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+    margin-left: 5px;
+    padding: 0;
+
+    border: 1px solid rgba(67, 239, 181, .3);
+    border-radius: 50%;
+
+    background: rgba(67, 239, 181, .07);
+    color: #43efb5;
+
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+
+    cursor: pointer;
+    vertical-align: middle;
+  }
+
+  body #riPremiumRoot
+  button.sm-help-star[aria-expanded="true"] {
+    background: #27e5ad;
+    color: #032418;
+  }
+
+  body #riPremiumRoot
+  button.sm-help-star:focus-visible {
+    outline: 2px solid #43efb5;
+    outline-offset: 3px;
+  }
+
+  body #riPremiumRoot .sm-help-box {
+    position: relative;
+
+    margin: 0 0 16px;
+    padding: 17px 48px 17px 18px;
+
+    border: 1px solid #2c6850;
+    border-radius: 12px;
+
+    background: #0b291e;
+  }
+
+  body #riPremiumRoot .sm-help-box strong {
+    color: #54efbd;
+    font-size: 14px;
+  }
+
+  body #riPremiumRoot .sm-help-box p {
+    margin: 7px 0 0;
+    color: #c1d8cc;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  body #riPremiumRoot button.sm-help-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    width: 28px;
+    height: 28px;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+    color: #b8d8c8;
+
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  body #riPremiumRoot
+  .sm-table td .sm-help-star {
+    display: none;
+  }
+
+  @media (max-width: 700px) {
+    body #riPremiumRoot
+    .sm-table td .sm-help-star {
+      display: inline-flex;
+    }
+  }
+`;
+
+const smartHelpBox =
+  document.createElement("div");
+
+smartHelpBox.className =
+  "sm-help-box";
+
+smartHelpBox.id =
+  "riSmartHelpBox";
+
+smartHelpBox.hidden = true;
+
+smartHelpBox.setAttribute(
+  "role",
+  "note"
+);
+
+smartHelpBox.innerHTML = `
+  <strong data-help-title></strong>
+
+  <p data-help-text></p>
+
+  <button
+    type="button"
+    class="sm-help-close"
+    aria-label="Close explanation"
+  >
+    ×
+  </button>
+`;
+
+panel.querySelector(
+  ".sm-toolbar"
+).after(smartHelpBox);
+
+let openedSmartHelp = null;
+
+function closeSmartHelp() {
+  smartHelpBox.hidden = true;
+
+  if (openedSmartHelp) {
+    openedSmartHelp.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+  }
+
+  openedSmartHelp = null;
+}
+
+function makeSmartHelp(label) {
+  const button =
+    document.createElement("button");
+
+  button.type = "button";
+
+  button.className =
+    "sm-help-star";
+
+  button.textContent = "*";
+
+  button.setAttribute(
+    "aria-label",
+    "Explain " + label
+  );
+
+  button.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+  button.setAttribute(
+    "aria-controls",
+    "riSmartHelpBox"
+  );
+
+  button.onclick = () => {
+    const alreadyOpen =
+      openedSmartHelp === button &&
+      !smartHelpBox.hidden;
+
+    closeSmartHelp();
+
+    if (alreadyOpen) return;
+
+    openedSmartHelp = button;
+
+    smartHelpBox.querySelector(
+      "[data-help-title]"
+    ).textContent = label;
+
+    smartHelpBox.querySelector(
+      "[data-help-text]"
+    ).textContent =
+      smartHelpText[label];
+
+    smartHelpBox.hidden = false;
+
+    button.setAttribute(
+      "aria-expanded",
+      "true"
+    );
+  };
+
+  return button;
+}
+
+smartHelpBox.querySelector(
+  ".sm-help-close"
+).onclick = () => {
+  const previousButton =
+    openedSmartHelp;
+
+  closeSmartHelp();
+
+  previousButton?.focus();
+};
+
+panel.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape" &&
+      openedSmartHelp
+    ) {
+      const previousButton =
+        openedSmartHelp;
+
+      closeSmartHelp();
+
+      previousButton.focus();
+    }
+  }
+);
+
+panel.querySelectorAll(
+  ".sm-table thead th"
+).forEach(th => {
+  const label = th.textContent
+    .replace("↓", "")
+    .trim();
+
+  if (smartHelpText[label]) {
+    th.append(
+      makeSmartHelp(label)
+    );
+  }
+});
+
     const node = (tag, text, cls) => {
       const el =
         document.createElement(tag);
@@ -688,9 +938,15 @@
           const td =
             node("td", text, cls);
 
-          if (label) {
-            td.dataset.label = label;
-          }
+if (label) {
+  td.dataset.label = label;
+
+  if (smartHelpText[label]) {
+    td.append(
+      makeSmartHelp(label)
+    );
+  }
+}
 
           row.append(td);
 
