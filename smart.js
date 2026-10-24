@@ -572,6 +572,200 @@ style.textContent += `
   }
 `;
 
+style.textContent += `
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-table thead {
+    background: rgba(14, 39, 29, .65);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-table thead th {
+    height: 64px;
+    padding: 16px 14px;
+
+    border-bottom: 1px solid #28513f;
+
+    color: #c0d6c9;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-table thead th:nth-child(3) {
+    color: #56e8b6;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  button.sm-help-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 22px;
+    height: 22px;
+    margin-left: 7px;
+    padding: 2px 0 0;
+
+    border: 1px solid rgba(130, 181, 156, .3);
+    border-radius: 7px;
+
+    background: rgba(134, 199, 165, .04);
+    color: #9fc7b2;
+
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+
+    vertical-align: middle;
+    box-shadow: none;
+
+    transition:
+      color 150ms ease,
+      border-color 150ms ease,
+      background 150ms ease;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  button.sm-help-star:hover {
+    border-color: #43dca7;
+    background: rgba(43, 220, 159, .1);
+    color: #72f0c2;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  button.sm-help-star[aria-expanded="true"] {
+    border-color: #43dca7;
+    background: rgba(43, 220, 159, .14);
+    color: #72f0c2;
+
+    box-shadow:
+      0 0 0 2px rgba(43, 220, 159, .05);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-help-box {
+    position: relative;
+
+    margin: 0 0 18px;
+    padding: 20px 52px 20px 22px;
+
+    border: 1px solid #2b5040;
+    border-left: 3px solid #36dfa5;
+    border-radius: 12px;
+
+    background:
+      linear-gradient(
+        110deg,
+        rgba(15, 47, 34, .96),
+        rgba(7, 28, 20, .98)
+      );
+
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, .12);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-help-box strong {
+    display: block;
+
+    margin: 0 0 8px;
+
+    color: #66edbc;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: .1px;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-help-box p {
+    max-width: 92ch;
+    margin: 0;
+
+    color: #b9cec1;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.75;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  button.sm-help-close {
+    top: 13px;
+    right: 13px;
+
+    display: grid;
+    place-items: center;
+
+    width: 28px;
+    height: 28px;
+    padding: 0;
+
+    border: 1px solid rgba(143, 186, 161, .16);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, .025);
+    color: #9db9a8;
+
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  button.sm-help-close:hover {
+    background: rgba(67, 239, 181, .08);
+    color: #e4fff0;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-table td .sm-help-star {
+    display: none;
+  }
+
+  @media (max-width: 700px) {
+    body #riPremiumRoot
+    [data-tool="smart_money"] .sm-help-box {
+      padding: 17px 46px 17px 17px;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"]
+    .sm-help-box p {
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"]
+    .sm-table td .sm-help-star {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body #riPremiumRoot
+    [data-tool="smart_money"]
+    button.sm-help-star {
+      transition: none;
+    }
+  }
+`;
+
 const smartHelpBox =
   document.createElement("div");
 
