@@ -565,7 +565,7 @@
       const img = node("img");
 
       img.alt = item.name + " logo";
-      img.loading = "lazy";
+      img.loading = "eager";
 
       img.referrerPolicy =
         "no-referrer";
