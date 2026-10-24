@@ -1,0 +1,1192 @@
+(() => {
+  "use strict";
+
+  function init() {
+    const root =
+      document.getElementById(
+        "riPremiumRoot"
+      );
+
+    const panel = root?.querySelector(
+      '[data-tool="smart_money"]'
+    );
+
+    if (
+      !panel ||
+      panel.dataset.smartReady
+    ) {
+      return;
+    }
+
+    panel.dataset.smartReady = "1";
+
+    const API =
+      "https://bagvyr-api.megafunhousetv.workers.dev";
+
+    const periods = [
+      "5m",
+      "1h",
+      "4h",
+      "24h"
+    ];
+
+    const cache = new Map();
+
+    let period = "1h";
+    let current = null;
+    let shownPeriod = "";
+    let retryAt = 0;
+    let wasActive = false;
+
+    let imageWorkers = 0;
+
+    const imageQueue = [];
+
+    const style =
+      document.createElement("style");
+
+    style.textContent = `
+      body #riPremiumRoot [data-card="smart_money"] {
+        --rp-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Cpath d='M12 12 20 4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='white'/%3E%3C/svg%3E");
+      }
+
+      body #riPremiumRoot [data-tool="smart_money"] {
+        border: 0;
+        padding: 0;
+        margin-top: 20px;
+        min-width: 0;
+      }
+
+      body #riPremiumRoot .sm-card {
+        border: 1px solid #214b3c;
+        border-radius: 16px;
+        padding: 26px;
+        background: rgba(3, 19, 14, .95);
+        color: #ecfff6;
+      }
+
+      body #riPremiumRoot .sm-heading,
+      body #riPremiumRoot .sm-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      body #riPremiumRoot .sm-heading h2 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -.7px;
+      }
+
+      body #riPremiumRoot .sm-card p {
+        color: #a4bdb2;
+        font-size: 13px;
+      }
+
+      body #riPremiumRoot .sm-chain {
+        border: 1px solid #245442;
+        border-radius: 20px;
+        padding: 5px 13px;
+        font-size: 12px;
+        color: #59efbf;
+      }
+
+      body #riPremiumRoot .sm-toolbar {
+        margin: 24px 0 14px;
+      }
+
+      body #riPremiumRoot .sm-periods {
+        display: flex;
+        padding: 4px;
+        border: 1px solid #244b3d;
+        border-radius: 12px;
+      }
+
+      body #riPremiumRoot .sm-periods button {
+        padding: 8px 17px;
+        border: 0;
+        background: transparent;
+        color: #acc9bb;
+        border-radius: 8px;
+      }
+
+      body #riPremiumRoot
+      .sm-periods button[aria-pressed="true"] {
+        background: #27e5ad;
+        color: #032418;
+        font-weight: 750;
+      }
+
+      body #riPremiumRoot .sm-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      body #riPremiumRoot .sm-status small {
+        font-size: 12px;
+        color: #a4bdb2;
+      }
+
+      body #riPremiumRoot .sm-refresh {
+        width: 40px;
+        height: 38px;
+        padding: 0;
+        border-color: #245442;
+        background: #08291e;
+        color: #4ce9b6;
+        font-size: 23px;
+      }
+
+      body #riPremiumRoot .sm-message {
+        margin: 10px 0;
+      }
+
+      body #riPremiumRoot .sm-message:empty {
+        display: none;
+      }
+
+      body #riPremiumRoot .sm-wrap {
+        overflow-x: auto;
+        border: 1px solid #1c3c30;
+        border-radius: 12px;
+      }
+
+      body #riPremiumRoot .sm-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+      }
+
+      body #riPremiumRoot .sm-table th,
+      body #riPremiumRoot .sm-table td {
+        padding: 15px 12px;
+        text-align: left;
+        border: 0;
+        border-bottom: 1px solid #1a382c;
+        font-size: 13px;
+        background: transparent;
+      }
+
+      body #riPremiumRoot .sm-table th {
+        color: #a8c7b7;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      body #riPremiumRoot
+      .sm-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      body #riPremiumRoot
+      .sm-table tbody tr:hover {
+        background: rgba(34, 226, 164, .035);
+      }
+
+      body #riPremiumRoot .sm-token {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 190px;
+      }
+
+      body #riPremiumRoot .sm-avatar {
+        position: relative;
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border: 1px solid #315445;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #12281e;
+        color: #79d5b4;
+      }
+
+      body #riPremiumRoot .sm-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      body #riPremiumRoot .sm-token-top {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      body #riPremiumRoot .sm-name {
+        max-width: 155px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 13px;
+      }
+
+      body #riPremiumRoot .sm-address {
+        display: block;
+        color: #8da89a;
+        font-size: 10px;
+        margin-top: 3px;
+      }
+
+      body #riPremiumRoot button.sm-copy {
+        padding: 2px 0;
+        background: none;
+        border: 0;
+        color: #a8c7b7;
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      body #riPremiumRoot .sm-buyers {
+        color: #43efb5;
+        font-size: 17px;
+        font-weight: 750;
+      }
+
+      body #riPremiumRoot .sm-positive {
+        color: #43efb5;
+        font-weight: 650;
+      }
+
+      body #riPremiumRoot .sm-negative {
+        color: #ff7885;
+        font-weight: 650;
+      }
+
+      body #riPremiumRoot a.sm-analyze {
+        display: inline-block;
+        border: 1px solid #2ce2a7;
+        border-radius: 8px;
+        padding: 7px 12px;
+        color: #49efbd;
+        text-decoration: none;
+        font-size: 12px;
+      }
+
+      body #riPremiumRoot .sm-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 14px;
+        color: #91ad9e;
+        font-size: 11px;
+      }
+
+      @media (min-width: 1200px) {
+        body #riPremiumRoot .rp-grid {
+          grid-template-columns:
+            repeat(6, minmax(0, 1fr));
+        }
+
+        body #riPremiumRoot
+        [data-card="smart_money"] > h3 {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 700px) {
+        body #riPremiumRoot .sm-card {
+          padding: 18px 14px;
+        }
+
+        body #riPremiumRoot .sm-heading h2 {
+          font-size: 23px;
+        }
+
+        body #riPremiumRoot .sm-toolbar {
+          gap: 12px;
+        }
+
+        body #riPremiumRoot .sm-status {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        body #riPremiumRoot .sm-table,
+        body #riPremiumRoot .sm-table tbody {
+          display: block;
+        }
+
+        body #riPremiumRoot .sm-table thead {
+          display: none;
+        }
+
+        body #riPremiumRoot .sm-table tr {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 13px;
+          padding: 16px 12px;
+          border-bottom: 1px solid #244333;
+        }
+
+        body #riPremiumRoot .sm-table td {
+          padding: 0;
+          border: 0;
+          white-space: normal;
+        }
+
+        body #riPremiumRoot
+        .sm-table td:first-child {
+          display: none;
+        }
+
+        body #riPremiumRoot
+        .sm-table td:nth-child(2),
+        body #riPremiumRoot
+        .sm-table td:last-child {
+          grid-column: 1 / -1;
+        }
+
+        body #riPremiumRoot
+        .sm-table td[data-label]::before {
+          content: attr(data-label);
+          display: block;
+          color: #91ad9e;
+          font-size: 10px;
+          margin-bottom: 3px;
+        }
+
+        body #riPremiumRoot a.sm-analyze {
+          display: block;
+          text-align: center;
+        }
+
+        body #riPremiumRoot .sm-name {
+          max-width: 190px;
+        }
+      }
+    `;
+
+    document.head.append(style);
+
+    panel.innerHTML = `
+      <div class="sm-card">
+        <div class="sm-heading">
+          <div>
+            <h2>Smart Money Radar</h2>
+
+            <p>
+              Top 20 tokens by unique
+              smart money buyers.
+            </p>
+          </div>
+
+          <span class="sm-chain">Solana</span>
+        </div>
+
+        <div class="sm-toolbar">
+          <div
+            class="sm-periods"
+            aria-label="Time period"
+          >
+            ${periods.map(p => `
+              <button
+                type="button"
+                data-period="${p}"
+                aria-pressed="${p === period}"
+              >
+                ${p}
+              </button>
+            `).join("")}
+          </div>
+
+          <div class="sm-status">
+            <small data-updated>
+              Not loaded yet
+            </small>
+
+            <button
+              type="button"
+              class="sm-refresh"
+              aria-label="Refresh Smart Money"
+            >
+              ↻
+            </button>
+          </div>
+        </div>
+
+        <p
+          class="sm-message"
+          role="status"
+          aria-live="polite"
+        ></p>
+
+        <div class="sm-wrap" hidden>
+          <table class="sm-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Token</th>
+                <th>SM Buyers ↓</th>
+                <th>Buy Trades</th>
+                <th>Net Inflow</th>
+                <th>Market Cap</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="sm-footer">
+          <span>
+            Each buying wallet counts once.
+            Sellers-only are excluded.
+            <br>
+            Counts cover returned tracked addresses.
+          </span>
+
+          <span>
+            Refreshes every 3 minutes.
+          </span>
+        </div>
+      </div>
+    `;
+
+    const tbody =
+      panel.querySelector("tbody");
+
+    const wrap =
+      panel.querySelector(".sm-wrap");
+
+    const message =
+      panel.querySelector(".sm-message");
+
+    const updated =
+      panel.querySelector("[data-updated]");
+
+    const refresh =
+      panel.querySelector(".sm-refresh");
+
+    const active = () =>
+      window.RI_PREMIUM?.isActive(
+        "smart_money"
+      ) === true;
+
+    const node = (tag, text, cls) => {
+      const el =
+        document.createElement(tag);
+
+      if (text !== undefined) {
+        el.textContent = text;
+      }
+
+      if (cls) {
+        el.className = cls;
+      }
+
+      return el;
+    };
+
+    const money = (
+      value,
+      signed = false
+    ) => {
+      if (
+        value === null ||
+        !Number.isFinite(value)
+      ) {
+        return "—";
+      }
+
+      const formatted =
+        new Intl.NumberFormat(
+          "en-US",
+          {
+            style: "currency",
+            currency: "USD",
+            notation: "compact",
+            maximumFractionDigits: 2
+          }
+        ).format(Math.abs(value));
+
+      return (
+        value < 0
+          ? "−"
+          : signed && value > 0
+            ? "+"
+            : ""
+      ) + formatted;
+    };
+
+    const safeImage = value => {
+      try {
+        const url = new URL(value);
+
+        return (
+          url.protocol === "https:" &&
+          !url.username &&
+          !url.password
+        )
+          ? url.href
+          : null;
+
+      } catch {
+        return null;
+      }
+    };
+
+    async function runImages() {
+      if (
+        imageWorkers >= 2 ||
+        !active() ||
+        document.hidden
+      ) {
+        return;
+      }
+
+      const job = imageQueue.shift();
+
+      if (!job) return;
+
+      imageWorkers++;
+
+      try {
+        if (job.connected()) {
+          await job.run();
+        }
+      } finally {
+        imageWorkers--;
+        runImages();
+      }
+    }
+
+    function addImage(avatar, item) {
+      const fallback =
+        node("span", "◈");
+
+      const img = node("img");
+
+      img.alt = item.name + " logo";
+      img.loading = "lazy";
+
+      img.referrerPolicy =
+        "no-referrer";
+
+      img.hidden = true;
+
+      avatar.append(fallback, img);
+
+      let backupStarted = false;
+      let candidates = [];
+      let timer;
+
+      const next = () => {
+        clearTimeout(timer);
+
+        if (!avatar.isConnected) return;
+
+        if (candidates.length) {
+          img.src = candidates.shift();
+
+          timer = setTimeout(
+            next,
+            8000
+          );
+
+        } else if (!backupStarted) {
+          backupStarted = true;
+
+          imageQueue.push({
+            connected: () =>
+              avatar.isConnected,
+
+            run: async () => {
+              try {
+                const res = await fetch(
+                  API +
+                  "/api/token-images?ca=" +
+                  encodeURIComponent(
+                    item.contract
+                  ),
+                  {
+                    signal:
+                      AbortSignal.timeout(
+                        15000
+                      )
+                  }
+                );
+
+                const data =
+                  await res.json();
+
+                if (
+                  !res.ok ||
+                  !data.success ||
+                  data.contract !==
+                    item.contract
+                ) {
+                  return;
+                }
+
+                candidates = [
+                  ...new Set(
+                    (data.images || [])
+                      .map(safeImage)
+                      .filter(Boolean)
+                  )
+                ].slice(0, 4);
+
+                next();
+
+              } catch {}
+            }
+          });
+
+          runImages();
+
+        } else {
+          img.hidden = true;
+          fallback.hidden = false;
+        }
+      };
+
+      img.onload = () => {
+        clearTimeout(timer);
+
+        img.hidden = false;
+        fallback.hidden = true;
+      };
+
+      img.onerror = next;
+
+      const first =
+        safeImage(item.image);
+
+      if (first) {
+        candidates.push(first);
+      }
+
+      next();
+    }
+
+    function render(data) {
+      imageQueue.length = 0;
+
+      tbody.replaceChildren();
+
+      shownPeriod = data.period;
+
+      for (
+        const [index, item]
+        of data.items.entries()
+      ) {
+        const row = node("tr");
+
+        const cell = (
+          text,
+          label,
+          cls
+        ) => {
+          const td =
+            node("td", text, cls);
+
+          if (label) {
+            td.dataset.label = label;
+          }
+
+          row.append(td);
+
+          return td;
+        };
+
+        cell(String(index + 1));
+
+        const token = node(
+          "div",
+          undefined,
+          "sm-token"
+        );
+
+        const avatar = node(
+          "span",
+          undefined,
+          "sm-avatar"
+        );
+
+        const details = node("div");
+
+        const top = node(
+          "div",
+          undefined,
+          "sm-token-top"
+        );
+
+        const name = node(
+          "strong",
+          item.name,
+          "sm-name"
+        );
+
+        name.title = item.name;
+
+        const copy = node(
+          "button",
+          "▢ Copy CA",
+          "sm-copy"
+        );
+
+        copy.type = "button";
+        copy.title = item.contract;
+
+        copy.onclick = async () => {
+          try {
+            await navigator.clipboard
+              .writeText(item.contract);
+
+            copy.textContent =
+              "Copied ✓";
+
+            setTimeout(() => {
+              copy.textContent =
+                "▢ Copy CA";
+            }, 1500);
+
+          } catch {
+            message.textContent =
+              "Contract: " +
+              item.contract;
+          }
+        };
+
+        top.append(name, copy);
+
+        details.append(
+          top,
+
+          node(
+            "small",
+
+            item.contract.slice(0, 6) +
+            "…" +
+            item.contract.slice(-6),
+
+            "sm-address"
+          )
+        );
+
+        token.append(
+          avatar,
+          details
+        );
+
+        cell().append(token);
+
+        cell(
+          String(item.buyers),
+          "SM Buyers",
+          "sm-buyers"
+        );
+
+        cell(
+          String(item.buy_trades),
+          "Buy Trades"
+        );
+
+        cell(
+          money(
+            item.net_inflow_usd,
+            true
+          ),
+
+          "Net Inflow",
+
+          item.net_inflow_usd < 0
+            ? "sm-negative"
+            : "sm-positive"
+        );
+
+        cell(
+          money(item.market_cap_usd),
+          "Market Cap"
+        );
+
+        const analyze = node(
+          "a",
+          "Analyze ↗",
+          "sm-analyze"
+        );
+
+        analyze.href =
+          "/?ca=" +
+          encodeURIComponent(
+            item.contract
+          ) +
+          "#scanner";
+
+        analyze.target = "_blank";
+
+        analyze.rel =
+          "noopener noreferrer";
+
+        cell().append(analyze);
+
+        tbody.append(row);
+
+        addImage(avatar, item);
+      }
+
+      wrap.hidden =
+        !data.items.length;
+
+      updated.textContent =
+        "Updated " +
+        new Date(
+          data.measured_at
+        ).toLocaleTimeString();
+
+      message.textContent =
+        data.stale
+          ? "Refresh unavailable. Showing an older snapshot."
+          : data.items.length
+            ? ""
+            : "No tracked buyers found for this period.";
+    }
+
+    async function load() {
+      if (
+        !active() ||
+        document.hidden ||
+        current ||
+        Date.now() < retryAt
+      ) {
+        return;
+      }
+
+      const saved =
+        cache.get(period);
+
+      if (
+        saved &&
+        Date.now() -
+          Date.parse(
+            saved.measured_at
+          ) < 180000
+      ) {
+        if (shownPeriod !== period) {
+          render(saved);
+        }
+
+        return;
+      }
+
+      if (
+        saved &&
+        shownPeriod !== period
+      ) {
+        render(saved);
+      }
+
+      const requested = period;
+
+      const controller =
+        new AbortController();
+
+      current = controller;
+
+      refresh.disabled = true;
+
+      if (shownPeriod !== period) {
+        tbody.replaceChildren();
+
+        wrap.hidden = true;
+
+        updated.textContent =
+          "Loading…";
+      }
+
+      message.textContent =
+        "Loading smart money buyers…";
+
+      const timeout = setTimeout(
+        () => controller.abort(),
+        25000
+      );
+
+      try {
+        const headers =
+          await window.RI_PREMIUM
+            .getHeaders();
+
+        if (
+          controller.signal.aborted
+        ) {
+          return;
+        }
+
+        const res = await fetch(
+          API +
+          "/api/smart-money?period=" +
+          requested,
+          {
+            headers,
+
+            signal:
+              controller.signal,
+
+            cache: "no-store"
+          }
+        );
+
+        const data =
+          await res.json();
+
+        if (
+          current !== controller ||
+          !active() ||
+          period !== requested
+        ) {
+          return;
+        }
+
+        if (
+          !res.ok ||
+          data?.success !== true
+        ) {
+          if (
+            res.status === 401 ||
+            res.status === 403
+          ) {
+            cache.clear();
+
+            tbody.replaceChildren();
+
+            wrap.hidden = true;
+          }
+
+          throw new Error(
+            data?.error ||
+            "Smart Money unavailable."
+          );
+        }
+
+        if (
+          data.period !== requested ||
+          !Array.isArray(data.items) ||
+          data.items.length > 20 ||
+
+          !Number.isFinite(
+            Date.parse(
+              data.measured_at
+            )
+          ) ||
+
+          data.items.some(item =>
+            !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+              .test(
+                item.contract || ""
+              ) ||
+
+            typeof item.name !==
+              "string" ||
+
+            !Number.isSafeInteger(
+              item.buyers
+            ) ||
+
+            item.buyers < 1 ||
+
+            !Number.isSafeInteger(
+              item.buy_trades
+            ) ||
+
+            item.buy_trades <
+              item.buyers
+          )
+        ) {
+          throw new Error(
+            "Invalid Smart Money response."
+          );
+        }
+
+        cache.set(period, data);
+
+        retryAt = data.stale
+          ? Date.now() + 30000
+          : 0;
+
+        render(data);
+
+      } catch (error) {
+        if (
+          current !== controller ||
+          !active()
+        ) {
+          return;
+        }
+
+        retryAt =
+          Date.now() + 30000;
+
+        message.textContent =
+          (
+            shownPeriod === period &&
+            tbody.children.length
+              ? "Showing previous snapshot. "
+              : ""
+          ) +
+
+          (
+            error.name === "AbortError"
+              ? "Request timed out. Try again shortly."
+              : error.message
+          );
+
+      } finally {
+        clearTimeout(timeout);
+
+        if (
+          current === controller
+        ) {
+          current = null;
+
+          refresh.disabled = false;
+        }
+      }
+    }
+
+    function sync() {
+      const enabled = active();
+
+      if (!enabled) {
+        current?.abort();
+
+        current = null;
+
+        cache.clear();
+
+        imageQueue.length = 0;
+
+        tbody.replaceChildren();
+
+        wrap.hidden = true;
+
+        shownPeriod = "";
+        retryAt = 0;
+
+        refresh.disabled = false;
+
+        message.textContent = "";
+
+        wasActive = false;
+
+        return;
+      }
+
+      if (!wasActive) {
+        retryAt = 0;
+      }
+
+      wasActive = true;
+
+      runImages();
+
+      void load();
+    }
+
+    panel.querySelectorAll(
+      "[data-period]"
+    ).forEach(button => {
+      button.onclick = () => {
+        if (
+          !active() ||
+          button.dataset.period ===
+            period
+        ) {
+          return;
+        }
+
+        current?.abort();
+
+        current = null;
+
+        period =
+          button.dataset.period;
+
+        retryAt = 0;
+
+        refresh.disabled = false;
+
+        panel.querySelectorAll(
+          "[data-period]"
+        ).forEach(el => {
+          el.setAttribute(
+            "aria-pressed",
+
+            String(
+              el.dataset.period ===
+                period
+            )
+          );
+        });
+
+        void load();
+      };
+    });
+
+    refresh.onclick =
+      () => void load();
+
+    document.addEventListener(
+      "ri:premium-change",
+      sync
+    );
+
+    document.addEventListener(
+      "ri:account-change",
+      () => {
+        current?.abort();
+
+        current = null;
+
+        cache.clear();
+
+        shownPeriod = "";
+
+        tbody.replaceChildren();
+
+        wrap.hidden = true;
+
+        retryAt = 0;
+
+        sync();
+      }
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      sync
+    );
+
+    setInterval(() => {
+      if (
+        active() &&
+        !document.hidden
+      ) {
+        void load();
+      }
+    }, 15000);
+
+    sync();
+  }
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      { once: true }
+    );
+  } else {
+    init();
+  }
+})();

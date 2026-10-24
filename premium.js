@@ -35,6 +35,12 @@
         "Inspect the first token buyers."
       ],
 [
+  "smart_money",
+  "Smart Money Radar",
+  "Find top tokens by unique smart money buyers."
+],
+
+[
   "telegram_bot",
   "Premium Telegram bot",
   "A new Telegram bot. Coming soon."
@@ -699,6 +705,9 @@ $("rpBody").hidden =
         flags.premium
           ? "Verejný web: ZAPNUTÉ"
           : "Verejný web: VYPNUTÉ";
+
+$("rpSharedToken").hidden =
+  selected === "smart_money";
 
       let count = 0;
 
