@@ -2734,6 +2734,25 @@ main:has(#dashboard:not([hidden])) > header {
     <button
   type="button"
   class="admin-nav-button"
+  data-admin-section="support"
+  aria-controls="supportSection"
+>
+  <svg
+    class="nav-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path d="M3 14v-3a9 9 0 0 1 18 0v3"></path>
+    <rect x="3" y="12" width="4" height="8" rx="2"></rect>
+    <rect x="17" y="12" width="4" height="8" rx="2"></rect>
+  </svg>
+
+  <span>Support</span>
+</button>
+
+    <button
+  type="button"
+  class="admin-nav-button"
 data-admin-section="premium"
 aria-controls="premiumSection"
 >
@@ -2877,6 +2896,15 @@ aria-controls="premiumSection"
           </button>
         </div>
       </div>
+
+<section
+  id="supportSection"
+  class="admin-section"
+  aria-label="Support"
+  hidden
+>
+  <div id="riAdminSupport"></div>
+</section>
 
 <section
   id="usersSection"
@@ -3333,6 +3361,7 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
+  support: $("supportSection"),
   users: $("usersSection"),
   premium: $("premiumSection"),
   monitoring: $("monitoringSection"),
@@ -3348,6 +3377,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+  support: "Support",
   users: "Users",
   premium: "Premium",
   monitoring: "Monitoring",
@@ -5424,5 +5454,6 @@ const fields = {
   <script src="premium.js?v=8"></script>
 <script src="lab.js?v=28"></script>
 <script src="early.js?v=6"></script>
+<script src="admin-support.js?v=1"></script>
 </body>
 </html>
