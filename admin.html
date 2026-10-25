@@ -3326,12 +3326,40 @@ aria-controls="premiumSection"
       let client;
 
       try {
-        client = window.supabase.createClient(
+        const authStorage = window.localStorage;
+const authKey = "bagvyr_admin_auth";
+const migrationKey = authKey + "_local_v1";
+
+if (
+  authStorage.getItem(migrationKey) !== "1"
+) {
+  const legacy =
+    window.sessionStorage.getItem(authKey);
+
+  if (
+    legacy &&
+    !authStorage.getItem(authKey)
+  ) {
+    authStorage.setItem(
+      authKey,
+      legacy
+    );
+  }
+
+  authStorage.setItem(
+    migrationKey,
+    "1"
+  );
+}
+
+window.sessionStorage.removeItem(authKey);
+
+client = window.supabase.createClient(
           config.url,
           config.publishableKey,
           {
             auth: {
-              storage: window.sessionStorage,
+              storage: authStorage,
               storageKey: "bagvyr_admin_auth",
               persistSession: true,
               autoRefreshToken: true,
@@ -5210,10 +5238,8 @@ function showLogin(message = "") {
           }
 
 const fields = {
-  visitors24: "visitors_24h",
   visitors7: "visitors_7d",
   visitorsMonth: "visitors_month",
-  searches24: "searches_24h",
   websiteUsersTotal: "visitors_total",
   telegramUsersTotal: "telegram_users_total"
 };
@@ -5248,14 +5274,7 @@ const fields = {
           }
 
           renderMonthlyVisitors(data.monthly_visitors);
-          const distinct = Number(data.unique_tokens_24h);
-
-          $("uniqueTokens").textContent =
-            Number.isSafeInteger(distinct) &&
-            distinct >= 0
-              ? distinct.toLocaleString("en-US") +
-                " unique tokens"
-              : "Successfully loaded analyses";
+          void window.RI_DAILY_STATS?.refresh();
 
           $("monthLabel").textContent =
             "Since " +
@@ -5454,7 +5473,8 @@ const fields = {
   <script src="premium.js?v=11"></script>
 <script src="lab.js?v=28"></script>
 <script src="early.js?v=6"></script>
-<script src="smart.js?v=4"></script>
+<script src="smart.js?v=5"></script>
 <script src="admin-support.js?v=1"></script>
+<script src="admin-daily.js?v=1"></script>
 </body>
 </html>

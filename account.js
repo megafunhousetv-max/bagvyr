@@ -26,12 +26,40 @@
     let client;
 
     try {
-      client = window.supabase.createClient(
+      const authStorage = window.localStorage;
+const authKey = "bagvyr_admin_auth";
+const migrationKey = authKey + "_local_v1";
+
+if (
+  authStorage.getItem(migrationKey) !== "1"
+) {
+  const legacy =
+    window.sessionStorage.getItem(authKey);
+
+  if (
+    legacy &&
+    !authStorage.getItem(authKey)
+  ) {
+    authStorage.setItem(
+      authKey,
+      legacy
+    );
+  }
+
+  authStorage.setItem(
+    migrationKey,
+    "1"
+  );
+}
+
+window.sessionStorage.removeItem(authKey);
+
+client = window.supabase.createClient(
         config.url,
         config.publishableKey,
         {
           auth: {
-            storage: window.sessionStorage,
+            storage: authStorage,
             storageKey: "bagvyr_admin_auth",
             persistSession: true,
             autoRefreshToken: true,
@@ -288,8 +316,10 @@
             <h3>Premium Telegram bot</h3>
 
             <p>
-              Link your Telegram account when
-              the new bot is available.
+              Get your activation code here and send it
+              to the Premium bot on Telegram.
+              Access stays active while you meet
+              the Premium requirements.
             </p>
           </div>
 

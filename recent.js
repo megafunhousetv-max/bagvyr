@@ -480,24 +480,10 @@
           ).slice(0, 2)
         );
 
-        const url = imageURL(item.image);
-
-        if (url) {
-          const img = node("img");
-
-          img.alt = "";
-          img.loading = "lazy";
-          img.referrerPolicy = "no-referrer";
-
-          img.addEventListener(
-            "error",
-            () => img.remove(),
-            { once: true }
-          );
-
-          img.src = url;
-          avatar.append(img);
-        }
+        window.RI_HISTORY_IMAGE?.(
+          avatar,
+          item
+        );
 
         const identity = node(
           "span",

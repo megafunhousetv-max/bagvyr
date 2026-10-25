@@ -1260,7 +1260,7 @@ if (label) {
 
         const analyze = node(
           "a",
-          "Analyze ↗",
+          "Analyze",
           "sm-analyze"
         );
 
@@ -1271,7 +1271,7 @@ if (label) {
           ) +
           "#scanner";
 
-        analyze.target = "_blank";
+        analyze.target = "_self";
 
         analyze.rel =
           "noopener noreferrer";
