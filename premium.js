@@ -59,6 +59,32 @@ const keys = [
       );
 
     let flags = empty();
+    let access = {};
+
+    const accessKeys = [
+      ...modules.map(([key]) => key),
+      "history"
+    ];
+
+    const checks = key => `
+      <label>
+        <input
+          type="checkbox"
+          data-access="${key}"
+          data-audience="premium"
+        >
+        Pre Premium
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          data-access="${key}"
+          data-audience="public"
+        >
+        Verejne
+      </label>
+    `;
     let verified = false;
     let premiumAccess = false;
     let selected = null;
@@ -457,6 +483,38 @@ style.textContent += `
   }
 `;
 
+    style.textContent += `
+      body #riPremiumRoot .rp-controls {
+        flex-wrap: wrap;
+      }
+
+      body #riPremiumRoot .rp-controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #d4ecdf;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      body #riPremiumRoot
+      .rp-controls input[type="checkbox"] {
+        appearance: auto;
+        display: inline-block;
+        width: 17px;
+        height: 17px;
+        min-width: 17px;
+        margin: 0;
+        padding: 0;
+        accent-color: #50efb2;
+        cursor: pointer;
+      }
+
+      body #riPremiumRoot .rp-controls > small {
+        flex-basis: 100%;
+      }
+    `;
+
     document.head.append(style);
 
     root.innerHTML = `
@@ -492,14 +550,20 @@ style.textContent += `
           Zapnúť Premium
         </button>
 
-<button
-  type="button"
-  role="switch"
-  aria-checked="false"
-  data-toggle="public_access"
+<div
+  class="rp-controls"
+  data-admin-control
+  hidden
 >
-  Zapnúť verejné Premium bez prihlásenia
-</button>
+  <strong>História vyhľadávania</strong>
+
+  ${checks("history")}
+
+  <small>
+    Verejne = všetci prihlásení.
+    Každý vidí iba svoju históriu.
+  </small>
+</div>
 
 <button type="button" id="rpRefresh">
   Obnoviť stav
@@ -612,17 +676,7 @@ style.textContent += `
                   data-admin-control
                   hidden
                 >
-                  <small data-state="${key}"></small>
-
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked="false"
-                    data-toggle="${key}"
-                    aria-label="${title} na webe"
-                  >
-                    Zapnúť na webe
-                  </button>
+                  ${checks(key)}
                 </div>
               </article>
             `
@@ -666,14 +720,17 @@ style.textContent += `
     `;
 
 const available = key =>
-  verified || (
+  verified ||
+  (
     !adminMode &&
-    (
-      premiumAccess ||
-      flags.public_access === true
-    ) &&
     flags.premium === true &&
-    flags[key] === true
+    (
+      access[key]?.public === true ||
+      (
+        premiumAccess &&
+        access[key]?.premium === true
+      )
+    )
   );
 
     function publish() {
@@ -684,19 +741,14 @@ const available = key =>
         selected = null;
       }
 
-$("rpBody").hidden =
-  adminMode
-    ? !verified
-    : !(
-        verified ||
-        (
-          flags.premium === true &&
-          (
-            premiumAccess ||
-            flags.public_access === true
-          )
-        )
-      );
+$("rpBody").hidden = adminMode
+  ? !verified
+  : !(
+      verified ||
+      modules.some(
+        ([key]) => available(key)
+      )
+    );
 
       $("rpMaster").hidden =
         !adminMode || !verified;
@@ -780,18 +832,15 @@ if (button.dataset.toggle === "premium") {
       });
 
       root.querySelectorAll(
-        "[data-state]"
-      ).forEach(label => {
-        const on =
-          flags[label.dataset.state];
+        "[data-access]"
+      ).forEach(input => {
+        input.checked =
+          access[input.dataset.access]?.[
+            input.dataset.audience
+          ] === true;
 
-        label.textContent = on
-          ? (
-              flags.premium
-                ? "Verejný web: ZAPNUTÉ"
-                : "ZAPNUTÉ · Premium na webe je vypnuté"
-            )
-          : "Verejný web: VYPNUTÉ";
+        input.disabled =
+          busy || !verified;
       });
 
       $("rpRefresh").disabled = busy;
@@ -810,6 +859,7 @@ if (button.dataset.toggle === "premium") {
 
       const next = JSON.stringify([
         flags,
+        access,
         verified,
         premiumAccess,
         selected
@@ -825,38 +875,32 @@ if (button.dataset.toggle === "premium") {
     }
 
 async function headers() {
-  if (
-    !adminMode &&
-    !verified &&
-    flags.premium === true &&
-    flags.public_access === true
-  ) {
-    return {};
-  }
-
-  if (!verified && !premiumAccess) {
-    throw new Error("Premium access required.");
-  }
-
   const authClient = adminMode
     ? window.BAGVYR_ADMIN_CLIENT
     : window.RI_ACCOUNT_CLIENT;
 
-  if (!authClient) {
-    throw new Error("Sign in again.");
+  const result = authClient
+    ? await authClient.auth.getSession()
+    : null;
+
+  if (result?.error) {
+    throw result.error;
   }
 
-  const { data, error } =
-    await authClient.auth.getSession();
+  const session = result?.data?.session;
 
-  if (error || !data?.session) {
-    throw new Error("Sign in again.");
+  if (adminMode && !session) {
+    throw new Error(
+      "Sign in again."
+    );
   }
 
-  return {
-    Authorization:
-      "Bearer " + data.session.access_token
-  };
+  return session
+    ? {
+        Authorization:
+          "Bearer " + session.access_token
+      }
+    : {};
 }
 
 let premiumContract = "";
@@ -1187,11 +1231,19 @@ window.RI_PREMIUM = {
   getHeaders: headers
 };
 
-async function refresh(feature = null) {
-  if (feature !== null && !adminMode) return;
+async function refresh(
+  feature = null,
+  audience = null
+) {
+  if (feature !== null && !adminMode) {
+    return;
+  }
 
   if (busy) {
-    if (feature === null) again = true;
+    if (feature === null) {
+      again = true;
+    }
+
     return;
   }
 
@@ -1212,7 +1264,9 @@ async function refresh(feature = null) {
       const result =
         await client.auth.getSession();
 
-      if (result.error) throw result.error;
+      if (result.error) {
+        throw result.error;
+      }
 
       if (result.data?.session) {
         authHeaders.Authorization =
@@ -1231,31 +1285,59 @@ async function refresh(feature = null) {
     }
 
     let saved = null;
+    let savedAccess = null;
 
     if (adminMode) {
       const result = await client.rpc(
         "ri_premium_settings",
         {
-          p_feature: feature,
+          p_feature:
+            audience ? null : feature,
 
           p_enabled:
-            feature === null
+            feature === null || audience
               ? null
               : !flags[feature]
         }
       );
 
-      if (result.error) throw result.error;
+      if (result.error) {
+        throw result.error;
+      }
 
       saved = result.data;
+
+      const ruleResult = await client.rpc(
+        "ri_feature_access",
+        {
+          p_feature:
+            audience ? feature : null,
+
+          p_audience:
+            audience,
+
+          p_enabled:
+            audience
+              ? access[feature]?.[audience] !== true
+              : null
+        }
+      );
+
+      if (ruleResult.error) {
+        throw ruleResult.error;
+      }
+
+      savedAccess =
+        ruleResult.data?.access;
     }
 
     const response = await fetch(
-      API + (
-        adminMode
-          ? "/api/premium/admin/status"
-          : "/api/premium/status"
-      ),
+      API +
+        (
+          adminMode
+            ? "/api/premium/admin/status"
+            : "/api/premium/status"
+        ),
       {
         headers: authHeaders,
         cache: "no-store",
@@ -1270,20 +1352,41 @@ async function refresh(feature = null) {
         ...data,
 
         ...Object.fromEntries(
-          keys.map(key => [key, saved[key]])
+          keys.map(
+            key => [key, saved[key]]
+          )
         )
       };
+    }
+
+    if (savedAccess) {
+      data.access = savedAccess;
     }
 
     if (
       !response.ok ||
       data?.success !== true ||
+
       keys.some(
-        key => typeof data[key] !== "boolean"
+        key =>
+          typeof data[key] !== "boolean"
       ) ||
+
+      accessKeys.some(
+        key =>
+          typeof data.access?.[key]?.premium !==
+            "boolean" ||
+          typeof data.access?.[key]?.public !==
+            "boolean"
+      ) ||
+
       typeof data.admin !== "boolean" ||
       typeof data.premium_active !== "boolean" ||
-      (adminMode && data.admin !== true)
+
+      (
+        adminMode &&
+        data.admin !== true
+      )
     ) {
       throw new Error(
         data?.error ||
@@ -1291,30 +1394,39 @@ async function refresh(feature = null) {
       );
     }
 
-    if (version !== generation) return;
+    if (version !== generation) {
+      return;
+    }
 
     flags = Object.fromEntries(
-      keys.map(key => [key, data[key]])
+      keys.map(
+        key => [key, data[key]]
+      )
     );
 
-    verified = data.admin === true;
+    access = data.access;
+
+    verified =
+      data.admin === true;
 
     premiumAccess =
       data.premium_active === true;
 
-$("rpMessage").textContent =
-  verified
-    ? "Admin access active. All tools are available regardless of public switches."
-    : flags.premium !== true
-      ? "Premium is temporarily unavailable."
-      : flags.public_access === true
-        ? "Premium is currently open to everyone. No sign-in required."
-        : !premiumAccess
-          ? "Sign in with a Premium account to access these tools."
-          : "";
+    $("rpMessage").textContent =
+      verified
+        ? "Admin access active. All tools are available."
+        : flags.premium !== true
+          ? "Premium is temporarily unavailable."
+          : modules.some(
+              ([key]) => available(key)
+            )
+            ? ""
+            : "No tools are available for your account. Sign in or check your Premium access.";
 
   } catch (error) {
-    if (version !== generation) return;
+    if (version !== generation) {
+      return;
+    }
 
     verified = false;
     premiumAccess = false;
@@ -1326,6 +1438,7 @@ $("rpMessage").textContent =
 
   } finally {
     busy = false;
+
     publish();
 
     if (again) {
@@ -1367,6 +1480,29 @@ $("rpMessage").textContent =
         );
       }
     });
+
+    root.addEventListener(
+      "change",
+      event => {
+        const input = event.target.closest(
+          "[data-access]"
+        );
+
+        if (
+          !adminMode ||
+          !input ||
+          !verified ||
+          busy
+        ) {
+          return;
+        }
+
+        void refresh(
+          input.dataset.access,
+          input.dataset.audience
+        );
+      }
+    );
 
     $("rpRefresh").onclick =
       () => void refresh();
