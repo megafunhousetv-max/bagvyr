@@ -35,7 +35,7 @@ exitAnalysis: "/api/exit-analysis"
   EARLY_TRANSACTION_LIMIT: 50,
 
   REQUEST_TIMEOUT: 30000,
-  MARKET_TIMEOUT: 7000,
+  MARKET_TIMEOUT: 15000,
   MARKET_REFRESH_MS: 5000
 };
 
@@ -619,6 +619,12 @@ hideResults();
       data;
 
 renderAnalysis(data);
+
+riRenderVolume24h(
+  data?.market?.volume24hUsd ??
+    data?.volume24hUsd,
+  contract
+);
 
 rememberSearch?.(data);
 
@@ -4276,6 +4282,83 @@ function stopMarketRefresh() {
     false;
 }
 
+const riLastVolume24h = new Map();
+
+function riRenderVolume24h(
+  value,
+  contract
+) {
+  if (
+    !contract ||
+    state.currentContract !== contract
+  ) {
+    return;
+  }
+
+  const element =
+    document.getElementById(
+      "liveVolume24h"
+    );
+
+  if (!element) return;
+
+  const typeOK =
+    typeof value === "number" ||
+    (
+      typeof value === "string" &&
+      value.trim() !== ""
+    );
+
+  const number =
+    typeOK ? Number(value) : NaN;
+
+  const fresh =
+    Number.isFinite(number) &&
+    number >= 0;
+
+  if (fresh) {
+    if (
+      riLastVolume24h.size >= 50 &&
+      !riLastVolume24h.has(contract)
+    ) {
+      riLastVolume24h.delete(
+        riLastVolume24h.keys().next().value
+      );
+    }
+
+    riLastVolume24h.set(contract, {
+      usd: number,
+      receivedAt: Date.now()
+    });
+  }
+
+  const saved =
+    riLastVolume24h.get(contract);
+
+  if (!saved) {
+    setText(element, "---");
+
+    element.title =
+      "24h volume has not loaded yet.";
+
+    return;
+  }
+
+  setText(
+    element,
+    formatCurrencyCompact(saved.usd)
+  );
+
+  element.title =
+    (
+      fresh
+        ? "Last received: "
+        : "Last known value. Last received: "
+    ) +
+    new Date(
+      saved.receivedAt
+    ).toLocaleTimeString();
+}
 
 async function refreshMarket() {
   const contract =
@@ -4406,22 +4489,9 @@ async function refreshMarket() {
       LIVE VOLUME 24H
     */
 
-    const rawVolume24h = data.volume24hUsd;
-
-    const volume24hUsd =
-      rawVolume24h === null ||
-      rawVolume24h === undefined ||
-      rawVolume24h === ""
-        ? null
-        : Number(rawVolume24h);
-
-    setText(
-      document.getElementById("liveVolume24h"),
-      volume24hUsd !== null &&
-      Number.isFinite(volume24hUsd) &&
-      volume24hUsd >= 0
-        ? formatCurrencyCompact(volume24hUsd)
-        : "---"
+    riRenderVolume24h(
+      data.volume24hUsd,
+      contract
     );
 
 
