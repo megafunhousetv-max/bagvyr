@@ -4360,9 +4360,122 @@ function riRenderVolume24h(
     ).toLocaleTimeString();
 }
 
+let riVolumeRequest = null;
+
+async function riRefreshVolume24h(
+  contract
+) {
+  if (
+    !contract ||
+    state.currentContract !== contract
+  ) {
+    return;
+  }
+
+  const saved =
+    riLastVolume24h.get(contract);
+
+  if (
+    saved &&
+    Date.now() - saved.receivedAt < 30000
+  ) {
+    return;
+  }
+
+  if (
+    riVolumeRequest?.contract === contract
+  ) {
+    return;
+  }
+
+  riVolumeRequest?.controller.abort();
+
+  const request = {
+    contract,
+    controller: new AbortController()
+  };
+
+  riVolumeRequest = request;
+
+  const timer = setTimeout(
+    () => request.controller.abort(),
+    10000
+  );
+
+  try {
+    const response = await fetch(
+      CONFIG.API_BASE +
+        "/api/volume?ca=" +
+        encodeURIComponent(contract),
+
+      {
+        headers: {
+          Accept: "application/json"
+        },
+
+        cache: "no-store",
+
+        signal:
+          request.controller.signal
+      }
+    );
+
+    if (!response.ok) return;
+
+    const data =
+      await response.json();
+
+    if (
+      state.currentContract !== contract ||
+      riVolumeRequest !== request ||
+      data?.success !== true ||
+      data.contractAddress !== contract
+    ) {
+      return;
+    }
+
+    riRenderVolume24h(
+      data.volume24hUsd,
+      contract
+    );
+
+    const element =
+      document.getElementById(
+        "liveVolume24h"
+      );
+
+    if (
+      element &&
+      typeof data.source === "string"
+    ) {
+      element.title +=
+        " · " + data.source;
+    }
+
+  } catch {
+    // Ponechaj poslednú načítanú hodnotu.
+
+  } finally {
+    clearTimeout(timer);
+
+    if (
+      riVolumeRequest === request
+    ) {
+      riVolumeRequest = null;
+    }
+  }
+}
+
 async function refreshMarket() {
   const contract =
     state.currentContract;
+
+  if (
+    contract &&
+    document.visibilityState !== "hidden"
+  ) {
+    void riRefreshVolume24h(contract);
+  }
 
   if (
     !contract ||
