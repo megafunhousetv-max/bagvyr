@@ -542,6 +542,9 @@ function handleAnalyze() {
    ========================================================= */
 
 async function analyzeToken(contract) {
+  const rememberSearch =
+    window.RI_RECENT_SEARCHES?.start(contract);
+
   try {
     state.analyzing = true;
 
@@ -616,6 +619,8 @@ hideResults();
       data;
 
 renderAnalysis(data);
+
+rememberSearch?.(data);
 
 void riLoadLaunchRiskSignals(
   contract,

@@ -993,6 +993,9 @@ $("rpTokenForm").addEventListener(
       30000
     );
 
+    const rememberSearch =
+      window.RI_RECENT_SEARCHES?.start(contract);
+
     premiumContract = contract;
 
     $("rpTokenSummary").hidden = false;
@@ -1088,6 +1091,35 @@ $("rpTokenForm").addEventListener(
       ]);
 
       if (premiumRequest !== controller) return;
+
+      if (
+        results.some(
+          result =>
+            result.status === "fulfilled"
+        )
+      ) {
+        const tokenName =
+          $("rpTokenName").textContent.trim();
+
+        const tokenSymbol =
+          $("rpTokenSymbol").textContent.trim();
+
+        rememberSearch?.({
+          name:
+            tokenName === "Selected token"
+              ? ""
+              : tokenName,
+
+          symbol:
+            tokenSymbol === "—"
+              ? ""
+              : tokenSymbol,
+
+          image:
+            $("rpTokenImage")
+              .getAttribute("src") || ""
+        });
+      }
 
       $("rpTokenMessage").textContent =
         results.some(
