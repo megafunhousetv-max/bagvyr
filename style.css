@@ -16084,3 +16084,131 @@ table.ri-overview-compact-table tbody > tr:hover {
     align-items: stretch;
   }
 }
+
+
+/* HOME — Telegram and X cards */
+
+#home .ri-home-bot.ri-home-socials {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+
+  width: 100%;
+  max-width: 740px;
+  margin: 22px auto 0;
+
+  text-align: left;
+}
+
+#home .ri-home-social-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  min-width: 0;
+  padding: 18px 36px 18px 16px;
+
+  border: 1px solid rgba(48, 235, 167, 0.32);
+  border-radius: 12px;
+
+  background: rgba(2, 23, 16, 0.78);
+  color: #37efb4;
+  text-decoration: none;
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+#home .ri-home-social-card:hover {
+  border-color: rgba(55, 239, 180, 0.72);
+  background: rgba(6, 38, 27, 0.92);
+}
+
+#home .ri-home-social-card:focus-visible {
+  outline: 2px solid #effff6;
+  outline-offset: 4px;
+}
+
+#home .ri-home-social-icon {
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 50px;
+  width: 50px;
+  height: 50px;
+
+  border: 1px solid rgba(55, 239, 180, 0.25);
+  border-radius: 50%;
+  background: rgba(14, 66, 46, 0.15);
+}
+
+#home .ri-home-social-icon svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#home .ri-home-social-icon-x {
+  color: #e5eee9;
+}
+
+#home .ri-home-social-icon-x svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  stroke: none;
+}
+
+#home .ri-home-social-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+#home .ri-home-social-title {
+  color: #37efb4;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+#home .ri-home-social-description {
+  color: #b3c4ba;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#home .ri-home-social-address {
+  color: #93aa9e;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+#home .ri-home-social-arrow {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+
+  color: #37efb4;
+  font-size: 19px;
+  line-height: 1;
+}
+
+@media (max-width: 600px) {
+  #home .ri-home-bot.ri-home-socials {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    max-width: 400px;
+  }
+}
