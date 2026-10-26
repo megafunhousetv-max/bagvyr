@@ -4467,6 +4467,112 @@ function riRenderVolume24h(
     new Date(
       saved.receivedAt
     ).toLocaleTimeString();
+
+  void riSyncVolumeScore(contract);
+}
+
+const riVolumeScoreInFlight = new WeakSet();
+const riVolumeScoreRetryAt = new WeakMap();
+
+async function riSyncVolumeScore(contract) {
+  const analysis = state.currentAnalysis;
+  const metric = "24h volume (USD)";
+  const saved = riLastVolume24h.get(contract);
+
+  if (
+    !analysis ||
+    state.currentContract !== contract ||
+    analysis.contractAddress !== contract ||
+    !Array.isArray(analysis.score?.missing) ||
+    !analysis.score.missing.includes(metric) ||
+    !saved ||
+    !Number.isFinite(saved.usd) ||
+    saved.usd < 0 ||
+    Date.now() - saved.receivedAt > 30000 ||
+    riVolumeScoreInFlight.has(analysis) ||
+    Date.now() < (
+      riVolumeScoreRetryAt.get(analysis) || 0
+    )
+  ) {
+    return;
+  }
+
+  riVolumeScoreInFlight.add(analysis);
+
+  riVolumeScoreRetryAt.set(
+    analysis,
+    Date.now() + 30000
+  );
+
+  try {
+    const data = await apiRequest(
+      `${CONFIG.ENDPOINTS.analyze}?ca=${encodeURIComponent(contract)}`
+    );
+
+    if (
+      state.currentContract !== contract ||
+      state.currentAnalysis !== analysis ||
+      data?.success !== true ||
+      data.contractAddress !== contract
+    ) {
+      return;
+    }
+
+    const volume =
+      data.market?.volume24hUsd ??
+      data.volume24hUsd;
+
+    const score = data.score;
+
+    const row = Array.isArray(score?.breakdown)
+      ? score.breakdown.find(
+          item => item.metric === metric
+        )
+      : null;
+
+    if (
+      typeof volume !== "number" ||
+      !Number.isFinite(volume) ||
+      volume < 0 ||
+      typeof score?.score !== "number" ||
+      !Number.isFinite(score.score) ||
+      score.score < 0 ||
+      score.score > 100 ||
+      !row ||
+      row.value !== volume ||
+      !Array.isArray(score.missing) ||
+      score.missing.includes(metric)
+    ) {
+      return;
+    }
+
+    state.currentAnalysis = data;
+
+    renderAnalysis(data);
+
+    riRenderVolume24h(
+      volume,
+      contract
+    );
+
+    riRenderHolderOverview(
+      data.providerTokenInfo?.token_info || {},
+      data
+    );
+
+    void riLoadLaunchRiskSignals(
+      contract,
+      data
+    );
+
+  } catch (error) {
+    console.warn(
+      "Volume score refresh failed:",
+      error
+    );
+  } finally {
+    riVolumeScoreInFlight.delete(analysis);
+  }
 }
 
 let riVolumeRequest = null;
