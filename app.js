@@ -554,6 +554,10 @@ async function analyzeToken(contract) {
 state.currentContract =
   contract;
 
+riRenderVolume24h(null, contract);
+
+void riRefreshVolume24h(contract);
+
 void loadDexPaidBadge(contract);
 void loadCoinGeckoBadge(contract);
 
@@ -2342,6 +2346,23 @@ function renderCreatorWallet(
 
   elements.creatorWallet.innerHTML =
     "";
+
+  const creatorSection =
+    elements.creatorWallet.closest(
+      "details, section"
+    );
+
+  creatorSection
+    ?.querySelectorAll('a[href="#"]')
+    .forEach(link => {
+      if (
+        link.textContent
+          .trim()
+          .toUpperCase() === "SOLSCAN"
+      ) {
+        link.hidden = true;
+      }
+    });
 
   const walletText =
     document.createElement(
@@ -4284,6 +4305,50 @@ function stopMarketRefresh() {
 
 const riLastVolume24h = new Map();
 
+const RI_VOLUME_STORAGE =
+  "ri_volume24h_v1:";
+
+function riRestoreVolume24h(contract) {
+  if (
+    riLastVolume24h.has(contract)
+  ) {
+    return;
+  }
+
+  try {
+    const saved = JSON.parse(
+      sessionStorage.getItem(
+        RI_VOLUME_STORAGE + contract
+      )
+    );
+
+    const age =
+      Date.now() - saved?.receivedAt;
+
+    if (
+      typeof saved?.usd === "number" &&
+      Number.isFinite(saved.usd) &&
+      saved.usd >= 0 &&
+      age >= 0 &&
+      age <= 15 * 60 * 1000
+    ) {
+      if (
+        riLastVolume24h.size >= 50
+      ) {
+        riLastVolume24h.delete(
+          riLastVolume24h.keys()
+            .next().value
+        );
+      }
+
+      riLastVolume24h.set(
+        contract,
+        saved
+      );
+    }
+  } catch {}
+}
+
 function riRenderVolume24h(
   value,
   contract
@@ -4326,11 +4391,55 @@ function riRenderVolume24h(
       );
     }
 
-    riLastVolume24h.set(contract, {
+    const savedValue = {
       usd: number,
       receivedAt: Date.now()
-    });
+    };
+
+    riLastVolume24h.set(
+      contract,
+      savedValue
+    );
+
+    try {
+      sessionStorage.setItem(
+        RI_VOLUME_STORAGE + contract,
+        JSON.stringify(savedValue)
+      );
+
+      const keys = Object.keys(
+        sessionStorage
+      ).filter(key =>
+        key.startsWith(
+          RI_VOLUME_STORAGE
+        )
+      );
+
+      if (keys.length > 50) {
+        const stamp = key => {
+          try {
+            return JSON.parse(
+              sessionStorage.getItem(key)
+            )?.receivedAt || 0;
+          } catch {
+            return 0;
+          }
+        };
+
+        keys.sort((x, y) =>
+          stamp(x) - stamp(y)
+        );
+
+        keys
+          .slice(0, keys.length - 50)
+          .forEach(key =>
+            sessionStorage.removeItem(key)
+          );
+      }
+    } catch {}
   }
+
+  riRestoreVolume24h(contract);
 
   const saved =
     riLastVolume24h.get(contract);
@@ -4371,6 +4480,8 @@ async function riRefreshVolume24h(
   ) {
     return;
   }
+
+  riRestoreVolume24h(contract);
 
   const saved =
     riLastVolume24h.get(contract);
@@ -8792,7 +8903,18 @@ function riRenderHolderOverview(
           ${
             riOverviewRing(
               "Dev holdings",
-              info.dev_holding_percent,
+
+              info.dev_holding_percent ??
+                (
+                  analysis?.contractAddress ===
+                    state.currentContract
+                    ? analysis?.creator?.supplyOwned ??
+                      analysis?.creator?.percentage ??
+                      analysis?.creator?.supplyPercentage ??
+                      analysis?.creator?.percentOwned
+                    : null
+                ),
+
               "#24eea2"
             )
           }
