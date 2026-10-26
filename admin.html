@@ -4029,13 +4029,18 @@ async function loadUsers(page = usersPage) {
       const botButton = document.createElement("button");
       const botResult = document.createElement("div");
 
+      let botWorking = false;
+
+      const isCurrentUserRow = () =>
+        generation === usersGeneration &&
+        session?.user.id === owner;
+
       botButton.type = "button";
       botButton.textContent = "New bot code";
 
       botButton.title =
-        "Creates a new activation code assigned to this account. " +
-        "The previous unused code stops working. " +
-        "This does not grant Premium.";
+        "Prepare a new code for this account. " +
+        "It will appear on the user's account only after Send code.";
 
       botButton.style.display = "block";
       botButton.style.marginTop = "8px";
@@ -4045,43 +4050,36 @@ async function loadUsers(page = usersPage) {
 
       botButton.addEventListener("click", async () => {
         if (
-          botButton.disabled ||
+          botWorking ||
           usersLoading ||
-          generation !== usersGeneration ||
-          session?.user.id !== owner
+          !isCurrentUserRow()
         ) {
           return;
         }
 
+        botWorking = true;
         botButton.disabled = true;
-        botResult.replaceChildren();
+        botResult.textContent = "Preparing code…";
 
         try {
-          const result = await client.rpc(
+          const { data, error } = await client.rpc(
             "ri_admin_bot_activation_code",
             {
               p_user_id: user.id
             }
           );
 
-          if (
-            generation !== usersGeneration ||
-            session?.user.id !== owner
-          ) {
-            return;
-          }
-
-          if (result.error) throw result.error;
-
-          const data = result.data;
+          if (!isCurrentUserRow()) return;
+          if (error) throw error;
 
           if (
             data?.success !== true ||
-            data.state !== "code_ready" ||
+            data.state !== "draft_ready" ||
+            typeof data.code_id !== "string" ||
             !/^[1-9][0-9]{6}$/.test(data.code || "")
           ) {
             throw new Error(
-              "A bot code could not be created."
+              "A bot code could not be prepared."
             );
           }
 
@@ -4092,57 +4090,95 @@ async function loadUsers(page = usersPage) {
 
           const note = document.createElement("small");
           note.textContent =
-            "Assigned to this user · One-time use";
+            "Draft · Not sent to this user yet";
           note.style.display = "block";
 
-          const copy = document.createElement("button");
-          copy.type = "button";
-          copy.textContent = "Copy code";
+          const send = document.createElement("button");
+          send.type = "button";
+          send.textContent = "Send code";
 
-          copy.addEventListener("click", async () => {
+          send.addEventListener("click", async () => {
             if (
-              generation !== usersGeneration ||
-              session?.user.id !== owner ||
-              !botResult.contains(copy)
+              botWorking ||
+              usersLoading ||
+              !isCurrentUserRow() ||
+              !botResult.contains(send)
             ) {
               return;
             }
 
+            botWorking = true;
+            botButton.disabled = true;
+            send.disabled = true;
+            send.textContent = "Sending…";
+
             try {
-              await navigator.clipboard.writeText(
-                data.code
+              const sent = await client.rpc(
+                "ri_admin_send_bot_code",
+                {
+                  p_user_id: user.id,
+                  p_code_id: data.code_id
+                }
               );
 
               if (
-                generation === usersGeneration &&
-                session?.user.id === owner &&
-                botResult.contains(copy)
+                !isCurrentUserRow() ||
+                !botResult.contains(send)
               ) {
-                copy.textContent = "Copied";
+                return;
               }
-            } catch {
+
+              if (sent.error) throw sent.error;
+
               if (
-                generation === usersGeneration &&
-                session?.user.id === owner &&
-                botResult.contains(copy)
+                sent.data?.success !== true ||
+                sent.data.state !== "code_sent" ||
+                sent.data.code !== data.code
               ) {
-                copy.textContent = "Select code manually";
+                throw new Error(
+                  "Code delivery could not be confirmed."
+                );
+              }
+
+              note.textContent =
+                "Sent to this user's website account. Premium is still required.";
+
+              send.textContent = "Code sent";
+              send.disabled = true;
+            } catch (error) {
+              if (
+                isCurrentUserRow() &&
+                botResult.contains(send)
+              ) {
+                note.textContent =
+                  error?.message ||
+                  "Code could not be sent.";
+
+                send.textContent = "Retry Send code";
+                send.disabled = false;
+              }
+            } finally {
+              botWorking = false;
+
+              if (isCurrentUserRow()) {
+                botButton.disabled = false;
               }
             }
           });
 
-          botResult.append(code, note, copy);
+          botResult.replaceChildren(code, note, send);
         } catch (error) {
-          if (
-            generation === usersGeneration &&
-            session?.user.id === owner
-          ) {
+          if (isCurrentUserRow()) {
             botResult.textContent =
               error?.message ||
-              "A bot code could not be created.";
+              "A bot code could not be prepared.";
           }
         } finally {
-          botButton.disabled = false;
+          botWorking = false;
+
+          if (isCurrentUserRow()) {
+            botButton.disabled = false;
+          }
         }
       });
 
