@@ -2642,6 +2642,279 @@ main:has(#dashboard:not([hidden])) > header {
   }
 </style>
 
+<style>
+  /* Users page */
+  #usersSection {
+    --users-border: rgba(98, 184, 145, .18);
+    --users-muted: #91aa9e;
+    --users-accent: #43e6ad;
+    padding-top: 12px;
+  }
+
+  #usersSection .ri-users-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 20px 22px;
+    border: 1px solid var(--users-border);
+    border-radius: 16px;
+    background: #0a1d15;
+  }
+
+  #usersSection h2 {
+    margin: 0;
+    color: #edf7f1;
+    font-size: 20px;
+    letter-spacing: -.4px;
+  }
+
+  #usersSection #usersCount {
+    margin: 7px 0 0;
+    color: var(--users-muted);
+    font-size: 13px;
+  }
+
+  #usersSection button {
+    min-height: 38px;
+    padding: 9px 13px;
+    border: 1px solid rgba(125, 174, 149, .22);
+    border-radius: 9px;
+    background: #14271e;
+    color: #e5f1e9;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition:
+      background .15s ease,
+      border-color .15s ease;
+  }
+
+  #usersSection button:hover:not(:disabled) {
+    background: #1b3528;
+    border-color: rgba(67, 230, 173, .5);
+  }
+
+  #usersSection button:focus-visible {
+    outline: 2px solid var(--users-accent);
+    outline-offset: 3px;
+  }
+
+  #usersSection button:disabled {
+    opacity: .45;
+    cursor: default;
+  }
+
+  #usersSection #usersReload {
+    background: #143b2c;
+    color: #9ff4ce;
+    border-color: #28583f;
+  }
+
+  #usersSection #usersStatus {
+    margin: 14px 0;
+    color: #dfc67e;
+    overflow-wrap: anywhere;
+  }
+
+  #usersSection #usersStatus:empty {
+    display: none;
+  }
+
+  #usersSection .ri-users-scroll {
+    margin: 18px 0;
+    overflow-x: auto;
+    border: 1px solid var(--users-border);
+    border-radius: 16px;
+    background: #071910;
+    scrollbar-color: #29553e #071910;
+  }
+
+  #usersSection .ri-users-table {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: collapse;
+    font-family: inherit;
+  }
+
+  #usersSection th {
+    padding: 16px 12px;
+    background: #10271c;
+    color: #9fb9aa;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    border-bottom: 1px solid var(--users-border);
+  }
+
+  #usersSection td {
+    padding: 18px 12px;
+    color: #deebe3;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(98, 184, 145, .12);
+  }
+
+  #usersSection tbody tr {
+    background: #071910;
+    transition: background .15s ease;
+  }
+
+  #usersSection tbody tr:nth-child(even) {
+    background: #0a1d14;
+  }
+
+  #usersSection tbody tr:hover {
+    background: #10281c;
+  }
+
+  #usersSection tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  #usersSection th:first-child,
+  #usersSection td:first-child {
+    padding-left: 20px;
+    text-align: left;
+  }
+
+  #usersSection td:first-child {
+    min-width: 205px;
+    max-width: 280px;
+    overflow-wrap: anywhere;
+  }
+
+  #usersSection td strong {
+    display: block;
+    color: #f0f7f2;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  #usersSection td small {
+    display: block;
+    margin-top: 6px;
+    color: var(--users-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  #usersSection .ri-user-flag {
+    display: inline-grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  #usersSection .ri-user-flag.is-yes {
+    background: rgba(45, 190, 130, .13);
+    border-color: rgba(64, 218, 155, .25);
+    color: #50dca6;
+  }
+
+  #usersSection .ri-user-flag.is-no {
+    background: rgba(194, 87, 87, .09);
+    border-color: rgba(194, 87, 87, .2);
+    color: #c88484;
+  }
+
+  #usersSection td:last-child {
+    min-width: 270px;
+    width: 290px;
+    padding-right: 20px;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #usersSection td:last-child > button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 5px 3px 0 !important;
+    vertical-align: middle;
+  }
+
+  #usersSection td:last-child > button:nth-of-type(2) {
+    background: transparent;
+    border-style: dashed;
+    color: #9fc8b3;
+  }
+
+  #usersSection td:last-child > div:empty {
+    display: none;
+  }
+
+  #usersSection td:last-child > div:not(:empty) {
+    margin-top: 12px !important;
+    padding: 14px;
+    border: 1px solid #28583f;
+    border-radius: 12px;
+    background: #0d2419;
+  }
+
+  #usersSection td:last-child code {
+    display: block;
+    color: #b0f6d4;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 22px !important;
+    font-weight: 700;
+    letter-spacing: 3px !important;
+    line-height: 1.3;
+  }
+
+  #usersSection td:last-child > div button {
+    margin-top: 10px;
+    min-height: 32px;
+    padding: 6px 11px;
+    background: #183d2b;
+    color: #b5f1d2;
+  }
+
+  #usersSection .ri-users-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 2px;
+  }
+
+  #usersSection #usersPage {
+    color: #adc4b6;
+    font-size: 12px;
+  }
+
+  #usersSection .ri-users-note {
+    margin: 16px 2px 0;
+    color: #839d8e;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    #usersSection .ri-users-heading {
+      padding: 16px;
+    }
+
+    #usersSection h2 {
+      font-size: 18px;
+    }
+
+    #usersSection .ri-users-scroll {
+      border-radius: 12px;
+    }
+  }
+</style>
+
 </head>
 
 <body>
