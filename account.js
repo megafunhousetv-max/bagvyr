@@ -471,7 +471,7 @@ client = window.supabase.createClient(
 
     window.RI_ACCOUNT = { isAdmin };
 
-        let telegramAccess = null;
+    let telegramAccess = null;
     let telegramRequest = null;
     let telegramNextCheck = 0;
     let telegramGeneration = 0;
@@ -485,8 +485,7 @@ client = window.supabase.createClient(
         mode !== "password";
 
       const data =
-        ready &&
-        telegramAccess?.owner === owner
+        ready && telegramAccess?.owner === owner
           ? telegramAccess.data
           : null;
 
@@ -501,72 +500,60 @@ client = window.supabase.createClient(
 
       if (!ready) {
         code.value = "";
-
         status.textContent =
           "Sign in to check your Premium access.";
-
         return;
       }
 
       if (!data) {
         code.value = "";
-
         status.textContent =
           telegramAccess?.owner === owner &&
           telegramAccess.error
             ? "Premium verification is unavailable. Please retry shortly."
             : "Checking your Premium access…";
-
         return;
       }
 
-      const eligible =
-        data.eligible === true;
+      const eligible = data.eligible === true;
 
-      $("raPremiumStatus").textContent =
-        data.is_admin
-          ? "Admin · Full access"
+      $("raPremiumStatus").textContent = data.is_admin
+        ? "Admin · Full access"
+        : eligible
+          ? "Premium active"
+          : "Premium required";
+
+      $("raPremiumNote").textContent = data.is_admin
+        ? "Your admin account has full access without tokens or a connected wallet."
+        : data.manual_premium
+          ? "Premium access was granted by an administrator. No token holding is required."
           : eligible
-            ? "Premium active"
-            : "Premium required";
-
-      $("raPremiumNote").textContent =
-        data.is_admin
-          ? "Your admin account has full access without tokens or a connected wallet."
-          : data.manual_premium
-            ? "Premium access was granted by an administrator. No token holding is required."
-            : eligible
-              ? "Your account meets the Premium requirements."
-              : "Your account does not currently meet the Premium requirements.";
+            ? "Your account meets the Premium requirements."
+            : "Your account does not currently meet the Premium requirements.";
 
       $("raOpenPremium").hidden = !eligible;
       $("raTokenSoon").hidden = eligible;
 
       if (!eligible) {
         code.value = "";
-
         status.textContent =
           "Premium is required to use this Telegram bot.";
-
         return;
       }
 
-      const remaining = Math.ceil(
-        (
-          Date.parse(data.expires_at) -
-          Date.now()
-        ) / 1000
-      );
+      if (data.state === "code_used") {
+        code.value = "";
+        status.textContent = "Code used";
+        return;
+      }
 
       if (
-        !/^[1-9][0-9]{6}$/.test(data.code || "") ||
-        !(remaining > 0)
+        data.state !== "code_ready" ||
+        !/^[1-9][0-9]{6}$/.test(data.code || "")
       ) {
         code.value = "";
-
         status.textContent =
-          "Your activation code expired. Requesting a new code…";
-
+          "Your activation code is unavailable. Please retry shortly.";
         return;
       }
 
@@ -575,21 +562,13 @@ client = window.supabase.createClient(
       }
 
       controls.hidden = false;
-      copy.disabled = false;
+      copy.disabled = busy;
 
       status.textContent =
         "Send this one-time code to the Premium Telegram bot. Never share it with anyone else.";
-
-      $("raTelegramExpires").textContent =
-        "Expires in " +
-        Math.floor(remaining / 60) +
-        ":" +
-        String(remaining % 60).padStart(2, "0");
     }
 
-    async function refreshTelegramAccess(
-      force = false
-    ) {
+    async function refreshTelegramAccess(force = false) {
       const owner = session?.user.id;
 
       if (
@@ -604,10 +583,7 @@ client = window.supabase.createClient(
 
       if (
         telegramRequest?.owner === owner ||
-        (
-          !force &&
-          Date.now() < telegramNextCheck
-        )
+        (!force && Date.now() < telegramNextCheck)
       ) {
         return;
       }
@@ -652,29 +628,28 @@ client = window.supabase.createClient(
 
         const data = await response.json();
 
-        if (
-          !response.ok ||
-          data?.success !== true ||
-          typeof data.eligible !== "boolean" ||
+        const validAccess =
+          data?.success === true &&
+          typeof data.eligible === "boolean" &&
           [
             "is_admin",
             "premium_active",
             "manual_premium"
-          ].some(
-            key => typeof data[key] !== "boolean"
-          ) ||
-          (
-            data.eligible &&
-            (
-              !/^[1-9][0-9]{6}$/.test(
-                data.code || ""
-              ) ||
-              !Number.isFinite(
-                Date.parse(data.expires_at)
-              )
-            )
-          )
-        ) {
+          ].every(key => typeof data[key] === "boolean");
+
+        const validState =
+          data?.eligible === false
+            ? data.state === "premium_required" &&
+              data.code === null
+            : (
+                data?.state === "code_ready" &&
+                /^[1-9][0-9]{6}$/.test(data.code || "")
+              ) || (
+                data?.state === "code_used" &&
+                data.code === null
+              );
+
+        if (!response.ok || !validAccess || !validState) {
           throw new Error(
             "Activation code could not be verified."
           );
@@ -689,16 +664,10 @@ client = window.supabase.createClient(
           return;
         }
 
-        telegramAccess = {
-          owner,
-          data
-        };
-
-        telegramNextCheck =
-          Date.now() + 30000;
+        telegramAccess = { owner, data };
+        telegramNextCheck = Date.now() + 30000;
 
         renderTelegramAccess();
-
       } catch {
         if (
           session?.user.id === owner &&
@@ -710,12 +679,9 @@ client = window.supabase.createClient(
             error: true
           };
 
-          telegramNextCheck =
-            Date.now() + 10000;
-
+          telegramNextCheck = Date.now() + 10000;
           renderTelegramAccess();
         }
-
       } finally {
         clearTimeout(timer);
 
@@ -727,7 +693,6 @@ client = window.supabase.createClient(
 
     function resetTelegramAccess() {
       telegramGeneration++;
-
       telegramRequest?.controller.abort();
 
       telegramRequest = null;
@@ -746,51 +711,48 @@ client = window.supabase.createClient(
           : null;
 
       if (
+        busy ||
+        !owner ||
+        profile?.id !== owner ||
+        mode === "password" ||
         !data?.eligible ||
-        !/^[1-9][0-9]{6}$/.test(
-          data.code || ""
-        ) ||
-        Date.parse(data.expires_at) <= Date.now()
+        data.state !== "code_ready" ||
+        !/^[1-9][0-9]{6}$/.test(data.code || "")
       ) {
         return;
       }
 
       try {
-        await navigator.clipboard.writeText(
-          data.code
-        );
+        await navigator.clipboard.writeText(data.code);
 
-        if (session?.user.id === owner) {
+        if (
+          session?.user.id === owner &&
+          telegramAccess?.data === data
+        ) {
           $("raTelegramStatus").textContent =
             "Code copied. Send it to the Premium Telegram bot.";
         }
-
       } catch {
-        if (session?.user.id === owner) {
+        if (
+          session?.user.id === owner &&
+          telegramAccess?.data === data
+        ) {
           $("raTelegramStatus").textContent =
             "Select the code and copy it manually.";
         }
       }
     };
 
-    window.addEventListener(
-      "hashchange",
-      () => {
-        renderTelegramAccess();
-        void refreshTelegramAccess();
-      }
-    );
+    window.addEventListener("hashchange", () => {
+      renderTelegramAccess();
+      void refreshTelegramAccess();
+    });
 
-    document.addEventListener(
-      "visibilitychange",
-      () => {
-        if (
-          document.visibilityState !== "hidden"
-        ) {
-          void refreshTelegramAccess(true);
-        }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "hidden") {
+        void refreshTelegramAccess(true);
       }
-    );
+    });
 
     setInterval(() => {
       if (
@@ -800,20 +762,7 @@ client = window.supabase.createClient(
         return;
       }
 
-      renderTelegramAccess();
-
-      const expires = Date.parse(
-        telegramAccess?.data?.expires_at
-      );
-
-      const expired =
-        telegramAccess?.data?.eligible &&
-        Number.isFinite(expires) &&
-        expires <= Date.now();
-
-      void refreshTelegramAccess(
-        !!expired
-      );
+      void refreshTelegramAccess();
     }, 1000);
 
     function message(value, type = "info") {
