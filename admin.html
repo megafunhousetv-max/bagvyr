@@ -2939,7 +2939,7 @@ aria-controls="premiumSection"
           <th scope="col">Premium access</th>
           <th scope="col">Premium bot verified</th>
 <th scope="col">Token balance</th>
-<th scope="col">Manual Premium</th>
+<th scope="col">Premium &amp; bot</th>
         </tr>
       </thead>
 
@@ -3752,6 +3752,128 @@ async function loadUsers(page = usersPage) {
       );
 
       manualCell.append(manualButton);
+
+      const botButton = document.createElement("button");
+      const botResult = document.createElement("div");
+
+      botButton.type = "button";
+      botButton.textContent = "New bot code";
+
+      botButton.title =
+        "Creates a new activation code assigned to this account. " +
+        "The previous unused code stops working. " +
+        "This does not grant Premium.";
+
+      botButton.style.display = "block";
+      botButton.style.marginTop = "8px";
+
+      botResult.style.marginTop = "8px";
+      botResult.setAttribute("role", "status");
+
+      botButton.addEventListener("click", async () => {
+        if (
+          botButton.disabled ||
+          usersLoading ||
+          generation !== usersGeneration ||
+          session?.user.id !== owner
+        ) {
+          return;
+        }
+
+        botButton.disabled = true;
+        botResult.replaceChildren();
+
+        try {
+          const result = await client.rpc(
+            "ri_admin_bot_activation_code",
+            {
+              p_user_id: user.id
+            }
+          );
+
+          if (
+            generation !== usersGeneration ||
+            session?.user.id !== owner
+          ) {
+            return;
+          }
+
+          if (result.error) throw result.error;
+
+          const data = result.data;
+
+          if (
+            data?.success !== true ||
+            data.state !== "code_ready" ||
+            !/^[1-9][0-9]{6}$/.test(data.code || "")
+          ) {
+            throw new Error(
+              "A bot code could not be created."
+            );
+          }
+
+          const code = document.createElement("code");
+          code.textContent = data.code;
+          code.style.fontSize = "20px";
+          code.style.letterSpacing = "2px";
+
+          const note = document.createElement("small");
+          note.textContent =
+            "Assigned to this user · One-time use";
+          note.style.display = "block";
+
+          const copy = document.createElement("button");
+          copy.type = "button";
+          copy.textContent = "Copy code";
+
+          copy.addEventListener("click", async () => {
+            if (
+              generation !== usersGeneration ||
+              session?.user.id !== owner ||
+              !botResult.contains(copy)
+            ) {
+              return;
+            }
+
+            try {
+              await navigator.clipboard.writeText(
+                data.code
+              );
+
+              if (
+                generation === usersGeneration &&
+                session?.user.id === owner &&
+                botResult.contains(copy)
+              ) {
+                copy.textContent = "Copied";
+              }
+            } catch {
+              if (
+                generation === usersGeneration &&
+                session?.user.id === owner &&
+                botResult.contains(copy)
+              ) {
+                copy.textContent = "Select code manually";
+              }
+            }
+          });
+
+          botResult.append(code, note, copy);
+        } catch (error) {
+          if (
+            generation === usersGeneration &&
+            session?.user.id === owner
+          ) {
+            botResult.textContent =
+              error?.message ||
+              "A bot code could not be created.";
+          }
+        } finally {
+          botButton.disabled = false;
+        }
+      });
+
+      manualCell.append(botButton, botResult);
       row.append(manualCell);
 
       fragment.append(row);
