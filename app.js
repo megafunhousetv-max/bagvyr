@@ -5510,36 +5510,10 @@ function riRenderDevActivity(data) {
     syncButton();
   };
 
-  if (a) {
-    if (
-      a.currentHolding !== null
-    ) {
-      setText(
-        elements.creatorHolding,
-        formatTokenAmount(
-          a.currentHolding
-        )
-      );
-    }
-
-    if (
-      a.supplyOwned !== null
-    ) {
-      setText(
-        elements.creatorPercentage,
-        formatPercentage(
-          a.supplyOwned
-        )
-      );
-    }
-
-    if (
-      state.transactionsLoaded
-    ) {
-      riRenderDevTransactions(
-        a.transactions || []
-      );
-    }
+  if (a && state.transactionsLoaded) {
+    riRenderDevTransactions(
+      a.transactions || []
+    );
   }
 }
 
@@ -8904,16 +8878,16 @@ function riRenderHolderOverview(
             riOverviewRing(
               "Dev holdings",
 
-              info.dev_holding_percent ??
-                (
-                  analysis?.contractAddress ===
-                    state.currentContract
-                    ? analysis?.creator?.supplyOwned ??
-                      analysis?.creator?.percentage ??
-                      analysis?.creator?.supplyPercentage ??
-                      analysis?.creator?.percentOwned
-                    : null
-                ),
+              analysis?.contractAddress ===
+                state.currentContract
+                ? (
+                    analysis?.creator?.supplyOwned ??
+                    analysis?.creator?.percentage ??
+                    analysis?.creator?.supplyPercentage ??
+                    analysis?.creator?.percentOwned ??
+                    null
+                  )
+                : null,
 
               "#24eea2"
             )
