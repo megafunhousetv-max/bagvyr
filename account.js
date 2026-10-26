@@ -311,21 +311,60 @@ client = window.supabase.createClient(
           </div>
         </div>
 
-        <div class="ra-card ra-telegram">
+        <div
+          class="ra-card ra-telegram"
+          style="flex-wrap:wrap;gap:16px"
+        >
           <div>
             <h3>Premium Telegram bot</h3>
 
-            <p>
-              Get your activation code here and send it
-              to the Premium bot on Telegram.
-              Access stays active while you meet
-              the Premium requirements.
+            <p
+              id="raTelegramStatus"
+              role="status"
+              aria-live="polite"
+            >
+              Checking your Premium access…
             </p>
           </div>
 
-          <span class="ra-badge">Coming soon</span>
-        </div>
+          <div id="raTelegramControls" hidden>
+            <label
+              for="raTelegramCode"
+              class="ra-small"
+            >
+              Your one-time activation code
+            </label>
 
+            <div
+              class="ra-actions"
+              style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"
+            >
+              <input
+                id="raTelegramCode"
+                type="text"
+                readonly
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Premium bot activation code"
+                style="width:11ch;max-width:100%;font:700 24px monospace;letter-spacing:2px;text-align:center"
+              >
+
+              <button
+                id="raTelegramCopy"
+                type="button"
+                class="ra-primary"
+                disabled
+              >
+                Copy code
+              </button>
+            </div>
+
+            <p
+              id="raTelegramExpires"
+              class="ra-small"
+            ></p>
+          </div>
+        </div>
         <div id="raEdit" class="ra-card" hidden>
           <h2>Account settings</h2>
           <p id="raAccountEmail"></p>
@@ -431,6 +470,351 @@ client = window.supabase.createClient(
       profile.is_admin === true;
 
     window.RI_ACCOUNT = { isAdmin };
+
+        let telegramAccess = null;
+    let telegramRequest = null;
+    let telegramNextCheck = 0;
+    let telegramGeneration = 0;
+
+    function renderTelegramAccess() {
+      const owner = session?.user.id;
+
+      const ready =
+        owner &&
+        profile?.id === owner &&
+        mode !== "password";
+
+      const data =
+        ready &&
+        telegramAccess?.owner === owner
+          ? telegramAccess.data
+          : null;
+
+      const code = $("raTelegramCode");
+      const controls = $("raTelegramControls");
+      const copy = $("raTelegramCopy");
+      const status = $("raTelegramStatus");
+
+      controls.hidden = true;
+      copy.disabled = true;
+      $("raTelegramExpires").textContent = "";
+
+      if (!ready) {
+        code.value = "";
+
+        status.textContent =
+          "Sign in to check your Premium access.";
+
+        return;
+      }
+
+      if (!data) {
+        code.value = "";
+
+        status.textContent =
+          telegramAccess?.owner === owner &&
+          telegramAccess.error
+            ? "Premium verification is unavailable. Please retry shortly."
+            : "Checking your Premium access…";
+
+        return;
+      }
+
+      const eligible =
+        data.eligible === true;
+
+      $("raPremiumStatus").textContent =
+        data.is_admin
+          ? "Admin · Full access"
+          : eligible
+            ? "Premium active"
+            : "Premium required";
+
+      $("raPremiumNote").textContent =
+        data.is_admin
+          ? "Your admin account has full access without tokens or a connected wallet."
+          : data.manual_premium
+            ? "Premium access was granted by an administrator. No token holding is required."
+            : eligible
+              ? "Your account meets the Premium requirements."
+              : "Your account does not currently meet the Premium requirements.";
+
+      $("raOpenPremium").hidden = !eligible;
+      $("raTokenSoon").hidden = eligible;
+
+      if (!eligible) {
+        code.value = "";
+
+        status.textContent =
+          "Premium is required to use this Telegram bot.";
+
+        return;
+      }
+
+      const remaining = Math.ceil(
+        (
+          Date.parse(data.expires_at) -
+          Date.now()
+        ) / 1000
+      );
+
+      if (
+        !/^[1-9][0-9]{6}$/.test(data.code || "") ||
+        !(remaining > 0)
+      ) {
+        code.value = "";
+
+        status.textContent =
+          "Your activation code expired. Requesting a new code…";
+
+        return;
+      }
+
+      if (code.value !== data.code) {
+        code.value = data.code;
+      }
+
+      controls.hidden = false;
+      copy.disabled = false;
+
+      status.textContent =
+        "Send this one-time code to the Premium Telegram bot. Never share it with anyone else.";
+
+      $("raTelegramExpires").textContent =
+        "Expires in " +
+        Math.floor(remaining / 60) +
+        ":" +
+        String(remaining % 60).padStart(2, "0");
+    }
+
+    async function refreshTelegramAccess(
+      force = false
+    ) {
+      const owner = session?.user.id;
+
+      if (
+        !owner ||
+        profile?.id !== owner ||
+        mode === "password" ||
+        location.hash !== "#account" ||
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+
+      if (
+        telegramRequest?.owner === owner ||
+        (
+          !force &&
+          Date.now() < telegramNextCheck
+        )
+      ) {
+        return;
+      }
+
+      telegramRequest?.controller.abort();
+
+      const controller = new AbortController();
+
+      const request = {
+        owner,
+        controller,
+        generation: telegramGeneration
+      };
+
+      telegramRequest = request;
+
+      const token = session.access_token;
+
+      const timer = setTimeout(
+        () => controller.abort(),
+        12000
+      );
+
+      try {
+        const response = await fetch(
+          config.url.replace(/\/+$/, "") +
+            "/rest/v1/rpc/ri_bot_activation_code",
+          {
+            method: "POST",
+
+            headers: {
+              apikey: config.publishableKey,
+              Authorization: "Bearer " + token,
+              "Content-Type": "application/json"
+            },
+
+            body: "{}",
+            cache: "no-store",
+            signal: controller.signal
+          }
+        );
+
+        const data = await response.json();
+
+        if (
+          !response.ok ||
+          data?.success !== true ||
+          typeof data.eligible !== "boolean" ||
+          [
+            "is_admin",
+            "premium_active",
+            "manual_premium"
+          ].some(
+            key => typeof data[key] !== "boolean"
+          ) ||
+          (
+            data.eligible &&
+            (
+              !/^[1-9][0-9]{6}$/.test(
+                data.code || ""
+              ) ||
+              !Number.isFinite(
+                Date.parse(data.expires_at)
+              )
+            )
+          )
+        ) {
+          throw new Error(
+            "Activation code could not be verified."
+          );
+        }
+
+        if (
+          session?.user.id !== owner ||
+          profile?.id !== owner ||
+          telegramRequest !== request ||
+          telegramGeneration !== request.generation
+        ) {
+          return;
+        }
+
+        telegramAccess = {
+          owner,
+          data
+        };
+
+        telegramNextCheck =
+          Date.now() + 30000;
+
+        renderTelegramAccess();
+
+      } catch {
+        if (
+          session?.user.id === owner &&
+          telegramRequest === request &&
+          telegramGeneration === request.generation
+        ) {
+          telegramAccess = {
+            owner,
+            error: true
+          };
+
+          telegramNextCheck =
+            Date.now() + 10000;
+
+          renderTelegramAccess();
+        }
+
+      } finally {
+        clearTimeout(timer);
+
+        if (telegramRequest === request) {
+          telegramRequest = null;
+        }
+      }
+    }
+
+    function resetTelegramAccess() {
+      telegramGeneration++;
+
+      telegramRequest?.controller.abort();
+
+      telegramRequest = null;
+      telegramAccess = null;
+      telegramNextCheck = 0;
+
+      renderTelegramAccess();
+    }
+
+    $("raTelegramCopy").onclick = async () => {
+      const owner = session?.user.id;
+
+      const data =
+        telegramAccess?.owner === owner
+          ? telegramAccess.data
+          : null;
+
+      if (
+        !data?.eligible ||
+        !/^[1-9][0-9]{6}$/.test(
+          data.code || ""
+        ) ||
+        Date.parse(data.expires_at) <= Date.now()
+      ) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(
+          data.code
+        );
+
+        if (session?.user.id === owner) {
+          $("raTelegramStatus").textContent =
+            "Code copied. Send it to the Premium Telegram bot.";
+        }
+
+      } catch {
+        if (session?.user.id === owner) {
+          $("raTelegramStatus").textContent =
+            "Select the code and copy it manually.";
+        }
+      }
+    };
+
+    window.addEventListener(
+      "hashchange",
+      () => {
+        renderTelegramAccess();
+        void refreshTelegramAccess();
+      }
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (
+          document.visibilityState !== "hidden"
+        ) {
+          void refreshTelegramAccess(true);
+        }
+      }
+    );
+
+    setInterval(() => {
+      if (
+        location.hash !== "#account" ||
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
+
+      renderTelegramAccess();
+
+      const expires = Date.parse(
+        telegramAccess?.data?.expires_at
+      );
+
+      const expired =
+        telegramAccess?.data?.eligible &&
+        Number.isFinite(expires) &&
+        expires <= Date.now();
+
+      void refreshTelegramAccess(
+        !!expired
+      );
+    }, 1000);
 
     function message(value, type = "info") {
       const box = $("raMessage");
@@ -633,6 +1017,13 @@ client = window.supabase.createClient(
       }
 
       setBusy(busy);
+
+      if (!logged) {
+        resetTelegramAccess();
+      } else {
+        renderTelegramAccess();
+        void refreshTelegramAccess();
+      }
 
       const next = JSON.stringify([
         session?.user.id || null,
