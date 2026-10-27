@@ -4596,6 +4596,7 @@ async function riRefreshVolume24h(
     saved &&
     Date.now() - saved.receivedAt < 30000
   ) {
+    riRenderVolume24h(null, contract);
     return;
   }
 
