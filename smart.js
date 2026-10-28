@@ -363,6 +363,133 @@
       }
     `;
 
+    style.textContent += `
+      body #riPremiumRoot .sm-heading {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        min-height: 150px;
+        box-sizing: border-box;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(42, 220, 164, .2);
+        border-radius: 18px;
+
+        background:
+          radial-gradient(
+            circle at 85% 50%,
+            rgba(0, 224, 164, .09),
+            transparent 42%
+          ),
+          linear-gradient(115deg, #061c15, #03110d);
+      }
+
+      body #riPremiumRoot
+      .sm-heading > div:not(.sm-radar) {
+        position: relative;
+        z-index: 1;
+        max-width: calc(100% - 200px);
+      }
+
+      body #riPremiumRoot .sm-radar {
+        position: absolute;
+        z-index: 0;
+        right: 18px;
+        top: 50%;
+        width: 210px;
+        height: 210px;
+        transform: translateY(-50%);
+        border: 1px solid rgba(31, 231, 173, .22);
+        border-radius: 50%;
+        pointer-events: none;
+
+        background:
+          linear-gradient(
+            transparent calc(50% - .5px),
+            rgba(36, 224, 168, .18) 50%,
+            transparent calc(50% + .5px)
+          ),
+          linear-gradient(
+            90deg,
+            transparent calc(50% - .5px),
+            rgba(36, 224, 168, .18) 50%,
+            transparent calc(50% + .5px)
+          ),
+          repeating-radial-gradient(
+            circle,
+            transparent 0 25px,
+            rgba(36, 224, 168, .22) 26px,
+            transparent 27px 52px
+          );
+
+        box-shadow:
+          inset 0 0 45px rgba(0, 226, 162, .04),
+          0 0 50px rgba(0, 226, 162, .04);
+      }
+
+      body #riPremiumRoot .sm-radar::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+
+        background: conic-gradient(
+          from 0deg,
+          transparent 0deg 292deg,
+          rgba(0, 236, 173, .02) 300deg,
+          rgba(0, 236, 173, .2) 350deg,
+          rgba(36, 255, 195, .65) 359deg,
+          transparent 360deg
+        );
+
+        animation: ri-smart-radar-turn 20s linear infinite;
+      }
+
+      body #riPremiumRoot .sm-radar::after {
+        content: "";
+        position: absolute;
+        left: calc(50% - 3px);
+        top: calc(50% - 3px);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #34f5bf;
+        box-shadow:
+          0 0 12px rgba(52, 245, 191, .8),
+          43px -48px 0 -1px #34f5bf,
+          -57px 28px 0 -1px #34f5bf,
+          24px 65px 0 -1px #34f5bf;
+      }
+
+      @keyframes ri-smart-radar-turn {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 700px) {
+        body #riPremiumRoot .sm-heading {
+          min-height: 130px;
+          padding: 20px;
+        }
+
+        body #riPremiumRoot
+        .sm-heading > div:not(.sm-radar) {
+          max-width: 100%;
+        }
+
+        body #riPremiumRoot .sm-radar {
+          right: -60px;
+          opacity: .2;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body #riPremiumRoot .sm-radar::before {
+          animation: none;
+        }
+      }
+    `;
+
     document.head.append(style);
 
     panel.innerHTML = `
@@ -377,7 +504,7 @@
             </p>
           </div>
 
-          <span class="sm-chain">Solana</span>
+          <div class="sm-radar" aria-hidden="true"></div>
         </div>
 
         <div class="sm-toolbar">
