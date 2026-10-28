@@ -86,6 +86,7 @@ const keys = [
       </label>
     `;
     let verified = false;
+let premiumStatusUnavailable = false;
     let premiumAccess = false;
     let selected = null;
     let busy = false;
@@ -849,11 +850,12 @@ if (button.dataset.toggle === "premium") {
         document.querySelectorAll(
           "[data-premium-link]"
         ).forEach(link => {
-          link.hidden = !(
-            flags.premium ||
-            verified ||
-            premiumAccess
-          );
+link.hidden = !(
+  flags.premium ||
+  verified ||
+  premiumAccess ||
+  premiumStatusUnavailable
+);
         });
       }
 
@@ -1341,7 +1343,7 @@ async function refresh(
       {
         headers: authHeaders,
         cache: "no-store",
-        signal: AbortSignal.timeout(12000)
+        signal: AbortSignal.timeout(20000)
       }
     );
 
@@ -1405,6 +1407,7 @@ async function refresh(
     );
 
     access = data.access;
+premiumStatusUnavailable = false;
 
     verified =
       data.admin === true;
@@ -1428,13 +1431,19 @@ async function refresh(
       return;
     }
 
-    verified = false;
-    premiumAccess = false;
-    flags = empty();
+premiumStatusUnavailable = true;
 
-    $("rpMessage").textContent =
-      error.message ||
-      "Premium unavailable. Try refreshing.";
+verified = false;
+premiumAccess = false;
+flags = empty();
+
+console.warn(
+  "Premium settings request failed:",
+  error
+);
+
+$("rpMessage").textContent =
+  "Premium settings could not be loaded. Retrying automatically…";
 
   } finally {
     busy = false;
