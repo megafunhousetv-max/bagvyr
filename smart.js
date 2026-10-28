@@ -573,7 +573,7 @@
           </span>
 
           <span>
-            Refreshes every 3 minutes.
+            Refreshes every minute.
           </span>
         </div>
       </div>
@@ -1798,7 +1798,7 @@ if (label) {
         Date.now() -
           Date.parse(
             saved.measured_at
-          ) < 180000
+               ) < 60000
       ) {
         if (shownPeriod !== period) {
           render(saved);
