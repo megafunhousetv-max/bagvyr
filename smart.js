@@ -496,11 +496,12 @@
       <div class="sm-card">
         <div class="sm-heading">
           <div>
-            <h2>Smart Money Radar</h2>
+            <h2>
+              Smart Money <span class="sm-accent">Radar</span>
+            </h2>
 
             <p>
-              Top 20 tokens by unique
-              smart money buyers.
+              Follow accumulation. Spot the next move.
             </p>
           </div>
 
@@ -550,6 +551,7 @@
               <tr>
                 <th>#</th>
                 <th>Token</th>
+                <th>Network</th>
                 <th>SM Buyers ↓</th>
                 <th>Buy Trades</th>
                 <th>Net Inflow</th>
@@ -893,6 +895,298 @@ style.textContent += `
   }
 `;
 
+style.textContent += `
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-card {
+    padding: 22px;
+    border-radius: 22px;
+    background:
+      radial-gradient(
+        ellipse at top right,
+        rgba(0, 220, 157, .045),
+        transparent 60%
+      ),
+      rgba(2, 17, 12, .97);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-accent {
+    color: #32eebb;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-heading h2 {
+    font-size: clamp(26px, 3vw, 40px);
+    letter-spacing: -1.2px;
+    line-height: 1.15;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-heading p {
+    margin-bottom: 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-periods {
+    border-radius: 15px;
+    background: rgba(0, 0, 0, .16);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-periods button {
+    min-width: 64px;
+    padding: 12px 18px;
+    border-radius: 11px;
+    cursor: pointer;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-periods button[aria-pressed="true"] {
+    background: linear-gradient(135deg, #35f0bf, #10dca2);
+    box-shadow: 0 0 18px rgba(20, 230, 169, .13);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-refresh {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-wrap {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-card .sm-table {
+    border-collapse: separate;
+    border-spacing: 0 9px;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-card .sm-table thead {
+    background: transparent;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-card .sm-table thead th {
+    height: auto;
+    padding: 15px 14px;
+    border: 0;
+    background: transparent;
+    color: #b7cfc3;
+    font-size: 12px;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table thead th:nth-child(4) {
+    color: #32eebb;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-card .sm-table tbody td {
+    padding: 20px 14px;
+    border-top: 1px solid #174536;
+    border-bottom: 1px solid #174536;
+    background: #041b13;
+    font-size: 14px;
+    transition: background 180ms ease;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table tbody td:first-child {
+    border-left: 1px solid #174536;
+    border-radius: 14px 0 0 14px;
+    color: #91b9a7;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table tbody td:last-child {
+    border-right: 1px solid #174536;
+    border-radius: 0 14px 14px 0;
+    text-align: right;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table tbody tr:first-child td {
+    background: #06271c;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table tbody tr:first-child td:first-child {
+    box-shadow: inset 4px 0 #28e8b0;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"]
+  .sm-card .sm-table tbody tr:hover td {
+    background: #0a3023;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-avatar {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+    border-color: #315e4b;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-name {
+    font-size: 14px;
+    font-weight: 750;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-address {
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: .15px;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-buy-badge {
+    padding: 3px 7px;
+    border: 1px solid #18865f;
+    border-radius: 6px;
+    background: rgba(24, 215, 150, .06);
+    color: #36edb5;
+    font-size: 10px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-network {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #b4d2c2;
+    font-size: 12px;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-network-solana::before {
+    content: "";
+    width: 18px;
+    height: 13px;
+    display: inline-block;
+    transform: skew(-22deg);
+    background:
+      linear-gradient(110deg, #8d65ed, #32e9bc)
+        top / 100% 3px no-repeat,
+      linear-gradient(110deg, #8d65ed, #32e9bc)
+        center / 100% 3px no-repeat,
+      linear-gradient(110deg, #8d65ed, #32e9bc)
+        bottom / 100% 3px no-repeat;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-positive {
+    color: #34edb6;
+    font-size: 16px;
+    font-weight: 750;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-negative {
+    color: #ff777f;
+    font-size: 16px;
+    font-weight: 750;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] a.sm-analyze {
+    min-width: 88px;
+    box-sizing: border-box;
+    padding: 11px 16px;
+    border-radius: 11px;
+    background: linear-gradient(145deg, #0b3527, #031b13);
+    border-color: #22dca4;
+    color: #4bf1c2;
+    text-align: center;
+    font-weight: 650;
+    transition: background 180ms ease, box-shadow 180ms ease;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] a.sm-analyze:hover {
+    background: #104d38;
+    box-shadow: 0 0 15px rgba(30, 225, 166, .12);
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] button.sm-help-star {
+    width: 19px;
+    height: 19px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #a4c5b6;
+    font-family: Georgia, serif;
+    font-size: 12px;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  body #riPremiumRoot
+  [data-tool="smart_money"] .sm-analysis-unavailable {
+    color: #6c9380;
+  }
+
+  @media (max-width: 700px) {
+    body #riPremiumRoot
+    [data-tool="smart_money"] .sm-card {
+      padding: 14px;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"] .sm-card .sm-table tbody tr {
+      margin-bottom: 10px;
+      padding: 17px;
+      border: 1px solid #174536;
+      border-radius: 14px;
+      background: #041b13;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"] .sm-card .sm-table tbody td {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"]
+    .sm-card .sm-table tbody tr:first-child td,
+    body #riPremiumRoot
+    [data-tool="smart_money"]
+    .sm-card .sm-table tbody tr:hover td {
+      background: transparent;
+    }
+
+    body #riPremiumRoot
+    [data-tool="smart_money"] .sm-periods button {
+      min-width: 48px;
+      padding: 10px 12px;
+    }
+  }
+`;
+
 const smartHelpBox =
   document.createElement("div");
 
@@ -951,7 +1245,7 @@ function makeSmartHelp(label) {
   button.className =
     "sm-help-star";
 
-  button.textContent = "*";
+  button.textContent = "i";
 
   button.setAttribute(
     "aria-label",
@@ -1339,7 +1633,15 @@ if (label) {
           }
         };
 
-        top.append(name, copy);
+        top.append(name);
+
+        if (item.smart_direction === "buy") {
+          top.append(
+            node("span", "BUY", "sm-buy-badge")
+          );
+        }
+
+        top.append(copy);
 
         details.append(
           top,
@@ -1361,6 +1663,41 @@ if (label) {
         );
 
         cell().append(token);
+
+        const chainId = item.chain_id;
+
+        const isSolana =
+          chainId === "CT_501" &&
+          [
+            "binance_row",
+            "binance_filter"
+          ].includes(item.chain_source);
+
+        const network = cell(
+          undefined,
+          "Network",
+          "sm-network-cell"
+        );
+
+        const networkLabel = isSolana
+          ? "Solana"
+          : typeof chainId === "string" && chainId
+            ? chainId
+            : "Unknown";
+
+        const networkBadge = node(
+          "span",
+          networkLabel,
+          "sm-network"
+        );
+
+        if (isSolana) {
+          networkBadge.classList.add(
+            "sm-network-solana"
+          );
+        }
+
+        network.append(networkBadge);
 
         cell(
           String(item.buyers),
@@ -1391,25 +1728,35 @@ if (label) {
           "Market Cap"
         );
 
-        const analyze = node(
-          "a",
-          "Analyze",
-          "sm-analyze"
-        );
+        const action = cell();
 
-        analyze.href =
-          "/?ca=" +
-          encodeURIComponent(
-            item.contract
-          ) +
-          "#scanner";
+        if (isSolana) {
+          const analyze = node(
+            "a",
+            "Analyze",
+            "sm-analyze"
+          );
 
-        analyze.target = "_self";
+          analyze.href =
+            "/?ca=" +
+            encodeURIComponent(item.contract) +
+            "#scanner";
 
-        analyze.rel =
-          "noopener noreferrer";
+          analyze.target = "_self";
 
-        cell().append(analyze);
+          action.append(analyze);
+        } else {
+          const unavailable = node(
+            "span",
+            "—",
+            "sm-analysis-unavailable"
+          );
+
+          unavailable.title =
+            "Analysis is available only for identified Solana tokens.";
+
+          action.append(unavailable);
+        }
 
         tbody.append(row);
 
