@@ -1118,9 +1118,15 @@ panel.querySelectorAll(
 
       shownPeriod = data.period;
 
+      const items = data.items.filter(item =>
+        typeof item.market_cap_usd === "number" &&
+        Number.isFinite(item.market_cap_usd) &&
+        item.market_cap_usd >= 10000
+      );
+
       for (
         const [index, item]
-        of data.items.entries()
+        of items.entries()
       ) {
         const row = node("tr");
 
@@ -1284,7 +1290,7 @@ if (label) {
       }
 
       wrap.hidden =
-        !data.items.length;
+        !items.length;
 
       updated.textContent =
         "Updated " +
@@ -1295,9 +1301,9 @@ if (label) {
       message.textContent =
         data.stale
           ? "Refresh unavailable. Showing an older snapshot."
-          : data.items.length
+          : items.length
             ? ""
-            : "No tracked buyers found for this period.";
+            : "No tokens with known market cap of at least $10,000 for this period.";
     }
 
     async function load() {
