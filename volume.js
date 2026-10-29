@@ -165,7 +165,39 @@
         text-align:left;padding:13px 11px;
         border-bottom:1px solid #244234;
       }
-      #vxRoot th { color:#95b6a6;font-weight:500 }
+      #vxRoot th {
+        color:#95b6a6;
+        font-weight:500;
+      }
+
+      #vxRoot button.vx-sort {
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        border:0;
+        border-radius:5px;
+        background:transparent;
+        color:inherit;
+        padding:4px 0;
+        font:inherit;
+        font-weight:600;
+        white-space:nowrap;
+        cursor:pointer;
+      }
+
+      #vxRoot button.vx-sort:hover {
+        color:var(--vx-green);
+      }
+
+      #vxRoot button.vx-sort:focus-visible {
+        outline:2px solid var(--vx-green);
+        outline-offset:5px;
+      }
+
+      #vxRoot th[aria-sort="ascending"],
+      #vxRoot th[aria-sort="descending"] {
+        color:var(--vx-green);
+      }
       #vxRoot a { color:#b5f6d8;text-decoration:none }
       #vxRoot a:hover { text-decoration:underline }
       #vxRoot .vx-tag {
@@ -247,6 +279,134 @@
     let sequence = 0;
     let snapshot = null;
     let loadingCA = "";
+
+    let sortKey = "share";
+    let sortDirection = "desc";
+
+    const sortColumns = [
+      ["address", "Address"],
+      ["bought", "Bought"],
+      ["sold", "Sold"],
+      ["net", "Net flow"],
+      ["trades", "Swaps"],
+      ["share", "Share"],
+      ["behavior", "Observed behavior"]
+    ];
+
+    function sortValue(wallet, key) {
+      if (key === "behavior") {
+        return [
+          wallet.flow,
+          ...wallet.signals.map(signal => signal.title)
+        ].join(" ");
+      }
+
+      return wallet[key];
+    }
+
+    function sortTable() {
+      if (!snapshot) return;
+
+      const tbody = content.querySelector(
+        "[data-vx-wallet-body]"
+      );
+
+      if (!tbody) return;
+
+      const byAddress = new Map(
+        snapshot.wallets.map(wallet => [
+          wallet.address,
+          wallet
+        ])
+      );
+
+      const rows = [
+        ...tbody.querySelectorAll("[data-vx-wallet]")
+      ];
+
+      rows.sort((a, b) => {
+        const walletA = byAddress.get(a.dataset.vxWallet);
+        const walletB = byAddress.get(b.dataset.vxWallet);
+
+        if (!walletA || !walletB) return 0;
+
+        const valueA = sortValue(walletA, sortKey);
+        const valueB = sortValue(walletB, sortKey);
+
+        const comparison = typeof valueA === "number"
+          ? valueA - valueB
+          : String(valueA).localeCompare(String(valueB), "en");
+
+        return (
+          comparison * (sortDirection === "asc" ? 1 : -1) ||
+          walletA.address.localeCompare(walletB.address)
+        );
+      });
+
+      const fragment = document.createDocumentFragment();
+
+      rows.forEach(row => fragment.append(row));
+      tbody.append(fragment);
+
+      content.querySelectorAll("[data-vx-sort]").forEach(button => {
+        const active = button.dataset.vxSort === sortKey;
+        const label = button.dataset.vxLabel;
+        const textColumn = ["address", "behavior"].includes(
+          button.dataset.vxSort
+        );
+
+        button.closest("th").setAttribute(
+          "aria-sort",
+          active
+            ? sortDirection === "asc"
+              ? "ascending"
+              : "descending"
+            : "none"
+        );
+
+        button.textContent = label + (
+          active
+            ? sortDirection === "asc" ? " ↑" : " ↓"
+            : " ↕"
+        );
+
+        button.setAttribute(
+          "aria-label",
+          label + ": " + (
+            active && sortDirection === "desc"
+              ? textColumn ? "sort A to Z" : "sort lowest first"
+              : active && sortDirection === "asc"
+                ? textColumn ? "sort Z to A" : "sort highest first"
+                : textColumn ? "sort A to Z" : "sort highest first"
+          )
+        );
+      });
+    }
+
+    content.addEventListener("click", event => {
+      const button = event.target.closest("[data-vx-sort]");
+
+      if (!button || !content.contains(button)) return;
+
+      const key = button.dataset.vxSort;
+
+      if (!sortColumns.some(([column]) => column === key)) {
+        return;
+      }
+
+      if (sortKey === key) {
+        sortDirection = sortDirection === "desc"
+          ? "asc"
+          : "desc";
+      } else {
+        sortKey = key;
+        sortDirection = ["address", "behavior"].includes(key)
+          ? "asc"
+          : "desc";
+      }
+
+      sortTable();
+    });
 
     function metric(label, value, className = "") {
       return `
@@ -407,14 +567,24 @@
             <table>
               <thead>
                 <tr>
-                  <th>Address</th><th>Bought</th><th>Sold</th>
-                  <th>Net flow</th><th>Swaps</th><th>Share</th>
-                  <th>Observed behavior</th>
+                  ${sortColumns.map(([key, label]) => `
+                    <th scope="col" aria-sort="none">
+                      <button
+                        type="button"
+                        class="vx-sort"
+                        data-vx-sort="${key}"
+                        data-vx-label="${escape(label)}"
+                        title="Click to change sorting"
+                      >
+                        ${escape(label)} ↕
+                      </button>
+                    </th>
+                  `).join("")}
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-vx-wallet-body>
                 ${wallets.map(wallet => `
-                  <tr>
+                  <tr data-vx-wallet="${escape(wallet.address)}">
                     <td>
                       <a
                         href="https://solscan.io/account/${escape(wallet.address)}"
@@ -512,6 +682,8 @@
           ${escape(time(data.fetched_at))}
         </div>
       `;
+
+      sortTable();
     }
 
     async function sync(force = false) {
