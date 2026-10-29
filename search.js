@@ -257,7 +257,14 @@
       panel.id + "List"
     );
 
-    host.append(panel);
+    if (
+      input.id === "riHomeContract" &&
+      input.form
+    ) {
+      input.form.after(panel);
+    } else {
+      host.append(panel);
+    }
 
     let version = 0;
     let timer;
