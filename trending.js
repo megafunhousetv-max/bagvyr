@@ -1566,7 +1566,7 @@ function renderHomeAdvertisements(items) {
       "ri-home-ad-action"
     );
 
-    action.textContent = "Analyze token ↗";
+    action.textContent = "Analyze token";
 
     action.setAttribute(
       "aria-label",
