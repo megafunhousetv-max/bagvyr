@@ -946,6 +946,52 @@ function renderInsiderAnalysis(data) {
 const dexTokenImageCache = new Map();
 let tokenImageRequestVersion = 0;
 
+async function getBinanceTokenImage(contract) {
+  if (state.currentContract !== contract) {
+    return null;
+  }
+
+  const image = elements.tokenImage;
+
+  if (
+    image &&
+    image.complete &&
+    image.naturalWidth > 0 &&
+    !image.classList.contains("hidden")
+  ) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      CONFIG.API_BASE +
+        "/api/token-images?fallback=binance&ca=" +
+        encodeURIComponent(contract),
+      {
+        signal: AbortSignal.timeout(9000)
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      data?.success !== true ||
+      data.contract !== contract ||
+      !Array.isArray(data.images)
+    ) {
+      return null;
+    }
+
+    return data.images
+      .map(normalizeImageURL)
+      .find(Boolean) || null;
+
+  } catch {
+    return null;
+  }
+}
+
 async function getDexTokenImage(contract) {
   if (dexTokenImageCache.has(contract)) {
     return dexTokenImageCache.get(contract);
@@ -993,7 +1039,7 @@ async function getDexTokenImage(contract) {
         if (image) return image;
       }
 
-      return null;
+      return await getBinanceTokenImage(contract);
     } finally {
       clearTimeout(timeout);
     }
@@ -1006,7 +1052,7 @@ async function getDexTokenImage(contract) {
 } catch (error) {
   console.warn("DexScreener logo loading failed:", error);
   dexTokenImageCache.delete(contract);
-  return null;
+  return await getBinanceTokenImage(contract);
 }
 }
 
@@ -1053,7 +1099,7 @@ async function addDexTokenImage(
 
   // Existing image loading handles errors and tries the next URL.
   renderTokenImage(
-    [...candidates, dexImage],
+    [dexImage, ...candidates],
     fallbackText
   );
 }
@@ -8268,6 +8314,7 @@ function riUpdateExitVerification(data = {}) {
 let riFeeController = null;
 let riFeeRefreshTimer = null;
 let riFeeContract = null;
+let riFeeLastGood = null;
 
 
 function riFeeText(id, value) {
@@ -8534,44 +8581,47 @@ function riRenderTokenFees(data = null) {
 
 async function riLoadTokenFees() {
   clearTimeout(riFeeRefreshTimer);
-
   riFeeController?.abort();
 
   const ca = state.currentContract;
+  const card = document.getElementById(
+    "riTokenFees"
+  );
 
-  if (
-    !ca ||
-    !document.getElementById(
-      "riTokenFees"
-    )
-  ) {
-    return;
-  }
+  if (!ca || !card) return;
 
   if (riFeeContract !== ca) {
     riFeeContract = ca;
+    riFeeLastGood = null;
 
     riRenderTokenFees();
+    card.title = "";
 
-    const details =
-      document.getElementById(
-        "riFeeDetails"
-      );
+    const details = document.getElementById(
+      "riFeeDetails"
+    );
 
-    if (details) {
-      details.open = false;
-    }
+    if (details) details.open = false;
   }
 
-  const controller =
-    new AbortController();
-
+  const controller = new AbortController();
   riFeeController = controller;
+
+  let retrySoon = false;
 
   const timeout = setTimeout(
     () => controller.abort(),
     45000
   );
+
+  const markStale = () => {
+    const message = riFeeLastGood
+      ? "Refresh unavailable. Showing last verified fees."
+      : "Some fee data is unavailable. Retrying…";
+
+    card.title = message;
+    riFeeText("riFeeUpdated", message);
+  };
 
   try {
     const response = await fetch(
@@ -8583,35 +8633,65 @@ async function riLoadTokenFees() {
 
     if (!response.ok) {
       throw new Error(
-        `Token fees HTTP ${response.status}`
+        "Token fees request failed."
       );
     }
 
-    const data =
-      await response.json();
+    const data = await response.json();
 
     if (
-      !data.success ||
+      !data?.success ||
       data.contract !== ca
     ) {
       throw new Error(
-        "Invalid fee response"
+        "Invalid fee response."
       );
     }
 
     if (
-      state.currentContract === ca &&
-      riFeeController === controller
+      state.currentContract !== ca ||
+      riFeeController !== controller
     ) {
-      riRenderTokenFees(data);
+      return;
     }
+
+    const complete =
+      riFeePercent(
+        data.transfer?.percent
+      ) !== "—" &&
+      riFeePercent(
+        data.trading?.pool_percent
+      ) !== "—" &&
+      riFeePercent(
+        data.trading?.creator_percent
+      ) !== "—";
+
+    if (complete) {
+      riFeeLastGood = data;
+      riRenderTokenFees(data);
+      card.title = "";
+
+    } else {
+      retrySoon = true;
+
+      riRenderTokenFees(
+        riFeeLastGood || data
+      );
+
+      markStale();
+    }
+
   } catch {
     if (
       state.currentContract === ca &&
       riFeeController === controller
     ) {
-      riRenderTokenFees();
+      retrySoon = true;
+
+      riRenderTokenFees(riFeeLastGood);
+      markStale();
     }
+
   } finally {
     clearTimeout(timeout);
 
@@ -8623,7 +8703,7 @@ async function riLoadTokenFees() {
     ) {
       riFeeRefreshTimer = setTimeout(
         riLoadTokenFees,
-        180000
+        retrySoon ? 15000 : 180000
       );
     }
   }
