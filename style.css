@@ -16896,3 +16896,191 @@ table.ri-overview-compact-table tbody > tr:hover {
     flex-direction: column;
   }
 }
+
+
+/* =========================================================
+   HEADER BONDING CURVE / MIGRATION STATUS
+   ========================================================= */
+
+#riBondingStatus[hidden] {
+  display: none !important;
+}
+
+#riBondingStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  flex: 1 1 340px;
+  min-width: 260px;
+  max-width: 560px;
+
+  margin-left: auto;
+  padding: 11px 14px;
+
+  color: #e8f7ef;
+
+  background:
+    linear-gradient(
+      115deg,
+      rgba(10, 36, 26, 0.8),
+      rgba(3, 19, 12, 0.85)
+    );
+
+  border: 1px solid
+    rgba(57, 219, 158, 0.24);
+
+  border-radius: 13px;
+}
+
+#riBondingStatus .ri-bonding__icon {
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+
+  color: #42eab2;
+
+  background: rgba(31, 182, 121, 0.055);
+
+  border: 1px solid
+    rgba(54, 211, 146, 0.19);
+
+  border-radius: 10px;
+}
+
+#resultsSection .ri-token-header-v2
+#riBondingStatus svg {
+  width: 22px;
+  height: 22px;
+
+  color: currentColor;
+}
+
+#riBondingStatus .ri-bonding__content {
+  flex: 1;
+  min-width: 0;
+}
+
+#riBondingStatus .ri-bonding__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+#riBondingStatus strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #edf9f3;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+#riBondingStatus strong i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+
+  background: #e8b34c;
+  border-radius: 50%;
+}
+
+#riBondingStatus b {
+  color: #3de8b0;
+
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.1;
+
+  white-space: nowrap;
+}
+
+#riBondingStatus .ri-bonding__details {
+  margin-top: 4px;
+
+  color: #91aea0;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+#riBondingStatus .ri-bonding__details span {
+  overflow-wrap: anywhere;
+}
+
+#riBondingStatus small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #93b1a2;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+#riBondingStatus .ri-bonding__track {
+  height: 5px;
+
+  margin-top: 8px;
+
+  overflow: hidden;
+
+  background: rgba(102, 171, 133, 0.12);
+  border-radius: 999px;
+}
+
+#riBondingStatus .ri-bonding__track > span {
+  display: block;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #31c991,
+      #49e9b9
+    );
+
+  border-radius: inherit;
+
+  box-shadow:
+    0 0 9px rgba(56, 230, 166, 0.2);
+
+  transition: width 500ms ease;
+}
+
+#riBondingStatus[data-state="migrated"] {
+  border-color: rgba(58, 219, 158, 0.32);
+}
+
+#riBondingStatus[data-state="migration_pending"]
+.ri-bonding__icon {
+  color: #e4bd6d;
+
+  border-color:
+    rgba(219, 175, 78, 0.22);
+}
+
+@media (max-width: 800px) {
+  #riBondingStatus {
+    flex-basis: 100%;
+
+    min-width: 0;
+    max-width: none;
+
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #riBondingStatus .ri-bonding__track > span {
+    transition: none;
+  }
+}
