@@ -1,6 +1,41 @@
 (() => {
   "use strict";
 
+  function guestToken() {
+    try {
+      const key =
+        "ri_ai_guest_token_v1";
+
+      let token =
+        localStorage.getItem(key);
+
+      if (
+        !/^[0-9a-f]{64}$/.test(
+          token || ""
+        )
+      ) {
+        token = Array.from(
+          crypto.getRandomValues(
+            new Uint8Array(32)
+          )
+        )
+          .map(byte =>
+            byte.toString(16).padStart(2, "0")
+          )
+          .join("");
+
+        localStorage.setItem(
+          key,
+          token
+        );
+      }
+
+      return token;
+    } catch {
+      return null;
+    }
+  }
+
   if (window.RI_RISK_SUMMARY_LOADED) return;
 
   window.RI_RISK_SUMMARY_LOADED = true;
@@ -125,15 +160,22 @@
           apikey:
             config.publishableKey,
 
-          Authorization:
-            "Bearer " +
-            auth.access_token,
+          ...(auth?.access_token
+            ? {
+                Authorization:
+                  "Bearer " +
+                  auth.access_token
+              }
+            : {}),
 
           "Content-Type":
             "application/json"
         },
 
-        body: JSON.stringify(body),
+body: JSON.stringify({
+  ...body,
+  guest_token: guestToken()
+}),
 
         signal:
           AbortSignal.timeout(110000)
@@ -176,7 +218,7 @@
           0,
           Number(quota.remaining) || 0
         ) +
-        " / 3"
+        " / 2"
       );
     }
 
@@ -232,7 +274,6 @@
       const auth = await session();
 
       if (
-        !auth ||
         current !== version
       ) {
         return;
@@ -274,7 +315,7 @@
         <div class="ri-context__status">
 
           <span class="ri-context__checked">
-            3 daily credits · Unlimited with Premium
+            2 daily credits · Unlimited with Premium
           </span>
 
           <span
@@ -558,17 +599,6 @@
         return;
       }
 
-      if (!auth) {
-        quota = null;
-
-        message(
-          "Sign in to use Risk Summary. Registered accounts receive 3 free credits per day.",
-          "login"
-        );
-
-        return;
-      }
-
       const status = await call(
         auth,
         {
@@ -622,7 +652,7 @@
           data.mode === "limit"
         ) {
           message(
-            "You have used today's 3 Risk Summary credits. Get Premium for unlimited summaries or come back tomorrow. Valid cached summaries are still free.",
+            "You have used today's 2 Risk Summary credits. Get Premium for unlimited summaries or come back tomorrow. Valid cached summaries are still free.",
             "limit"
           );
 

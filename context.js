@@ -1,6 +1,41 @@
 (() => {
   "use strict";
 
+  function guestToken() {
+    try {
+      const key =
+        "ri_ai_guest_token_v1";
+
+      let token =
+        localStorage.getItem(key);
+
+      if (
+        !/^[0-9a-f]{64}$/.test(
+          token || ""
+        )
+      ) {
+        token = Array.from(
+          crypto.getRandomValues(
+            new Uint8Array(32)
+          )
+        )
+          .map(byte =>
+            byte.toString(16).padStart(2, "0")
+          )
+          .join("");
+
+        localStorage.setItem(
+          key,
+          token
+        );
+      }
+
+      return token;
+    } catch {
+      return null;
+    }
+  }
+
   if (window.RI_TOKEN_CONTEXT_LOADED) return;
   window.RI_TOKEN_CONTEXT_LOADED = true;
 
@@ -105,13 +140,21 @@
         headers: {
           apikey: config.publishableKey,
 
-          Authorization:
-            "Bearer " + session.access_token,
+          ...(session?.access_token
+            ? {
+                Authorization:
+                  "Bearer " +
+                  session.access_token
+              }
+            : {}),
 
           "Content-Type": "application/json"
         },
 
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+  ...body,
+  guest_token: guestToken()
+}),
 
         signal: AbortSignal.timeout(90000)
       }
@@ -207,7 +250,7 @@
     try {
       const session = await getSession();
 
-      if (!session || version !== revision) {
+      if (version !== revision) {
         return;
       }
 
@@ -532,17 +575,6 @@
       const session = await getSession();
 
       if (version !== revision) return;
-
-      if (!session) {
-        quota = null;
-
-        message(
-          "Sign in to use Token Context. Registered accounts receive 2 free credits per day.",
-          { login: true }
-        );
-
-        return;
-      }
 
       const status = await call(session, {
         action: "status"

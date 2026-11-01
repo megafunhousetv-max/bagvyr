@@ -5908,5 +5908,232 @@ const fields = {
 <script src="smart.js?v=10"></script>
 <script src="admin-support.js?v=1"></script>
 <script src="admin-daily.js?v=1"></script>
+<script>
+(() => {
+  "use strict";
+
+  let started = false;
+
+  function init() {
+    const client =
+      window.BAGVYR_ADMIN_CLIENT;
+
+    const section =
+      document.getElementById(
+        "premiumSection"
+      );
+
+    if (
+      started ||
+      !client ||
+      !section
+    ) {
+      return;
+    }
+
+    started = true;
+
+    const card =
+      document.createElement("div");
+
+    card.hidden = true;
+
+    card.style.cssText = [
+      "padding:20px",
+      "margin-bottom:20px",
+      "border:1px solid #245343",
+      "border-radius:16px",
+      "background:#071b14",
+      "color:#eafff6"
+    ].join(";");
+
+    card.innerHTML = `
+      <h3 style="margin:0 0 14px">
+        AI access for guests
+      </h3>
+
+      <label style="display:block;margin:12px 0">
+        <input
+          type="checkbox"
+          data-feature="context"
+        >
+        Token Context · 2 credits / day
+      </label>
+
+      <label style="display:block;margin:12px 0">
+        <input
+          type="checkbox"
+          data-feature="risk"
+        >
+        Risk Summary · 2 credits / day
+      </label>
+
+      <p style="
+        margin:12px 0 0;
+        font-size:13px;
+        color:#abc6ba
+      ">
+        Applies to visitors who are not signed in.
+        Premium and admin stay unlimited.
+      </p>
+
+      <p
+        data-status
+        role="status"
+        style="margin-bottom:0"
+      ></p>
+    `;
+
+    section.prepend(card);
+
+    const boxes = Array.from(
+      card.querySelectorAll("input")
+    );
+
+    const status = card.querySelector(
+      "[data-status]"
+    );
+
+    let version = 0;
+    let saving = false;
+
+    function render(data) {
+      boxes[0].checked =
+        data.context_enabled === true;
+
+      boxes[1].checked =
+        data.risk_enabled === true;
+    }
+
+    async function load() {
+      const current = ++version;
+
+      card.hidden = true;
+
+      const { data, error } =
+        await client.rpc(
+          "ri_ai_guest_admin",
+          {}
+        );
+
+      if (
+        current !== version ||
+        error ||
+        !data
+      ) {
+        return;
+      }
+
+      render(data);
+
+      boxes.forEach(box => {
+        box.disabled = false;
+      });
+
+      status.textContent = "";
+      card.hidden = false;
+    }
+
+    card.addEventListener(
+      "change",
+      async event => {
+        const input = event.target;
+
+        if (
+          !boxes.includes(input) ||
+          saving
+        ) {
+          return;
+        }
+
+        saving = true;
+
+        const current = version;
+        const enabled = input.checked;
+
+        boxes.forEach(box => {
+          box.disabled = true;
+        });
+
+        status.textContent = "Saving…";
+
+        try {
+          const parameter =
+            input.dataset.feature === "context"
+              ? "p_context"
+              : "p_risk";
+
+          const { data, error } =
+            await client.rpc(
+              "ri_ai_guest_admin",
+              {
+                [parameter]: enabled
+              }
+            );
+
+          if (current !== version) {
+            return;
+          }
+
+          if (error || !data) {
+            throw new Error(
+              "Could not save."
+            );
+          }
+
+          render(data);
+
+          status.textContent = "Saved.";
+
+        } catch {
+          if (current === version) {
+            input.checked = !enabled;
+
+            status.textContent =
+              "Could not save. Please try again.";
+          }
+
+        } finally {
+          saving = false;
+
+          if (current === version) {
+            boxes.forEach(box => {
+              box.disabled = false;
+            });
+          }
+        }
+      }
+    );
+
+    client.auth.onAuthStateChange(() => {
+      version++;
+      card.hidden = true;
+
+      setTimeout(() => {
+        void load().catch(() => {});
+      }, 0);
+    });
+
+    void load().catch(() => {});
+  }
+
+  window.addEventListener(
+    "bagvyr-admin-ready",
+    init
+  );
+
+  if (
+    document.readyState === "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      { once: true }
+    );
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
