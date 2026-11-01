@@ -760,6 +760,17 @@ function renderAnalysis(data) {
   renderInsiderAnalysis(data);
   renderAnalysisHighlights(data);
   riUpdateExitVerification();
+
+  document.dispatchEvent(
+    new CustomEvent("ri:token-context", {
+      detail: {
+        ca:
+          token.contractAddress ||
+          data.contractAddress ||
+          state.currentContract
+      }
+    })
+  );
 }
 
 
