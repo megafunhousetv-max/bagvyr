@@ -319,6 +319,18 @@
 
     controller = active;
 
+    const element = root();
+
+    if (
+      element &&
+      (
+        element.hidden ||
+        element.dataset.state === "loading"
+      )
+    ) {
+      showLoading();
+    }
+
     const timeout = setTimeout(
       () => active.abort(),
       25000
@@ -379,8 +391,23 @@
             "false"
           );
 
-          element.hidden = true;
-          element.innerHTML = "";
+          element.hidden = false;
+
+          const heading =
+            element.querySelector("strong");
+
+          const description =
+            element.querySelector("small");
+
+          if (heading) {
+            heading.textContent =
+              "Checking launch status…";
+          }
+
+          if (description) {
+            description.textContent =
+              "The data source is taking longer. Retrying shortly.";
+          }
         }
       }
 
