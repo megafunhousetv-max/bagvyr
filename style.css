@@ -16740,3 +16740,159 @@ table.ri-overview-compact-table tbody > tr:hover {
     transition: none;
   }
 }
+
+/* =========================================================
+   RISK SUMMARY
+   ========================================================= */
+
+.ri-risk__tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+
+  margin-top: 18px;
+  padding-left: 41px;
+}
+
+.ri-risk__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  max-width: 100%;
+  padding: 8px 11px;
+
+  color: #e8c976;
+  background: rgba(203, 158, 49, 0.065);
+
+  border: 1px solid rgba(214, 173, 66, 0.25);
+  border-radius: 9px;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.ri-risk__tag svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ri-risk__score {
+  color: #46dfb4;
+
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ri-risk__score small {
+  color: #a4b4be;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ri-risk__score[data-risk-level="moderate"] {
+  color: #e4d17a;
+}
+
+.ri-risk__score[data-risk-level="elevated"] {
+  color: #e9aa65;
+}
+
+.ri-risk__score[data-risk-level="higher"] {
+  color: #ef8791;
+}
+
+.ri-risk__label {
+  margin-top: 4px;
+
+  color: #b6c6ce;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ri-risk__concern {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  margin-top: 16px;
+
+  color: #e8c976;
+}
+
+.ri-risk__concern > svg {
+  width: 21px;
+  height: 21px;
+
+  margin-top: 1px;
+}
+
+.ri-risk__concern strong,
+.ri-risk__concern span {
+  display: block;
+}
+
+.ri-risk__concern strong {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.ri-risk__concern span {
+  margin-top: 3px;
+
+  color: #d4dce1;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.ri-risk__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 18px;
+  padding-top: 12px;
+
+  color: #94a6b1;
+
+  border-top: 1px solid
+    rgba(172, 190, 200, 0.16);
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.ri-risk__footer > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ri-risk__footer svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 680px) {
+  .ri-risk__tags {
+    padding-left: 30px;
+  }
+
+  .ri-risk__aside {
+    display: block;
+  }
+
+  .ri-risk__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
