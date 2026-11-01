@@ -17084,3 +17084,42 @@ table.ri-overview-compact-table tbody > tr:hover {
     transition: none;
   }
 }
+
+
+.ri-bonding__spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  border: 2px solid rgba(57, 235, 181, 0.18);
+  border-top-color: #39ebb5;
+  border-radius: 50%;
+
+  animation: ri-bonding-spin 0.9s linear infinite;
+}
+
+#riBondingStatus[data-state="loading"] {
+  color: #bdd6cd;
+}
+
+#riBondingStatus[data-state="loading"] strong {
+  color: #e3eee9;
+}
+
+#riBondingStatus[data-state="loading"] small {
+  color: #8da99e;
+}
+
+@keyframes ri-bonding-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ri-bonding__spinner {
+    animation: none;
+  }
+}

@@ -91,10 +91,50 @@
     return element;
   }
 
+  function showLoading() {
+    const element = root();
+
+    if (!element) return;
+
+    element.dataset.state = "loading";
+    element.title = "";
+
+    element.setAttribute(
+      "aria-busy",
+      "true"
+    );
+
+    element.innerHTML = `
+      <span class="ri-bonding__icon">
+        <span
+          class="ri-bonding__spinner"
+          aria-hidden="true"
+        ></span>
+      </span>
+
+      <div class="ri-bonding__content">
+        <strong>
+          Checking launch status…
+        </strong>
+
+        <small>
+          Loading bonding curve information
+        </small>
+      </div>
+    `;
+
+    element.hidden = false;
+  }
+
   function render(data) {
     const element = root();
 
     if (!element) return;
+
+    element.setAttribute(
+      "aria-busy",
+      "false"
+    );
 
     clearTimeout(expiryTimer);
 
@@ -322,8 +362,27 @@
       render(data);
 
     } catch {
-      // A temporary failure must not affect the scanner.
-      // The previous snapshot expires on its own timer.
+      // Hide the initial loader if this request fails.
+      // Keep an existing valid snapshot until it expires.
+      if (
+        current === revision &&
+        controller === active
+      ) {
+        const element = root();
+
+        if (
+          element?.dataset.state ===
+          "loading"
+        ) {
+          element.setAttribute(
+            "aria-busy",
+            "false"
+          );
+
+          element.hidden = true;
+          element.innerHTML = "";
+        }
+      }
 
     } finally {
       clearTimeout(timeout);
@@ -364,8 +423,7 @@
 
     if (!element) return;
 
-    element.hidden = true;
-    element.innerHTML = "";
+    showLoading();
 
     void refresh(current);
   }
