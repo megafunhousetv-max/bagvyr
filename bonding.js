@@ -52,6 +52,7 @@
   let timer;
   let expiryTimer;
   let controller;
+  let quickRetries = 0;
 
   function root() {
     let element =
@@ -372,6 +373,7 @@
       }
 
       render(data);
+      quickRetries = 0;
 
     } catch {
       // Hide the initial loader if this request fails.
@@ -415,11 +417,67 @@
       clearTimeout(timeout);
 
       if (
-        current === revision
+        current === revision &&
+        controller === active
       ) {
+        let delay = 60000;
+
+        const element = root();
+
+        const waiting =
+          element?.dataset.state ===
+          "loading";
+
+        if (waiting && quickRetries < 2) {
+          quickRetries++;
+
+          delay =
+            quickRetries === 1
+              ? 5000
+              : 15000;
+
+        } else if (waiting) {
+          element.dataset.state =
+            "unavailable";
+
+          element.setAttribute(
+            "aria-busy",
+            "false"
+          );
+
+          const icon =
+            element.querySelector(
+              ".ri-bonding__icon"
+            );
+
+          const heading =
+            element.querySelector(
+              "strong"
+            );
+
+          const description =
+            element.querySelector(
+              "small"
+            );
+
+          if (icon) {
+            icon.innerHTML = clock;
+          }
+
+          if (heading) {
+            heading.textContent =
+              "Launch status temporarily unavailable";
+          }
+
+          if (description) {
+            description.textContent =
+              "We’ll check again automatically.";
+          }
+        }
+
         timer = setTimeout(
           () => void refresh(current),
-          60000
+          delay
         );
       }
     }
@@ -436,7 +494,8 @@
       return;
     }
 
-    ca = contract;
+       ca = contract;
+    quickRetries = 0;
 
     const current =
       ++revision;
