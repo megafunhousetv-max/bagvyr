@@ -9443,7 +9443,7 @@ async function riDrawAnalysisCard(data, contract, logoUrl) {
   if (!ctx) throw new Error("Image rendering unavailable.");
 
   const template = await riCardLoadImage(
-    new URL("./analyse.png", window.location.href).href
+  new URL("./analyse2.png", window.location.href).href
   );
 
   ctx.drawImage(template, 0, 0, 1585, 992);
@@ -9503,13 +9503,14 @@ async function riDrawAnalysisCard(data, contract, logoUrl) {
   const symbol = String(token.symbol || "")
     .replace(/^\$/, "");
 
-  text(name, 355, 240, 655, 82);
+  text(name, 305, 222, 615, 58);
+
   text(
     symbol ? "$" + symbol : "—",
-    355,
-    315,
-    290,
-    48,
+    305,
+    295,
+    365,
+    42,
     "#b8cbd0",
     600
   );
@@ -9574,14 +9575,15 @@ if (!logo) {
 }
 
   ctx.save();
+
   ctx.beginPath();
-  ctx.arc(202, 233, 103, 0, Math.PI * 2);
+  ctx.roundRect(70, 138, 192, 192, 30);
   ctx.clip();
 
   if (logo) {
     const scale = Math.max(
-      206 / logo.naturalWidth,
-      206 / logo.naturalHeight
+      192 / logo.naturalWidth,
+      192 / logo.naturalHeight
     );
 
     const width = logo.naturalWidth * scale;
@@ -9589,14 +9591,15 @@ if (!logo) {
 
     ctx.drawImage(
       logo,
-      202 - width / 2,
-      233 - height / 2,
+      166 - width / 2,
+      234 - height / 2,
       width,
       height
     );
   } else {
     ctx.fillStyle = "#09251c";
-    ctx.fillRect(99, 130, 206, 206);
+    ctx.fillRect(70, 138, 192, 192);
+
     ctx.fillStyle = "#bafbe0";
     ctx.font = "700 92px Arial";
     ctx.textAlign = "center";
@@ -9604,8 +9607,8 @@ if (!logo) {
 
     ctx.fillText(
       (symbol || name).slice(0, 1).toUpperCase(),
-      202,
-      233
+      166,
+      234
     );
   }
 
@@ -9616,32 +9619,73 @@ if (!logo) {
       ? data.score
       : data.score?.value ?? data.score?.score;
 
-  const score = riCardNumber(rawScore);
+  const parsedScore = riCardNumber(rawScore);
+
+  const score =
+    parsedScore !== null && parsedScore <= 100
+      ? parsedScore
+      : null;
 
   const scoreText =
-    score !== null && score <= 100
-      ? String(Math.round(score))
-      : "—";
+    score === null
+      ? "—"
+      : String(Math.round(score));
 
   const scoreColor =
-    score === null ? "#b8cbd0" :
-    score >= 80 ? "#00e6aa" :
+    score === null ? "#a9bcb3" :
+    score >= 80 ? "#52efbc" :
     score >= 60 ? "#f5d56c" :
-    score >= 40 ? "#f2a34b" : "#ef7373";
+    score >= 40 ? "#f2a34b" :
+    "#ef7373";
 
-  // Right-aligned immediately before the fixed "/100".
-  let scoreSize = 116;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "alphabetic";
+  ctx.save();
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.fillStyle = scoreColor;
-  ctx.font = `700 ${scoreSize}px Arial`;
+  ctx.font = "700 90px Arial";
 
-  while (ctx.measureText(scoreText).width > 205) {
-    scoreSize--;
-    ctx.font = `700 ${scoreSize}px Arial`;
+  ctx.fillText(scoreText, 1099, 239);
+
+  if (score !== null && score > 0) {
+    ctx.beginPath();
+
+    ctx.arc(
+      1099,
+      231,
+      97,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.PI * 2 * score / 100
+    );
+
+    ctx.strokeStyle = scoreColor;
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.stroke();
   }
 
-  ctx.fillText(scoreText, 1260, 272);
+  ctx.restore();
+
+  const incomplete =
+    data.dataCompleteness?.canScore === false;
+
+  const riskLabel =
+    score === null ? "SCORE UNAVAILABLE" :
+    incomplete ? "INCOMPLETE DATA" :
+    score >= 80 ? "LOWER DETECTED RISK" :
+    score >= 60 ? "MODERATE DETECTED RISK" :
+    score >= 40 ? "ELEVATED DETECTED RISK" :
+    "HIGHER DETECTED RISK";
+
+  text(
+    riskLabel,
+    1250,
+    261,
+    254,
+    19,
+    scoreColor,
+    700
+  );
 
   const count = riCardNumber(
     holders.holderCount ??
@@ -9697,10 +9741,10 @@ if (!logo) {
   ];
 
   const columns = [
-    { x: 155, width: 238 },
-    { x: 545, width: 220 },
-    { x: 915, width: 225 },
-    { x: 1290, width: 225 }
+    { x: 140, width: 250 },
+    { x: 525, width: 240 },
+    { x: 900, width: 240 },
+    { x: 1280, width: 240 }
   ];
 
   values.forEach((value, index) => {
@@ -9709,7 +9753,7 @@ if (!logo) {
     text(
       value,
       column.x,
-      index < 4 ? 465 : 615,
+index < 4 ? 454 : 609,
       column.width,
       48
     );
@@ -9736,19 +9780,19 @@ if (!logo) {
 
   text(
     authority(mint),
-    545, 710, 225, 25,
+    450, 704, 300, 27,
     authorityColor(mint), 600
   );
 
-text(
-  authority(freeze),
-  1225, 710, 285, 25,
-  authorityColor(freeze), 600
-);
+  text(
+    authority(freeze),
+    1230, 704, 280, 27,
+    authorityColor(freeze), 600
+  );
 
   text(
     contract,
-    280, 806, 1220, 29,
+   295, 798, 1215, 28,
     "#ecf5f1", 500, "monospace"
   );
 
@@ -9758,7 +9802,7 @@ text(
     ? measuredAt.toISOString().slice(0, 16).replace("T", " ") + " UTC"
     : "Unavailable";
 
-  text(time, 1365, 862, 180, 12, "#c4d5ce", 400);
+  text(time, 1375, 856, 165, 12, "#c4d5ce", 400);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
