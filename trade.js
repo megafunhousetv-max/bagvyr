@@ -25,7 +25,8 @@ import {
     loading: false,
     active: null,
     scanner: null,
-    pending: null
+pending: null,
+holdingsPage: 0
   };
 
   let metaClient = null;
@@ -1092,6 +1093,15 @@ function renderAccount() {
 
   if (!walletRoot || !holdingsRoot) return;
 
+  const telegramCard = document.querySelector(".ra-telegram");
+
+if (
+  telegramCard &&
+  telegramCard.parentElement === holdingsRoot.parentElement
+) {
+  holdingsRoot.before(telegramCard);
+}
+
   walletRoot.replaceChildren();
   holdingsRoot.replaceChildren();
   holdingsRoot.hidden = !state.user;
@@ -1569,7 +1579,24 @@ function renderAccount() {
     ...h.tokens
   ];
 
-  for (const token of rows) {
+const pageSize = 5;
+
+const pageCount = Math.max(
+  1,
+  Math.ceil(rows.length / pageSize)
+);
+
+state.holdingsPage = Math.min(
+  Math.max(0, state.holdingsPage || 0),
+  pageCount - 1
+);
+
+const pageRows = rows.slice(
+  state.holdingsPage * pageSize,
+  (state.holdingsPage + 1) * pageSize
+);
+
+for (const token of pageRows) {
     const row = make(
       "tr",
       token.mint === SOL
@@ -1730,18 +1757,76 @@ function renderAccount() {
     body.append(row);
   }
 
-  table.append(body);
-  wrap.append(table);
+table.append(body);
+wrap.append(table);
 
-  holdingsRoot.append(
-    wrap,
+holdingsRoot.append(wrap);
+
+if (pageCount > 1) {
+  const pager = make(
+    "nav",
+    "rt-holdings-pagination"
+  );
+
+  pager.setAttribute(
+    "aria-label",
+    "Holdings pages"
+  );
+
+  const previous = button(
+    "← Previous",
+    () => {
+      state.holdingsPage = Math.max(
+        0,
+        state.holdingsPage - 1
+      );
+
+      renderAccount();
+    }
+  );
+
+  previous.disabled = state.holdingsPage === 0;
+
+  const next = button(
+    "Next →",
+    () => {
+      state.holdingsPage = Math.min(
+        pageCount - 1,
+        state.holdingsPage + 1
+      );
+
+      renderAccount();
+    }
+  );
+
+  next.disabled =
+    state.holdingsPage === pageCount - 1;
+
+  pager.append(
+    previous,
 
     make(
-      "p",
-      "rt-small rt-portfolio-footnote",
-      "Values are estimates. Trading depends on available routes."
-    )
+      "span",
+      "rt-small",
+      "Page " +
+        (state.holdingsPage + 1) +
+        " of " +
+        pageCount
+    ),
+
+    next
   );
+
+  holdingsRoot.append(pager);
+}
+
+holdingsRoot.append(
+  make(
+    "p",
+    "rt-small rt-portfolio-footnote",
+    "Values are estimates. Trading depends on available routes."
+  )
+);
 }
 
 

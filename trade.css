@@ -1428,3 +1428,35 @@ dialog.rt-wallet-dialog {
     min-width: 0;
   }
 }
+
+
+#rtHoldingsRoot .rt-holdings-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+#rtHoldingsRoot .rt-holdings-pagination .rt-button {
+  margin: 0;
+  padding: 9px 13px;
+  font-size: 12px;
+}
+
+#rtHoldingsRoot .rt-holdings-pagination .rt-small {
+  font-variant-numeric: tabular-nums;
+}
+
+#rtHoldingsRoot .rt-holdings-pagination .rt-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (max-width: 580px) {
+  #rtHoldingsRoot .rt-holdings-pagination {
+    justify-content: center;
+    gap: 10px;
+  }
+}
