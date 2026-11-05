@@ -1086,359 +1086,663 @@ async function pickWallet() {
   }
 
 
-  function renderAccount() {
-    const walletRoot = $("rtWalletRoot");
-    const holdingsRoot = $("rtHoldingsRoot");
+function renderAccount() {
+  const walletRoot = $("rtWalletRoot");
+  const holdingsRoot = $("rtHoldingsRoot");
 
-    if (!walletRoot || !holdingsRoot) return;
+  if (!walletRoot || !holdingsRoot) return;
 
-    walletRoot.replaceChildren();
-    holdingsRoot.replaceChildren();
+  walletRoot.replaceChildren();
+  holdingsRoot.replaceChildren();
+  holdingsRoot.hidden = !state.user;
 
-    holdingsRoot.hidden = !state.user;
+  if ($("rtWalletSummary")) {
+    $("rtWalletSummary").textContent = state.linked
+      ? short(state.linked.address) + " · Verified"
+      : "Not connected";
+  }
 
-    if ($("rtWalletSummary")) {
-      $("rtWalletSummary").textContent =
-        state.linked
-          ? short(state.linked.address) +
-            " · Verified"
-          : "Not connected";
-    }
+  if (!state.linked) {
+    renderWalletWelcome(walletRoot);
+    holdingsRoot.hidden = true;
+    return;
+  }
 
-    walletRoot.append(
-      make("h2", "", "Your wallet")
-    );
+  const h = state.holdings;
 
-    if (!state.linked) {
-      renderWalletWelcome(walletRoot);
+  const connected =
+    state.account?.address === state.linked.address;
 
-      holdingsRoot.hidden = true;
-      return;
-    }
+  const solBalance = h
+    ? nice(Number(decimal(h.solRaw, 9))) + " SOL"
+    : "—";
 
-    const addressBox = make(
-      "div",
-      "rt-wallet-address"
-    );
+  const updated = h
+    ? new Date(h.measuredAt).toLocaleTimeString()
+    : "";
 
-    addressBox.append(
-      make(
-        "strong",
-        "",
-        short(state.linked.address)
-      ),
+  function glyph(kind) {
+    const element = make("span", "rt-account-icon");
 
-      make("span", "rt-badge", "Verified")
-    );
+    element.setAttribute("aria-hidden", "true");
 
-    walletRoot.append(
-      addressBox,
+    const paths = {
+      copy: `
+        <rect
+          x="8" y="8"
+          width="12" height="12"
+          rx="2"
+        />
+        <path d="M16 8V4H4v12h4"/>
+      `,
 
-      make(
-        "p",
-        "rt-muted",
+      refresh: `
+        <path d="
+          M20 7v5h-5
+          M4 17v-5h5
+          M6 7a7 7 0 0 1 12-1l2 3
+          M4 15l2 3a7 7 0 0 0 12-1
+        "/>
+      `,
 
-        state.linked.wallet_name +
-        " · " +
-        (
-          state.account?.address ===
+      sol: `
+        <path
+          stroke="#69f2cd"
+          stroke-width="4"
+          d="M7 6h12M5 12h12M7 18h12"
+        />
+      `
+    };
+
+    element.innerHTML = `
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        ${paths[kind]}
+      </svg>
+    `;
+
+    return element;
+  }
+
+  function copyAddress() {
+    const element = button(
+      "",
+      async () => {
+        await navigator.clipboard.writeText(
           state.linked.address
-            ? "Connected for trading"
-            : "Reconnect to sign trades"
-        )
-      ),
+        );
 
-      button(
-        state.account
-          ? "Change wallet"
-          : "Connect wallet",
-        connect
-      ),
-
-      make(
-        "p",
-        "rt-small",
-        "Your address is saved. Each trade requires your wallet signature."
-      )
-    );
-
-    const heading = make("div", "rt-heading");
-
-    heading.append(
-      make("h2", "", "My holdings"),
-
-      button(
-        state.loading ? "Loading…" : "Refresh",
-        loadHoldings
-      )
-    );
-
-    holdingsRoot.append(
-      heading,
-
-      make(
-        "p",
-        "rt-muted",
-        "Tokens in your verified Solana wallet. Values are estimates."
-      )
-    );
-
-    if (state.pending) {
-      const warning = make(
-        "div",
-        "rt-warning"
-      );
-
-      warning.append(
-        make(
-          "p",
-          "",
-          "A previous trade needs a status check."
-        ),
-
-        button("Check status", checkPending),
-
-        button("I checked my wallet", () => {
-          clearPending();
-          renderAccount();
-          invalidate();
-        })
-      );
-
-      holdingsRoot.append(warning);
-    }
-
-    if (!state.holdings) {
-      holdingsRoot.append(
-        make(
-          "p",
-          "rt-muted",
-
-          state.loading
-            ? "Loading balances…"
-            : "Press Refresh to load your balances."
-        )
-      );
-
-      return;
-    }
-
-    const holdings = state.holdings;
-    const summaries = make("div", "rt-summaries");
-
-    let total = 0;
-    let unknown = 0;
-
-    for (const token of holdings.tokens) {
-      if (token.price === null) {
-        unknown++;
-      } else {
-        total +=
-          Number(decimal(token.raw, token.decimals)) *
-          token.price;
-      }
-    }
-
-    summaries.append(
-      make(
-        "div",
-        "rt-summary",
-
-        "SOL balance: " +
-        nice(Number(decimal(holdings.solRaw, 9))) +
-        " SOL"
-      ),
-
-      make(
-        "div",
-        "rt-summary",
-        "Priced tokens: " + dollars(total)
-      )
-    );
-
-    holdingsRoot.append(summaries);
-
-    if (unknown) {
-      holdingsRoot.append(
-        make(
-          "p",
-          "rt-small",
-
-          unknown +
-          " token(s) have no available price and are excluded from the total."
-        )
-      );
-    }
-
-    const wrap = make("div", "rt-table-wrap");
-    const table = make("table", "rt-table");
-    const tableHead = make("thead");
-    const headings = make("tr");
-
-    for (const label of [
-      "Token",
-      "Balance",
-      "Price",
-      "Value",
-      "Actions"
-    ]) {
-      headings.append(make("th", "", label));
-    }
-
-    tableHead.append(headings);
-    table.append(tableHead);
-
-    const tableBody = make("tbody");
-
-    const rows = [
-      {
-        mint: SOL,
-        symbol: "SOL",
-        name: "Solana",
-        raw: holdings.solRaw,
-        decimals: 9,
-        price: holdings.solPrice
+        notice("Wallet address copied.");
       },
+      "rt-button rt-address-copy"
+    );
 
-      ...holdings.tokens
-    ];
+    element.append(glyph("copy"));
 
-    for (const token of rows) {
-      const row = make("tr");
-      const nameCell = make("td");
+    element.title = "Copy wallet address";
 
-      if (
-        token.icon &&
-        /^https:\/\//.test(token.icon)
-      ) {
-        const image = make("img", "rt-token-icon");
+    element.setAttribute(
+      "aria-label",
+      "Copy wallet address"
+    );
 
-        image.src = token.icon;
-        image.alt = "";
-        image.loading = "lazy";
-        image.referrerPolicy = "no-referrer";
+    return element;
+  }
 
-        image.addEventListener(
-          "error",
-          () => image.remove(),
-          { once: true }
-        );
+  // YOUR WALLET
 
-        nameCell.append(image);
-      }
+  walletRoot.append(
+    make("h2", "rt-connected-title", "Your wallet")
+  );
 
-      nameCell.append(
-        make("strong", "", token.symbol),
-        make("small", "rt-muted", token.name)
-      );
+  const panel = make("div", "rt-connected-panel");
 
-      const exactBalance = decimal(
-        token.raw,
-        token.decimals
-      );
+  const profile = make(
+    "div",
+    "rt-connected-profile"
+  );
 
-      const quantity = Number(exactBalance);
+  const brand = make(
+    "div",
+    "rt-connected-brand"
+  );
 
-      const balanceCell = make(
-        "td",
-        "",
-        nice(quantity)
-      );
+  const walletName =
+    state.linked.wallet_name || "Solana wallet";
 
-      balanceCell.title = exactBalance;
+  const knownWallet = [
+    "MetaMask",
+    "Phantom",
+    "Solflare",
+    "Backpack"
+  ].includes(walletName);
 
-      row.append(
-        nameCell,
-        balanceCell,
+  brand.append(
+    knownWallet
+      ? walletIcon(walletName)
+      : walletMark()
+  );
 
-        make(
-          "td",
-          "",
+  const details = make(
+    "div",
+    "rt-connected-details"
+  );
 
-          token.price === null
-            ? "—"
-            : new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                maximumSignificantDigits: 5
-              }).format(token.price)
-        ),
+  const nameLine = make(
+    "div",
+    "rt-connected-name"
+  );
 
-        make(
-          "td",
-          "",
+  nameLine.append(
+    make("strong", "", walletName),
 
-          token.price === null
-            ? "—"
-            : dollars(quantity * token.price)
-        )
-      );
+    make(
+      "span",
+      connected
+        ? "rt-connection-state is-connected"
+        : "rt-connection-state",
+      connected
+        ? "Connected"
+        : "Reconnect to trade"
+    )
+  );
 
-      const actions = make("td", "rt-actions");
+  const addressLine = make(
+    "div",
+    "rt-connected-address"
+  );
 
-      if (token.mint !== SOL) {
-        actions.append(
-          button(
-            "Analyze",
-            () => analyze(token.mint)
-          ),
+  const address = make(
+    "strong",
+    "",
+    short(state.linked.address)
+  );
 
-          button(
-            "Buy more",
+  address.title = state.linked.address;
 
-            () => openTrade(
-              token.mint,
-              token.symbol,
-              "buy"
-            ),
+  addressLine.append(
+    address,
+    copyAddress()
+  );
 
-            "rt-button rt-primary"
-          ),
+  details.append(nameLine, addressLine);
 
-          button(
-            "Sell",
+  profile.append(
+    brand,
+    details,
+    make(
+      "span",
+      "rt-verified-pill",
+      "✓ Verified"
+    )
+  );
 
-            () => openTrade(
-              token.mint,
-              token.symbol,
-              "sell"
-            ),
+  const balance = make(
+    "div",
+    "rt-connected-balance"
+  );
 
-            "rt-button rt-sell"
-          )
-        );
-      } else {
-        actions.append(
-          make(
-            "span",
-            "rt-muted",
-            "Network balance"
-          )
-        );
-      }
+  const balanceText = make("div");
 
-      row.append(actions);
-      tableBody.append(row);
-    }
+  balanceText.append(
+    make(
+      "span",
+      "rt-account-label",
+      "SOL balance"
+    ),
 
-    table.append(tableBody);
-    wrap.append(table);
+    make(
+      "strong",
+      "rt-account-number",
+      solBalance
+    )
+  );
 
-    holdingsRoot.append(
-      wrap,
+  balance.append(
+    glyph("sol"),
+    balanceText
+  );
 
+  panel.append(profile, balance);
+
+  const walletFooter = make(
+    "div",
+    "rt-connected-footer"
+  );
+
+  walletFooter.append(
+    button(
+      state.account
+        ? "Change wallet"
+        : "Connect wallet",
+      connect
+    ),
+
+    make(
+      "p",
+      "rt-small",
+      "Each trade requires your wallet signature."
+    )
+  );
+
+  walletRoot.append(panel, walletFooter);
+
+  // MY HOLDINGS
+
+  const heading = make(
+    "div",
+    "rt-portfolio-heading"
+  );
+
+  const title = make(
+    "div",
+    "rt-portfolio-title"
+  );
+
+  const titleText = make("div");
+
+  titleText.append(
+    make("h2", "", "My holdings"),
+
+    make(
+      "p",
+      "rt-muted",
+      "Tokens in your verified Solana wallet."
+    )
+  );
+
+  title.append(
+    walletMark(),
+    titleText
+  );
+
+  const refreshArea = make(
+    "div",
+    "rt-portfolio-refresh"
+  );
+
+  const refresh = button(
+    state.loading ? "Loading…" : "Refresh",
+    loadHoldings
+  );
+
+  refresh.prepend(glyph("refresh"));
+  refresh.disabled = state.loading;
+
+  refreshArea.append(refresh);
+
+  if (updated) {
+    refreshArea.append(
       make(
-        "p",
+        "span",
         "rt-small",
-
-        "Updated " +
-        new Date(
-          holdings.measuredAt
-        ).toLocaleTimeString() +
-        ". Trading depends on available routes."
+        "Updated " + updated
       )
     );
   }
+
+  heading.append(title, refreshArea);
+
+  holdingsRoot.append(heading);
+
+  // Existing pending trade controls.
+
+  if (state.pending) {
+    const warning = make(
+      "div",
+      "rt-warning"
+    );
+
+    warning.append(
+      make(
+        "p",
+        "",
+        "A previous trade needs a status check."
+      ),
+
+      button("Check status", checkPending),
+
+      button("I checked my wallet", () => {
+        clearPending();
+        renderAccount();
+        invalidate();
+      })
+    );
+
+    holdingsRoot.append(warning);
+  }
+
+  if (!h) {
+    holdingsRoot.append(
+      make(
+        "p",
+        "rt-muted",
+        state.loading
+          ? "Loading balances…"
+          : "Press Refresh to load your balances."
+      )
+    );
+
+    return;
+  }
+
+  let total = 0;
+  let unknown = 0;
+
+  for (const token of h.tokens) {
+    if (token.price === null) {
+      unknown++;
+    } else {
+      total +=
+        Number(decimal(token.raw, token.decimals)) *
+        token.price;
+    }
+  }
+
+  const overview = make(
+    "div",
+    "rt-portfolio-overview"
+  );
+
+  for (const [label, value] of [
+    ["Estimated token value", dollars(total)],
+    ["SOL balance", solBalance]
+  ]) {
+    const metric = make(
+      "div",
+      "rt-portfolio-metric"
+    );
+
+    metric.append(
+      make(
+        "span",
+        "rt-account-label",
+        label
+      ),
+
+      make(
+        "strong",
+        "rt-account-number",
+        value
+      )
+    );
+
+    overview.append(metric);
+  }
+
+  const walletMetric = make(
+    "div",
+    "rt-portfolio-metric rt-portfolio-wallet"
+  );
+
+  const walletAddress = make(
+    "div",
+    "rt-connected-address"
+  );
+
+  walletAddress.append(
+    make(
+      "strong",
+      "",
+      short(state.linked.address)
+    ),
+
+    copyAddress(),
+
+    make(
+      "span",
+      "rt-verified-pill",
+      "✓ Verified"
+    )
+  );
+
+  walletMetric.append(
+    make(
+      "span",
+      "rt-account-label",
+      "Wallet address"
+    ),
+
+    walletAddress
+  );
+
+  overview.append(walletMetric);
+  holdingsRoot.append(overview);
+
+  if (unknown) {
+    holdingsRoot.append(
+      make(
+        "p",
+        "rt-small",
+        unknown +
+        " token(s) have no available price and are excluded from the total."
+      )
+    );
+  }
+
+  const wrap = make(
+    "div",
+    "rt-table-wrap rt-portfolio-table-wrap"
+  );
+
+  const table = make(
+    "table",
+    "rt-table rt-portfolio-table"
+  );
+
+  const head = make("thead");
+  const labels = make("tr");
+
+  for (const text of [
+    "Asset",
+    "Balance",
+    "Price",
+    "Value",
+    "Trade"
+  ]) {
+    const th = make("th", "", text);
+    th.scope = "col";
+    labels.append(th);
+  }
+
+  head.append(labels);
+  table.append(head);
+
+  const body = make("tbody");
+
+  const rows = [
+    {
+      mint: SOL,
+      symbol: "SOL",
+      name: "Solana",
+      raw: h.solRaw,
+      decimals: 9,
+      price: h.solPrice
+    },
+
+    ...h.tokens
+  ];
+
+  for (const token of rows) {
+    const row = make(
+      "tr",
+      token.mint === SOL
+        ? "rt-native-row"
+        : "rt-holding-row"
+    );
+
+    const assetCell = make("td");
+
+    const asset = make(
+      "div",
+      "rt-portfolio-asset"
+    );
+
+    const tokenIcon = make(
+      "span",
+      "rt-portfolio-token-icon"
+    );
+
+    const fallback = () => {
+      tokenIcon.replaceChildren(
+        token.mint === SOL
+          ? glyph("sol")
+          : make(
+              "span",
+              "",
+              (token.symbol || "?").slice(0, 2)
+            )
+      );
+    };
+
+    fallback();
+
+    if (
+      token.icon &&
+      /^https:\/\//.test(token.icon)
+    ) {
+      const image = make("img");
+
+      image.src = token.icon;
+      image.alt = "";
+      image.loading = "lazy";
+      image.referrerPolicy = "no-referrer";
+
+      image.addEventListener(
+        "error",
+        fallback,
+        { once: true }
+      );
+
+      tokenIcon.replaceChildren(image);
+    }
+
+    const tokenText = make(
+      "div",
+      "rt-portfolio-token-text"
+    );
+
+    tokenText.append(
+      make("strong", "", token.symbol),
+      make("small", "rt-muted", token.name)
+    );
+
+    asset.append(tokenIcon, tokenText);
+    assetCell.append(asset);
+
+    const exactBalance = decimal(
+      token.raw,
+      token.decimals
+    );
+
+    const quantity = Number(exactBalance);
+
+    const balanceCell = make(
+      "td",
+      "rt-portfolio-numeric",
+      nice(quantity)
+    );
+
+    balanceCell.title = exactBalance;
+
+    row.append(
+      assetCell,
+      balanceCell,
+
+      make(
+        "td",
+        "rt-portfolio-numeric",
+        token.price === null
+          ? "—"
+          : new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+              maximumSignificantDigits: 5
+            }).format(token.price)
+      ),
+
+      make(
+        "td",
+        "rt-portfolio-numeric rt-portfolio-value",
+        token.price === null
+          ? "—"
+          : dollars(quantity * token.price)
+      )
+    );
+
+    const actions = make(
+      "td",
+      "rt-portfolio-actions"
+    );
+
+    if (token.mint !== SOL) {
+      const group = make(
+        "div",
+        "rt-portfolio-action-group"
+      );
+
+      group.append(
+        button(
+          "Buy more",
+          () => openTrade(
+            token.mint,
+            token.symbol,
+            "buy"
+          ),
+          "rt-button rt-primary"
+        ),
+
+        button(
+          "Sell",
+          () => openTrade(
+            token.mint,
+            token.symbol,
+            "sell"
+          ),
+          "rt-button rt-sell"
+        ),
+
+        button(
+          "Analyze",
+          () => analyze(token.mint),
+          "rt-button rt-portfolio-analyze"
+        )
+      );
+
+      actions.append(group);
+    } else {
+      actions.append(
+        make(
+          "span",
+          "rt-muted",
+          "Network balance"
+        )
+      );
+    }
+
+    row.append(actions);
+    body.append(row);
+  }
+
+  table.append(body);
+  wrap.append(table);
+
+  holdingsRoot.append(
+    wrap,
+
+    make(
+      "p",
+      "rt-small rt-portfolio-footnote",
+      "Values are estimates. Trading depends on available routes."
+    )
+  );
+}
 
 
   async function loadHoldings() {
@@ -1794,12 +2098,18 @@ async function pickWallet() {
   }
 
 
-  function openTrade(
-    mint,
-    symbol,
-    side = "buy"
-  ) {
-    if (state.busy) return;
+function openTrade(
+  mint,
+  symbol,
+  side = "buy"
+) {
+  if (state.busy) return;
+
+  if (!state.user) {
+    notice("Please sign in to buy or sell tokens.");
+    location.hash = "account";
+    return;
+  }
 
     if (
       !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)

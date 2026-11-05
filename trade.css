@@ -823,3 +823,608 @@ dialog.rt-wallet-dialog {
     font-size: 20px;
   }
 }
+
+/* Connected wallet and holdings appearance */
+
+#rtWalletRoot,
+#rtHoldingsRoot {
+  min-width: 0;
+}
+
+.rt-account-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.rt-account-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#rtWalletRoot .rt-connected-title {
+  margin: 0 0 18px;
+  font-size: 23px;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.rt-connected-panel {
+  padding: 18px;
+  border: 1px solid #1b513b;
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgb(29 163 112 / 8%),
+      transparent 70%
+    ),
+    #051c13;
+}
+
+.rt-connected-profile {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.rt-connected-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid #246047;
+  border-radius: 14px;
+  background: #042117;
+}
+
+.rt-connected-brand .rt-wallet-logo {
+  width: 36px;
+  height: 36px;
+}
+
+.rt-connected-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.rt-connected-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 12px;
+}
+
+.rt-connected-name > strong {
+  font-size: 15px;
+  color: #eefbf4;
+}
+
+.rt-connection-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #a9bdb1;
+}
+
+.rt-connection-state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #879c90;
+}
+
+.rt-connection-state.is-connected {
+  color: #48edb7;
+}
+
+.rt-connection-state.is-connected::before {
+  background: #36e9ac;
+}
+
+.rt-connected-address {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 6px;
+}
+
+.rt-connected-address > strong {
+  font-size: 14px;
+  color: #e6f5ed;
+  overflow-wrap: anywhere;
+}
+
+#rtWalletRoot .rt-address-copy,
+#rtHoldingsRoot .rt-address-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #a3c8b5;
+}
+
+#rtWalletRoot .rt-address-copy:hover,
+#rtHoldingsRoot .rt-address-copy:hover {
+  border-color: #28634a;
+  background: #0c3021;
+  color: #59f1bf;
+}
+
+.rt-verified-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border: 1px solid #287252;
+  border-radius: 20px;
+  background: rgb(25 115 78 / 17%);
+  color: #50edb9;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.rt-connected-balance {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 18px;
+  padding-top: 17px;
+  border-top: 1px solid #204a36;
+}
+
+.rt-connected-balance > .rt-account-icon {
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  box-sizing: border-box;
+  border: 1px solid #1b5038;
+  border-radius: 12px;
+  background: #03170f;
+}
+
+.rt-account-label {
+  display: block;
+  color: #a8c2b4;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rt-account-number {
+  display: block;
+  margin-top: 4px;
+  color: #f0fcf5;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rt-connected-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 18px;
+}
+
+#rtWalletRoot .rt-connected-footer .rt-button {
+  margin: 0;
+}
+
+#rtWalletRoot .rt-connected-footer p {
+  flex: 1;
+  min-width: 160px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* Holdings */
+
+#rtHoldingsRoot {
+  padding: 26px;
+  border-color: #236148;
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at top left,
+      rgb(13 102 67 / 10%),
+      transparent 60%
+    ),
+    linear-gradient(130deg, #041b12, #03110c);
+}
+
+.rt-portfolio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.rt-portfolio-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+#rtHoldingsRoot .rt-portfolio-title h2 {
+  margin: 0;
+  font-size: 25px;
+  line-height: 1.3;
+  letter-spacing: -0.6px;
+}
+
+#rtHoldingsRoot .rt-portfolio-title p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rt-portfolio-refresh {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 7px;
+}
+
+.rt-portfolio-refresh .rt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rt-portfolio-refresh .rt-small {
+  font-size: 10px;
+}
+
+.rt-portfolio-overview {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 0.8fr)
+    minmax(0, 1.25fr);
+  align-items: center;
+  gap: 0;
+  margin-bottom: 22px;
+  padding: 22px 0;
+  border: 1px solid #235f44;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      110deg,
+      rgb(15 65 43 / 65%),
+      rgb(5 33 22 / 55%)
+    );
+}
+
+.rt-portfolio-metric {
+  min-width: 0;
+  padding: 0 22px;
+}
+
+.rt-portfolio-metric + .rt-portfolio-metric {
+  border-left: 1px solid #24513c;
+}
+
+.rt-portfolio-metric:first-child .rt-account-number {
+  font-size: 32px;
+}
+
+.rt-portfolio-wallet .rt-connected-address {
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.rt-portfolio-wallet .rt-connected-address > strong {
+  font-size: 15px;
+}
+
+/* Token rows */
+
+.rt-portfolio-table-wrap {
+  width: 100%;
+  margin-top: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+#rtHoldingsRoot .rt-portfolio-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+#rtHoldingsRoot .rt-portfolio-table th {
+  padding: 8px 16px 12px;
+  border: 0;
+  color: #9db9aa;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+#rtHoldingsRoot .rt-portfolio-table th:nth-child(2),
+#rtHoldingsRoot .rt-portfolio-table th:nth-child(3),
+#rtHoldingsRoot .rt-portfolio-table th:nth-child(4) {
+  text-align: right;
+}
+
+#rtHoldingsRoot .rt-portfolio-table td {
+  height: 76px;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid #193d2c;
+}
+
+#rtHoldingsRoot .rt-holding-row td {
+  border-top-color: #1b4b34;
+  border-bottom-color: #1b4b34;
+  background: rgb(12 49 32 / 55%);
+}
+
+#rtHoldingsRoot .rt-holding-row td:first-child {
+  border-left: 1px solid #1b4b34;
+  border-radius: 13px 0 0 13px;
+}
+
+#rtHoldingsRoot .rt-holding-row td:last-child {
+  border-right: 1px solid #1b4b34;
+  border-radius: 0 13px 13px 0;
+}
+
+#rtHoldingsRoot .rt-holding-row:hover td {
+  background: rgb(17 65 43 / 65%);
+}
+
+.rt-portfolio-asset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.rt-portfolio-token-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border: 1px solid #23563e;
+  border-radius: 50%;
+  background: #062317;
+  color: #60e9b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rt-portfolio-token-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rt-portfolio-token-icon .rt-account-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.rt-portfolio-token-text {
+  min-width: 0;
+}
+
+.rt-portfolio-token-text > strong {
+  display: block;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  color: #edf9f2;
+}
+
+#rtHoldingsRoot .rt-portfolio-token-text small {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+#rtHoldingsRoot .rt-portfolio-numeric {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+#rtHoldingsRoot .rt-portfolio-value {
+  font-weight: 700;
+  color: #edf9f2;
+}
+
+.rt-portfolio-action-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rt-portfolio-action-group .rt-button {
+  margin: 0;
+  padding: 10px 13px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.rt-portfolio-action-group .rt-primary {
+  box-shadow: 0 3px 14px rgb(13 211 148 / 8%);
+}
+
+.rt-portfolio-action-group .rt-sell {
+  border-color: #79434a;
+  background: rgb(62 27 32 / 30%);
+  color: #f49da5;
+}
+
+.rt-portfolio-action-group .rt-sell:hover {
+  border-color: #e1818d;
+}
+
+.rt-portfolio-action-group .rt-portfolio-analyze {
+  border-color: #254c3a;
+  background: transparent;
+  color: #a7c8b6;
+}
+
+.rt-portfolio-actions {
+  text-align: right;
+}
+
+.rt-native-row .rt-portfolio-actions {
+  color: #99b6a6;
+  font-size: 12px;
+}
+
+#rtHoldingsRoot .rt-portfolio-footnote {
+  margin: 16px 0 0;
+  padding-top: 15px;
+  border-top: 1px solid #1b4933;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* Smaller screens */
+
+@media (max-width: 1100px) {
+  .rt-connected-profile {
+    flex-wrap: wrap;
+  }
+
+  .rt-portfolio-overview {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 18px;
+  }
+
+  .rt-portfolio-wallet {
+    grid-column: 1 / -1;
+    padding-top: 16px;
+    border-top: 1px solid #24513c;
+  }
+
+  .rt-portfolio-metric.rt-portfolio-wallet {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 580px) {
+  #rtHoldingsRoot {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .rt-portfolio-heading {
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .rt-portfolio-title {
+    gap: 10px;
+  }
+
+  .rt-portfolio-title > .rt-wallet-mark {
+    display: none;
+  }
+
+  #rtHoldingsRoot .rt-portfolio-title h2 {
+    font-size: 21px;
+  }
+
+  #rtHoldingsRoot .rt-portfolio-title p {
+    font-size: 11px;
+  }
+
+  .rt-portfolio-refresh .rt-button {
+    padding: 9px 11px;
+    font-size: 11px;
+  }
+
+  .rt-portfolio-refresh .rt-small {
+    max-width: 100px;
+    text-align: right;
+    font-size: 9px;
+  }
+
+  .rt-portfolio-overview {
+    padding: 18px 0;
+    margin-bottom: 14px;
+  }
+
+  .rt-portfolio-metric {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .rt-portfolio-metric .rt-account-label {
+    font-size: 10px;
+  }
+
+  .rt-portfolio-metric .rt-account-number {
+    font-size: 22px;
+  }
+
+  .rt-portfolio-metric:first-child .rt-account-number {
+    font-size: 27px;
+  }
+
+  .rt-connected-panel {
+    padding: 15px;
+  }
+
+  .rt-connected-profile {
+    gap: 10px;
+  }
+
+  .rt-connected-brand {
+    flex-basis: 46px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .rt-connected-name > strong {
+    font-size: 14px;
+  }
+
+  .rt-connected-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #rtWalletRoot .rt-connected-footer p {
+    min-width: 0;
+  }
+}
