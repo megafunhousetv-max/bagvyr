@@ -296,141 +296,508 @@ import {
   }
 
 
-  async function pickWallet() {
-    const dialog = make("dialog", "rt-dialog");
-    const content = make("div", "rt-dialog-body");
+function walletIcon(name) {
+  const paths = {
+    Phantom: `
+      <path
+        fill="#AB9FF2"
+        d="M7 23c-2-9 4-17 13-17s15 6 14 14c-1 6-5 11-9 11-2 0-3-1-3-3-2 3-5 4-7 3-2-1-2-3-1-5-3 3-6 2-7-3Z"
+      />
+      <ellipse
+        cx="22" cy="16"
+        rx="1.7" ry="2.5"
+        fill="#302750"
+      />
+      <ellipse
+        cx="28" cy="16"
+        rx="1.7" ry="2.5"
+        fill="#302750"
+      />
+    `,
 
-    content.append(
-      make("h2", "", "Connect Solana wallet"),
+    Solflare: `
+      <path
+        fill="#FF8B1F"
+        d="m20 2 3 12 11-7-7 11 11 3-12 3 7 11-11-7-3 11-3-12-11 7 7-11-11-3 12-3L6 6l11 7Z"
+      />
+      <circle
+        cx="20" cy="20"
+        r="6"
+        fill="#FFC34D"
+      />
+    `,
 
-      make(
-        "p",
-        "rt-muted",
-        "Choose your wallet. Verify the address with a message signature."
-      )
+    Backpack: `
+      <path
+        d="M13 14v-3a7 7 0 0 1 14 0v3"
+        fill="none"
+        stroke="#F64C55"
+        stroke-width="3"
+      />
+      <rect
+        x="8" y="12"
+        width="24" height="25"
+        rx="7"
+        fill="#F64C55"
+      />
+      <rect
+        x="12" y="23"
+        width="16" height="9"
+        rx="3"
+        fill="#B62936"
+      />
+      <path
+        d="M17 18h6"
+        stroke="#FFD5D8"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    `,
+
+    MetaMask: `
+      <path
+        fill="#E27625"
+        d="m4 4 13 8h6l13-8-4 23-12 10L8 27Z"
+      />
+      <path
+        fill="#F6851B"
+        d="m4 4 14 15-10 8Zm32 0L22 19l10 8Z"
+      />
+      <path
+        fill="#CD6116"
+        d="m8 27 10-8 2 10-8 4Zm24 0-10-8-2 10 8 4Z"
+      />
+      <path
+        fill="#FFD6A4"
+        d="m12 26 6 2 2 5-7-1Zm16 0-6 2-2 5 7-1Z"
+      />
+      <path
+        fill="#3D2A20"
+        d="m13 20 5 2-4 2Zm14 0-5 2 4 2Zm-10 10h6l-3 4Z"
+      />
+    `
+  };
+
+  const icon = make("span", "rt-wallet-logo");
+
+  icon.setAttribute("aria-hidden", "true");
+
+  icon.innerHTML = `
+    <svg
+      viewBox="0 0 40 40"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      ${paths[name] || ""}
+    </svg>
+  `;
+
+  return icon;
+}
+
+
+function walletMark() {
+  const mark = make("span", "rt-wallet-mark");
+
+  mark.setAttribute("aria-hidden", "true");
+
+  mark.innerHTML = `
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path
+        d="M20 8V6a2 2 0 0 0-2-2H6a3 3 0 0 0-3 3v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8H6a1 1 0 0 1 0-2"
+      />
+      <path d="M21 12h-5v4h5"/>
+      <path d="M17 14h.01"/>
+    </svg>
+  `;
+
+  return mark;
+}
+
+
+function renderWalletWelcome(root) {
+  root.replaceChildren();
+
+  const heading = make(
+    "div",
+    "rt-wallet-card-heading"
+  );
+
+  const titles = make(
+    "div",
+    "rt-wallet-card-titles"
+  );
+
+  const titleRow = make(
+    "div",
+    "rt-wallet-title-row"
+  );
+
+  titleRow.append(
+    make("h2", "", "Your wallet"),
+
+    make(
+      "span",
+      "rt-wallet-offline",
+      "Not connected"
+    )
+  );
+
+  titles.append(
+    titleRow,
+
+    make(
+      "p",
+      "rt-wallet-description",
+      "Connect your Solana wallet to view holdings and trade."
+    )
+  );
+
+  heading.append(
+    walletMark(),
+    titles
+  );
+
+  const logos = make(
+    "div",
+    "rt-wallet-brands"
+  );
+
+  for (const name of [
+    "Phantom",
+    "Solflare",
+    "Backpack",
+    "MetaMask"
+  ]) {
+    const brand = make(
+      "div",
+      "rt-wallet-brand"
     );
 
-    let resolveSelection;
+    brand.append(
+      walletIcon(name),
+      make("span", "", name)
+    );
 
-    const selection = new Promise(resolve => {
-      resolveSelection = resolve;
-    });
+    logos.append(brand);
+  }
 
-    let closed = false;
+  root.append(
+    heading,
+    logos,
 
-    function finish(wallet) {
-      if (closed) return;
+    button(
+      "Connect wallet",
+      connect,
+      "rt-button rt-primary rt-wallet-connect"
+    ),
 
-      closed = true;
-      dialog.close();
-      dialog.remove();
-      resolveSelection(wallet);
-    }
+    make(
+      "p",
+      "rt-wallet-caption",
+      "Verify ownership with a message signature."
+    ),
 
-    const installed = registry
-      .get()
-      .filter(supportsTrading);
+    make(
+      "div",
+      "rt-wallet-card-footer",
+      "Your funds stay in your wallet."
+    )
+  );
+}
 
-    const list = make("div", "rt-wallet-list");
 
-    for (const name of [
-      "Phantom",
-      "Solflare",
-      "Backpack",
-      "MetaMask"
-    ]) {
-      const found = installed.find(wallet => {
-        return wallet.name
-          .toLowerCase()
-          .includes(name.toLowerCase());
-      });
+async function pickWallet() {
+  const dialog = make(
+    "dialog",
+    "rt-dialog rt-wallet-dialog"
+  );
 
-      list.append(
-        button(
-          name + (found ? "" : " · Open / install"),
+  dialog.setAttribute(
+    "aria-labelledby",
+    "rtWalletDialogTitle"
+  );
 
-          async () => {
-            if (found) {
-              finish(found);
-              return;
-            }
+  dialog.setAttribute(
+    "aria-describedby",
+    "rtWalletDialogDescription"
+  );
 
-            if (name === "MetaMask") {
-              notice("Opening MetaMask…");
+  const content = make(
+    "div",
+    "rt-wallet-dialog-body"
+  );
 
-              if (!metaClient) {
-                const {
-                  createSolanaClient
-                } = await import(
-                  "https://esm.sh/@metamask/connect-solana@2.1.1?bundle"
-                );
+  const heading = make(
+    "div",
+    "rt-wallet-modal-heading"
+  );
 
-                metaClient = await createSolanaClient({
+  const titles = make(
+    "div",
+    "rt-wallet-modal-titles"
+  );
+
+  const title = make(
+    "h2",
+    "",
+    "Connect wallet"
+  );
+
+  title.id = "rtWalletDialogTitle";
+
+  const description = make(
+    "p",
+    "",
+    "Choose a Solana wallet"
+  );
+
+  description.id =
+    "rtWalletDialogDescription";
+
+  titles.append(
+    title,
+    description
+  );
+
+  let resolveSelection;
+
+  const selection = new Promise(resolve => {
+    resolveSelection = resolve;
+  });
+
+  let closed = false;
+
+  function finish(wallet) {
+    if (closed) return;
+
+    closed = true;
+
+    dialog.close();
+    dialog.remove();
+
+    resolveSelection(wallet);
+  }
+
+  const close = button(
+    "×",
+    () => finish(null),
+    "rt-wallet-close"
+  );
+
+  close.setAttribute(
+    "aria-label",
+    "Close wallet selection"
+  );
+
+  heading.append(
+    walletMark(),
+    titles,
+    close
+  );
+
+  const list = make(
+    "div",
+    "rt-wallet-options"
+  );
+
+  const status = make(
+    "div",
+    "rt-wallet-picker-status"
+  );
+
+  status.setAttribute("role", "status");
+
+  const choices = [];
+
+  for (const name of [
+    "Phantom",
+    "Solflare",
+    "Backpack",
+    "MetaMask"
+  ]) {
+    const choice = button(
+      "",
+
+      async () => {
+        for (const item of choices) {
+          item.disabled = true;
+        }
+
+        status.replaceChildren();
+
+        try {
+          const found = registry
+            .get()
+            .filter(supportsTrading)
+            .find(wallet => {
+              return wallet.name
+                .toLowerCase()
+                .includes(name.toLowerCase());
+            });
+
+          if (found) {
+            finish(found);
+            return;
+          }
+
+          if (name === "MetaMask") {
+            status.textContent =
+              "Opening MetaMask…";
+
+            if (!metaClient) {
+              const {
+                createSolanaClient
+              } = await import(
+                "https://esm.sh/@metamask/connect-solana@2.1.1?bundle"
+              );
+
+              metaClient =
+                await createSolanaClient({
                   dapp: {
                     name: "RugInspect",
                     url: location.origin,
+
                     iconUrl:
-                      location.origin + "/lupa.png"
+                      location.origin +
+                      "/lupa.png"
                   }
                 });
-              }
-
-              finish(metaClient.getWallet());
-              return;
             }
 
-            const links = {
-              Phantom:
-                "https://phantom.com/download",
-
-              Solflare:
-                "https://solflare.com/download",
-
-              Backpack:
-                "https://backpack.app/download"
-            };
-
-            content.append(
-              make(
-                "p",
-                "rt-muted",
-                "Install the wallet extension, or open ruginspect.com in the wallet’s mobile browser, then reconnect."
-              )
-            );
-
-            const link = make(
-              "a",
-              "rt-link",
-              "Open official " + name + " website"
-            );
-
-            link.href = links[name];
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-
-            content.append(link);
+            finish(metaClient.getWallet());
+            return;
           }
-        )
-      );
-    }
 
-    content.append(
-      list,
-      button("Cancel", () => finish(null))
+          const links = {
+            Phantom:
+              "https://phantom.com/download",
+
+            Solflare:
+              "https://solflare.com/download",
+
+            Backpack:
+              "https://backpack.app/download"
+          };
+
+          status.append(
+            make(
+              "p",
+              "",
+              "Open RugInspect in your wallet’s mobile browser, or install the browser extension."
+            )
+          );
+
+          const link = make(
+            "a",
+            "rt-link",
+            "Get " + name + " ↗"
+          );
+
+          link.href = links[name];
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+
+          status.append(link);
+        } catch (error) {
+          status.textContent =
+            error?.message ||
+            "Could not open this wallet. Please try again.";
+        } finally {
+          if (!closed) {
+            for (const item of choices) {
+              item.disabled = false;
+            }
+          }
+        }
+      },
+
+      "rt-wallet-option"
     );
 
-    dialog.append(content);
+    choice.dataset.wallet = name;
 
-    dialog.addEventListener("cancel", event => {
+    const arrow = make(
+      "span",
+      "rt-wallet-chevron",
+      "›"
+    );
+
+    arrow.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    choice.append(
+      walletIcon(name),
+
+      make(
+        "span",
+        "rt-wallet-option-name",
+        name
+      ),
+
+      arrow
+    );
+
+    choices.push(choice);
+    list.append(choice);
+  }
+
+  const footer = make(
+    "div",
+    "rt-wallet-modal-footer"
+  );
+
+  const footerText = make("div");
+
+  footerText.append(
+    make(
+      "p",
+      "",
+      "One signature to verify your address."
+    ),
+
+    make(
+      "p",
+      "",
+      "Trades require a separate confirmation."
+    )
+  );
+
+  footer.append(
+    walletMark(),
+    footerText
+  );
+
+  content.append(
+    heading,
+    list,
+    status,
+    footer
+  );
+
+  dialog.append(content);
+
+  dialog.addEventListener(
+    "cancel",
+    event => {
       event.preventDefault();
       finish(null);
-    });
+    }
+  );
 
-    document.body.append(dialog);
-    dialog.showModal();
+  document.body.append(dialog);
+  dialog.showModal();
 
-    return selection;
-  }
+  return selection;
+}
 
 
   async function pickAccount(accounts) {
@@ -743,19 +1110,7 @@ import {
     );
 
     if (!state.linked) {
-      walletRoot.append(
-        make(
-          "p",
-          "rt-muted",
-          "Connect and verify your Solana wallet."
-        ),
-
-        button(
-          "Connect wallet",
-          connect,
-          "rt-button rt-primary"
-        )
-      );
+      renderWalletWelcome(walletRoot);
 
       holdingsRoot.hidden = true;
       return;
