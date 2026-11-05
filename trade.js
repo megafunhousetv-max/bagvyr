@@ -1755,7 +1755,7 @@ function renderAccount() {
     renderAccount();
 
     try {
-      const data = await api("/holdings");
+     const data = await api("/holdings?fresh=1");
 
       if (
         user !== state.user ||
@@ -2534,6 +2534,21 @@ function openTrade(
       open: openTrade,
       connect
     };
+
+setInterval(() => {
+  if (
+    document.hidden ||
+    location.hash !== "#account" ||
+    !state.user ||
+    !state.linked ||
+    state.loading ||
+    state.busy
+  ) {
+    return;
+  }
+
+  void guard(loadHoldings);
+}, 10000);
 
     const toast = make("div", "rt-notice");
 
