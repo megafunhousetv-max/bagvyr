@@ -1,0 +1,428 @@
+/* RugInspect — Trading */
+
+.rt-card {
+  margin: 18px 0;
+  padding: 22px;
+  border: 1px solid #164c3b;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #061c14, #03100c);
+  color: #e4f5ed;
+}
+
+.rt-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rt-heading h2,
+.rt-heading h3 {
+  margin: 0;
+}
+
+.rt-muted,
+.rt-small {
+  color: #a4bbb0;
+}
+
+.rt-small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rt-button {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid #235d47;
+  border-radius: 10px;
+  background: #082219;
+  color: #e5f9ef;
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rt-button:hover {
+  border-color: #53edba;
+}
+
+.rt-primary {
+  background: linear-gradient(110deg, #68f8ca, #11dca2);
+  color: #012116;
+  font-weight: 700;
+  border-color: transparent;
+}
+
+.rt-sell {
+  color: #ffadaf;
+  border-color: #813c44;
+  background: #211316;
+}
+
+.rt-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.rt-button:focus-visible,
+.rt-field input:focus-visible,
+.rt-settings select:focus-visible {
+  outline: 2px solid #63f5c2;
+  outline-offset: 3px;
+}
+
+.rt-trade-grid {
+  display: grid;
+  grid-template-columns:
+    180px
+    minmax(130px, 1fr)
+    24px
+    minmax(130px, 1fr)
+    190px;
+  align-items: start;
+  gap: 20px;
+}
+
+.rt-tabs {
+  display: flex;
+  padding: 3px;
+  border: 1px solid #24503d;
+  border-radius: 11px;
+  margin-top: 18px;
+}
+
+.rt-tabs .rt-button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+}
+
+.rt-tabs .rt-selected {
+  background: #39ebae;
+  color: #012316;
+  font-weight: 700;
+}
+
+.rt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.rt-field input,
+.rt-field strong {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #22543f;
+  border-radius: 10px;
+  background: #04140e;
+  color: #edfff6;
+  font: inherit;
+  min-height: 46px;
+}
+
+.rt-field strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.rt-presets {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.rt-presets .rt-button {
+  padding: 4px 10px;
+  font-size: 11px;
+  flex: 1;
+}
+
+.rt-arrow {
+  margin-top: 35px;
+  color: #7edcbb;
+}
+
+.rt-trade-grid > .rt-primary {
+  margin-top: 24px;
+  min-height: 46px;
+}
+
+.rt-settings {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: 14px;
+}
+
+.rt-settings select {
+  margin-left: 8px;
+  background: #062218;
+  color: #cff5e4;
+  border: 1px solid #255a43;
+  border-radius: 7px;
+  padding: 5px;
+}
+
+.rt-review {
+  border-top: 1px solid #1d4333;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.rt-review p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+.rt-status {
+  font-size: 13px;
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+.rt-status:empty {
+  display: none;
+}
+
+.rt-wallet-address {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: center;
+  background: #052217;
+  padding: 14px;
+  border: 1px solid #20503a;
+  border-radius: 10px;
+}
+
+.rt-badge {
+  color: #47e9b3;
+  font-size: 12px;
+}
+
+.rt-summaries {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.rt-summary {
+  padding: 16px;
+  background: #08291d;
+  border: 1px solid #1e4e38;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.rt-table-wrap {
+  overflow-x: auto;
+}
+
+.rt-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+.rt-table th {
+  text-align: left;
+  color: #a4c5b4;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.rt-table th,
+.rt-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #183f2d;
+  white-space: nowrap;
+}
+
+.rt-table td small {
+  display: block;
+  margin-top: 4px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rt-actions .rt-button {
+  margin: 0 4px;
+}
+
+.rt-token-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  float: left;
+  margin: 0 10px 0 0;
+}
+
+.rt-dialog {
+  width: min(820px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 0;
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid #23654b;
+  border-radius: 20px;
+  background: #03140d;
+  color: #edfdf5;
+}
+
+.rt-dialog::backdrop {
+  background: #000b;
+  backdrop-filter: blur(5px);
+}
+
+.rt-dialog-body {
+  padding: 22px;
+}
+
+.rt-dialog .rt-card {
+  padding: 16px;
+  margin: 16px 0 0;
+}
+
+.rt-dialog .rt-trade-grid {
+  grid-template-columns: 1fr 24px 1fr;
+  gap: 12px;
+}
+
+.rt-dialog .rt-tabs {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.rt-dialog .rt-trade-grid > .rt-primary {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.rt-wallet-list {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.rt-link {
+  color: #5be8bb;
+  text-decoration: underline;
+}
+
+.rt-warning {
+  padding: 14px;
+  border: 1px solid #6f5a23;
+  background: #28230f;
+  border-radius: 10px;
+  color: #f6de9f;
+}
+
+.rt-warning .rt-button {
+  margin-right: 8px;
+}
+
+.rt-notice {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9999;
+  max-width: min(500px, calc(100vw - 48px));
+  padding: 14px 18px;
+  background: #082519;
+  color: #d9ffeb;
+  border: 1px solid #2d6c4b;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: 0 10px 40px #0008;
+}
+
+.rt-notice:empty {
+  display: none;
+}
+
+.rt-trend-trade {
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.rt-card[hidden],
+.rt-review[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 1000px) {
+  .rt-trade-grid {
+    grid-template-columns: 1fr 24px 1fr;
+  }
+
+  .rt-tabs {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .rt-trade-grid > .rt-primary {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+}
+
+@media (max-width: 580px) {
+  .rt-card {
+    padding: 16px;
+  }
+
+  .rt-settings {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .rt-table th,
+  .rt-table td {
+    padding: 12px 8px;
+  }
+
+  .rt-heading {
+    gap: 10px;
+  }
+
+  .rt-dialog-body {
+    padding: 12px;
+  }
+
+  .rt-notice {
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .rt-trade-grid,
+  .rt-dialog .rt-trade-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rt-arrow {
+    display: none;
+  }
+
+  .rt-trade-grid .rt-tabs,
+  .rt-trade-grid > .rt-primary {
+    grid-column: auto;
+  }
+
+  .rt-summaries {
+    gap: 8px;
+  }
+
+  .rt-summary {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

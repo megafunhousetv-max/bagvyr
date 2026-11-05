@@ -1783,7 +1783,35 @@ for (const [board, label] of [
         `Analyze ${item.name || item.symbol || item.contract}`
       );
 
-      actionCell.append(analyzeLink);
+      const tradeButton = element(
+        "button",
+        "rt-button rt-primary rt-trend-trade",
+        "Buy / Sell"
+      );
+
+      tradeButton.type = "button";
+
+      tradeButton.setAttribute(
+        "aria-label",
+        `Buy or sell ${item.name || item.symbol || "token"}`
+      );
+
+      tradeButton.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (window.RI_TRADING) {
+          window.RI_TRADING.open(
+            item.contract,
+            item.symbol || item.name || "TOKEN"
+          );
+        }
+      });
+
+      actionCell.append(
+        analyzeLink,
+        tradeButton
+      );
       row.append(actionCell);
 
       body.append(row);

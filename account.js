@@ -252,8 +252,8 @@ client = window.supabase.createClient(
           </div>
 
           <div class="ra-card">
-            <h3>Solana wallet</h3>
-            <p>Not connected</p>
+           <h3>Solana wallet</h3>
+<p id="rtWalletSummary">Not connected</p>
           </div>
 
           <div class="ra-card">
@@ -263,26 +263,7 @@ client = window.supabase.createClient(
         </div>
 
         <div class="ra-columns">
-          <div class="ra-card">
-            <h2>Your wallet</h2>
-
-            <p>
-              Connect and verify your Solana wallet.
-            </p>
-
-            <div class="ra-notice">
-              Wallet connection coming soon
-            </div>
-
-            <p class="ra-small">
-              Verification will use a signed message.
-              Your wallet stays under your control.
-            </p>
-
-            <button type="button" data-coming disabled>
-              Connect wallet · Coming soon
-            </button>
-          </div>
+<div class="ra-card" id="rtWalletRoot"></div>
 
           <div class="ra-card">
             <h2>Premium access</h2>
@@ -311,10 +292,17 @@ client = window.supabase.createClient(
           </div>
         </div>
 
-        <div
-          class="ra-card ra-telegram"
-          style="flex-wrap:wrap;gap:16px"
-        >
+<section
+  id="rtHoldingsRoot"
+  class="rt-card"
+  aria-label="My holdings"
+  hidden
+></section>
+
+<div
+  class="ra-card ra-telegram"
+  style="flex-wrap:wrap;gap:16px"
+>
           <div>
             <h3>Premium Telegram bot</h3>
 
