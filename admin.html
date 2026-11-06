@@ -3817,8 +3817,9 @@ async function loadUsers(page = usersPage) {
   usersLoading = true;
   usersButtons();
 
-  $("usersRows").replaceChildren();
+if (!$("usersRows").children.length) {
   $("usersStatus").textContent = "Loading users…";
+}
 
   const controller = new AbortController();
   usersController = controller;
@@ -4210,7 +4211,6 @@ async function loadUsers(page = usersPage) {
       generation === usersGeneration &&
       session?.user.id === owner
     ) {
-      $("usersRows").replaceChildren();
 
       $("usersStatus").textContent =
         error.name === "AbortError"
@@ -4229,6 +4229,56 @@ async function loadUsers(page = usersPage) {
     }
   }
 }
+
+function refreshVisibleUsers() {
+  if (
+    document.visibilityState !== "visible" ||
+    !session ||
+    usersLoading ||
+    $("dashboard").hidden ||
+    $("usersSection").hidden
+  ) {
+    return;
+  }
+
+  const rows = $("usersRows");
+
+  // Počas práce s tlačidlami tabuľku neprekresľujeme.
+  if (
+    rows.contains(document.activeElement) ||
+    rows.querySelector("button:disabled")
+  ) {
+    return;
+  }
+
+  // Zachováme pripravený alebo zobrazený bot kód.
+  const hasOpenBotCode = Array.from(
+    rows.querySelectorAll("td:last-child > div")
+  ).some(element => element.textContent.trim() !== "");
+
+  if (hasOpenBotCode) {
+    return;
+  }
+
+  void loadUsers(usersPage);
+}
+
+setInterval(refreshVisibleUsers, 15000);
+
+window.addEventListener(
+  "focus",
+  refreshVisibleUsers
+);
+
+document.addEventListener(
+  "visibilitychange",
+  refreshVisibleUsers
+);
+
+window.addEventListener(
+  "online",
+  refreshVisibleUsers
+);
 
 $("usersReload").onclick =
   () => void loadUsers();
