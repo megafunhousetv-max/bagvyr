@@ -1129,6 +1129,248 @@
   }
 </style>
 
+<style id="ri-holder-banner-design">
+  #home .ri-holder-banner {
+    box-sizing: border-box;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+
+    width: min(940px, calc(100vw - 48px));
+    max-width: none;
+    margin: 24px 0 28px;
+    padding: 24px 28px;
+
+    overflow: hidden;
+    isolation: isolate;
+    text-align: left;
+
+    border: 1px solid rgba(68, 231, 173, .55);
+    border-radius: 20px;
+
+    background:
+      radial-gradient(
+        ellipse at 48% 110%,
+        rgba(0, 216, 147, .12),
+        transparent 65%
+      ),
+      linear-gradient(
+        115deg,
+        rgba(4, 28, 20, .98),
+        rgba(2, 17, 12, .98)
+      );
+
+    box-shadow:
+      inset 0 1px 0 rgba(170, 255, 222, .05),
+      0 12px 36px rgba(0, 0, 0, .16);
+  }
+
+  #home .ri-holder-banner-icon {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+
+    width: 64px;
+    height: 64px;
+
+    color: #2fe6ad;
+    background: linear-gradient(
+      145deg,
+      rgba(0, 198, 135, .13),
+      rgba(0, 58, 39, .08)
+    );
+
+    border: 1px solid rgba(27, 208, 145, .28);
+    border-radius: 16px;
+  }
+
+  #home .ri-holder-banner-icon svg {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #home .ri-holder-banner-copy {
+    min-width: 0;
+    padding-left: 24px;
+    border-left: 1px solid rgba(75, 199, 148, .2);
+  }
+
+  #home .ri-holder-banner-label {
+    margin: 0 0 7px;
+    color: #40efb0;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: 1.5px;
+  }
+
+  #home .ri-holder-banner h3 {
+    margin: 0;
+    padding: 0;
+
+    color: #effbf5;
+    font-family: inherit;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -.55px;
+    text-transform: none;
+  }
+
+  #home .ri-holder-banner h3 span {
+    color: #35e9aa;
+  }
+
+  #home .ri-holder-banner-description {
+    margin: 7px 0 0;
+    padding: 0;
+
+    color: #b4c8bd;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: normal;
+  }
+
+  #home .ri-holder-banner-free {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 7px 0 0;
+    padding: 0;
+
+    color: #c4d6cc;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: normal;
+  }
+
+  #home .ri-holder-banner-free svg {
+    flex: 0 0 17px;
+    width: 17px;
+    height: 17px;
+  }
+
+  #home .ri-holder-banner-free circle {
+    fill: #2de2a3;
+  }
+
+  #home .ri-holder-banner-free path {
+    fill: none;
+    stroke: #043021;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #home .ri-holder-banner-launch {
+    align-self: start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 1px;
+    padding: 6px 10px;
+
+    color: #44efbd;
+    background: rgba(0, 126, 86, .12);
+    border: 1px solid rgba(41, 216, 155, .28);
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: .8px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 1200px) {
+    #home .ri-holder-banner {
+      width: 100%;
+      grid-template-columns: 56px minmax(0, 1fr);
+      gap: 16px;
+      padding: 22px;
+    }
+
+    #home .ri-holder-banner-icon {
+      width: 56px;
+      height: 56px;
+    }
+
+    #home .ri-holder-banner-copy {
+      padding-left: 18px;
+    }
+
+    #home .ri-holder-banner-launch {
+      grid-column: 2;
+      justify-self: start;
+      margin: 0 0 0 18px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    #home .ri-holder-banner {
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+      margin-bottom: 22px;
+      padding: 18px 16px;
+      border-radius: 16px;
+    }
+
+    #home .ri-holder-banner-icon {
+      align-self: start;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+    }
+
+    #home .ri-holder-banner-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    #home .ri-holder-banner-copy {
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    #home .ri-holder-banner h3 {
+      font-size: 18px;
+      letter-spacing: -.35px;
+    }
+
+    #home .ri-holder-banner-description {
+      font-size: 12px;
+    }
+
+    #home .ri-holder-banner-free {
+      align-items: flex-start;
+      font-size: 11px;
+    }
+
+    #home .ri-holder-banner-free svg {
+      margin-top: 1px;
+    }
+
+    #home .ri-holder-banner-launch {
+      margin-left: 0;
+    }
+  }
+</style>
+
 </head>
 
 
@@ -1325,6 +1567,49 @@
             </button>
 
           </form>
+
+          <!-- Premium announcement -->
+          <aside
+            class="ri-holder-banner"
+            aria-labelledby="riHolderBannerTitle"
+          >
+            <div class="ri-holder-banner-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 6l4.5 4L12 4l4.5 6L21 6l-2 14H5L3 6z"/>
+              </svg>
+            </div>
+
+            <div class="ri-holder-banner-copy">
+              <div class="ri-holder-banner-label">
+                PREMIUM FOR HOLDERS
+              </div>
+
+              <h3 id="riHolderBannerTitle">
+                Hold our token. Unlock unlimited
+                <span>Premium.</span>
+              </h3>
+
+              <p class="ri-holder-banner-description">
+                Our token launches soon. Hold it to access
+                unlimited Premium features.
+              </p>
+
+              <p class="ri-holder-banner-free">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <circle cx="10" cy="10" r="9"/>
+                  <path d="M6 10l2.5 2.5L14 7"/>
+                </svg>
+
+                <span>
+                  Basic analysis &amp; our Telegram bot stay free.
+                </span>
+              </p>
+            </div>
+
+            <span class="ri-holder-banner-launch">
+              TOKEN LAUNCH SOON
+            </span>
+          </aside>
 
           <div
             id="riHomeStatus"
