@@ -1545,6 +1545,43 @@
   }
 </style>
 
+<style id="ri-smart-money-trending-tabs">
+  /* Pri otvorení Smart Money zostanú záložky na mieste. */
+  #trendingRoot.ri-showing-smart-money
+  > :not(.ri-trend-tabs) {
+    display: none !important;
+  }
+
+  #trendingRoot .ri-trend-tab[hidden] {
+    display: none !important;
+  }
+
+  /* Ikona záložky Smart Money. */
+  #trendingRoot
+  .ri-trend-tab[data-ri-smart-tab]::before {
+    content: "◎";
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  /* Radar sa otvára priamo, ďalšiu kartu nepotrebujeme. */
+  #riPremiumRoot.ri-embedded-smart-view
+  .ri-embedded-tabs {
+    display: none !important;
+  }
+
+  #riPremiumRoot .ri-embedded-navigation[hidden],
+  #riPremiumRoot .ri-embedded-tab[hidden] {
+    display: none !important;
+  }
+
+  #riTrendingToolsHost {
+    margin-top: 18px;
+  }
+</style>
+
 </head>
 
 
@@ -5043,7 +5080,7 @@
 <script src="early.js?v=6"></script>
 <script src="volume.js?v=2"></script>
 <script src="smart.js?v=10"></script>
-<script src="scanner-tools.js?v=1"></script>
+<script src="scanner-tools.js?v=2"></script>
 <script
   src="support.js?v=1"
   data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"

@@ -17,12 +17,12 @@
     );
 
     const trending = document.getElementById("trendingRoot");
+    const body = root.querySelector("#rpBody");
 
-    if (!overview || !trending) return;
+    if (!overview || !trending || !body) return;
 
     root.dataset.embeddedToolsReady = "true";
 
-    // Uložíme pôvodné miesto Premium panelu.
     const originalPlace = document.createComment(
       "Original Premium panel position"
     );
@@ -32,13 +32,11 @@
     const scannerHost = document.createElement("div");
     scannerHost.id = "riScannerToolsHost";
     scannerHost.hidden = true;
-
     overview.after(scannerHost);
 
     const trendingHost = document.createElement("div");
     trendingHost.id = "riTrendingToolsHost";
     trendingHost.hidden = true;
-
     trending.after(trendingHost);
 
     const tools = [
@@ -81,7 +79,6 @@
           <h2 data-embedded-title>Premium analysis</h2>
           <p data-embedded-description></p>
         </div>
-
         <span
           class="ri-embedded-access"
           data-embedded-access
@@ -102,7 +99,6 @@
               class="ri-embedded-icon"
               aria-hidden="true"
             >${tool.icon}</span>
-
             <span>
               <strong>${tool.title}</strong>
               <small>${tool.description}</small>
@@ -111,10 +107,6 @@
         `).join("")}
       </div>
     `;
-
-    const body = root.querySelector("#rpBody");
-
-    if (!body) return;
 
     body.before(navigation);
 
@@ -130,8 +122,78 @@
       "[data-embedded-access]"
     );
 
+    const smartOpener = navigation.querySelector(
+      '[data-embedded-tool="smart_money"]'
+    );
+
     let scannerContract = "";
+    let trendingView = "trending";
     let syncing = false;
+
+    function syncTrendingTabs(premium, onTrendingPage) {
+      const tabs = trending.querySelector(".ri-trend-tabs");
+      const allowed = premium.isAvailable("smart_money");
+
+      if (!allowed) trendingView = "trending";
+
+      const showingSmart =
+        onTrendingPage &&
+        allowed &&
+        trendingView === "smart_money";
+
+      trending.classList.toggle(
+        "ri-showing-smart-money",
+        showingSmart
+      );
+
+      if (!tabs) return showingSmart;
+
+      let smartTab = tabs.querySelector(
+        "[data-ri-smart-tab]"
+      );
+
+      if (!smartTab) {
+        smartTab = document.createElement("button");
+        smartTab.type = "button";
+        smartTab.className = "ri-trend-tab";
+        smartTab.dataset.riSmartTab = "true";
+        smartTab.textContent = "Smart Money";
+
+        smartTab.addEventListener("click", () => {
+          if (
+            !window.RI_PREMIUM?.isAvailable("smart_money")
+          ) {
+            return;
+          }
+
+          trendingView = "smart_money";
+          sync();
+        });
+
+        tabs.append(smartTab);
+      }
+
+      smartTab.hidden = !allowed;
+
+      smartTab.setAttribute(
+        "aria-selected",
+        String(showingSmart)
+      );
+
+      for (const button of tabs.querySelectorAll(
+        ".ri-trend-tab:not([data-ri-smart-tab])"
+      )) {
+        if (showingSmart) {
+          button.setAttribute("aria-selected", "false");
+        } else if (button === tabs.querySelector(
+          ".ri-trend-tab:not([data-ri-smart-tab])"
+        )) {
+          button.setAttribute("aria-selected", "true");
+        }
+      }
+
+      return showingSmart;
+    }
 
     function sync() {
       const premium = window.RI_PREMIUM;
@@ -150,15 +212,23 @@
 
         premium.setEmbeddedView(view);
 
+        const showingSmart = syncTrendingTabs(
+          premium,
+          view === "trending"
+        );
+
         scannerHost.hidden = true;
         trendingHost.hidden = true;
 
+        root.classList.toggle(
+          "ri-embedded-smart-view",
+          view === "trending"
+        );
+
         if (!view) {
           root.classList.remove("ri-embedded-tools");
-
           originalPlace.after(root);
           navigation.hidden = true;
-
           return;
         }
 
@@ -222,13 +292,52 @@
           if (visible) visibleCount++;
         }
 
-        host.hidden =
-          visibleCount === 0 ||
-          (view === "scanner" && !scannerContract);
+        if (view === "trending") {
+          host.hidden = !showingSmart;
+
+          const selected = premium.getSelectedTool();
+
+          if (
+            (showingSmart && selected !== "smart_money") ||
+            (!showingSmart && selected === "smart_money")
+          ) {
+            // Použije pôvodné otvorenie/zatvorenie nástroja.
+            smartOpener.click();
+          }
+        } else {
+          host.hidden =
+            visibleCount === 0 ||
+            !scannerContract;
+        }
       } finally {
         syncing = false;
       }
     }
+
+    // Kliknutie na pôvodnú záložku Trending.
+    trending.addEventListener("click", event => {
+      const button = event.target.closest?.(
+        ".ri-trend-tab"
+      );
+
+      if (
+        !button ||
+        button.hasAttribute("data-ri-smart-tab")
+      ) {
+        return;
+      }
+
+      trendingView = "trending";
+      sync();
+    }, true);
+
+    // Trending pri obnove vytvára obsah znova.
+    // Záložku preto obnovíme aj po jeho prekreslení.
+    const observer = new MutationObserver(sync);
+
+    observer.observe(trending, {
+      childList: true
+    });
 
     document.addEventListener(
       "ri:token-context",
@@ -243,7 +352,6 @@
         }
 
         scannerContract = ca;
-
         sync();
       }
     );
@@ -261,15 +369,8 @@
       }
     );
 
-    document.addEventListener(
-      "ri:premium-change",
-      sync
-    );
-
-    document.addEventListener(
-      "ri:account-change",
-      sync
-    );
+    document.addEventListener("ri:premium-change", sync);
+    document.addEventListener("ri:account-change", sync);
 
     window.addEventListener("hashchange", sync);
 
