@@ -1371,6 +1371,180 @@
   }
 </style>
 
+<style id="ri-embedded-tools-design">
+  #riScannerToolsHost,
+  #riTrendingToolsHost {
+    margin: 20px 0;
+    min-width: 0;
+  }
+
+  #riScannerToolsHost[hidden],
+  #riTrendingToolsHost[hidden] {
+    display: none !important;
+  }
+
+  body #riPremiumRoot.ri-embedded-tools {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 22px;
+    color: #edf7f1;
+
+    border: 1px solid rgba(45, 210, 151, .27);
+    border-radius: 18px;
+
+    background:
+      radial-gradient(
+        ellipse at top right,
+        rgba(0, 183, 126, .08),
+        transparent 65%
+      ),
+      #03130d;
+  }
+
+  #riPremiumRoot .ri-embedded-navigation {
+    display: none;
+  }
+
+  #riPremiumRoot.ri-embedded-tools
+  .ri-embedded-navigation {
+    display: block;
+  }
+
+  #riPremiumRoot.ri-embedded-tools > .rp-kicker,
+  #riPremiumRoot.ri-embedded-tools > h1,
+  #riPremiumRoot.ri-embedded-tools > p,
+  #riPremiumRoot.ri-embedded-tools > #rpMaster,
+  #riPremiumRoot.ri-embedded-tools #rpSharedToken,
+  #riPremiumRoot.ri-embedded-tools .rp-grid,
+  #riPremiumRoot.ri-embedded-tools #rpEmpty {
+    display: none !important;
+  }
+
+  #riPremiumRoot .ri-embedded-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+  }
+
+  #riPremiumRoot .ri-embedded-heading h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 750;
+    line-height: 1.3;
+    color: #edf7f1;
+  }
+
+  #riPremiumRoot .ri-embedded-heading p {
+    margin: 7px 0 0;
+    max-width: 760px;
+    color: #a6c2b5;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  #riPremiumRoot .ri-embedded-access {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    color: #43edb6;
+    border: 1px solid rgba(44, 220, 158, .4);
+    border-radius: 10px;
+    background: rgba(0, 116, 78, .09);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  #riPremiumRoot .ri-embedded-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  #riPremiumRoot button.ri-embedded-tab {
+    flex: 1 1 210px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin: 0;
+    padding: 16px 18px;
+    text-align: left;
+
+    color: #edf7f1;
+    background: #051b12;
+    border: 1px solid #204b39;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  #riPremiumRoot button.ri-embedded-tab:hover {
+    background: #0a2c1e;
+    border-color: #32b785;
+  }
+
+  #riPremiumRoot button.ri-embedded-tab.is-selected {
+    background: linear-gradient(125deg, #0c3c29, #062318);
+    border-color: #39dfaa;
+    box-shadow: inset 0 -3px 0 #35e9af;
+  }
+
+  #riPremiumRoot button.ri-embedded-tab:focus-visible {
+    outline: 2px solid #45efb7;
+    outline-offset: 3px;
+  }
+
+  #riPremiumRoot .ri-embedded-icon {
+    color: #35e9af;
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  #riPremiumRoot .ri-embedded-tab strong,
+  #riPremiumRoot .ri-embedded-tab small {
+    display: block;
+  }
+
+  #riPremiumRoot .ri-embedded-tab strong {
+    font-size: 15px;
+    font-weight: 750;
+  }
+
+  #riPremiumRoot .ri-embedded-tab small {
+    margin-top: 3px;
+    color: #a6c2b5;
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  #riPremiumRoot.ri-embedded-tools
+  #rpBody > [data-tool]:not([hidden]) {
+    margin-top: 20px;
+  }
+
+  @media (max-width: 640px) {
+    body #riPremiumRoot.ri-embedded-tools {
+      padding: 16px;
+      border-radius: 14px;
+    }
+
+    #riPremiumRoot .ri-embedded-heading {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #riPremiumRoot .ri-embedded-heading h2 {
+      font-size: 20px;
+    }
+
+    #riPremiumRoot button.ri-embedded-tab {
+      flex-basis: 100%;
+    }
+  }
+</style>
+
 </head>
 
 
@@ -4738,7 +4912,7 @@
   <script src="analytics.js"></script>
 <script src="history-images.js?v=1"></script>
 <script src="recent.js?v=2"></script>
-  <script src="app.js?v=37"></script>
+  <script src="app.js?v=38"></script>
   <script src="search.js?v=2"></script>
 
 
@@ -4863,12 +5037,13 @@
 <script src="context.js?v=2"></script>
 <script src="bonding.js?v=4"></script>
 <script src="risk.js?v=2"></script>
-<script src="premium.js?v=12"></script>
+<script src="premium.js?v=13"></script>
 <script src="lab.js?v=28"></script>
 
 <script src="early.js?v=6"></script>
 <script src="volume.js?v=2"></script>
 <script src="smart.js?v=10"></script>
+<script src="scanner-tools.js?v=1"></script>
 <script
   src="support.js?v=1"
   data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"

@@ -89,6 +89,7 @@ const keys = [
 let premiumStatusUnavailable = false;
     let premiumAccess = false;
     let selected = null;
+    let embeddedView = null;
     let busy = false;
     let again = false;
     let generation = 0;
@@ -1218,17 +1219,82 @@ window.RI_PREMIUM = {
 
   isAvailable: available,
 
-  isActive: key =>
-    available(key) &&
-    selected === key &&
-    (
-      adminMode
-        ? (
-            !root.closest(".admin-section").hidden &&
-            !document.getElementById("dashboard").hidden
-          )
-        : location.hash === "#premium"
-    ),
+  getAccessState: () => ({
+    admin: verified,
+    premium: premiumAccess
+  }),
+
+  getSelectedTool: () => selected,
+
+  setEmbeddedView(view) {
+    if (adminMode) return;
+
+    const next =
+      view === "scanner" || view === "trending"
+        ? view
+        : null;
+
+    if (embeddedView === next) return;
+
+    embeddedView = next;
+
+    // Pri zmene stránky zavrieme pôvodný nástroj.
+    selected = null;
+
+    publish();
+  },
+
+  setEmbeddedContract(contract) {
+    if (adminMode) return;
+
+    const next =
+      typeof contract === "string" &&
+      /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(contract)
+        ? contract
+        : "";
+
+    if (premiumContract === next) return;
+
+    premiumRequest?.abort();
+
+    premiumContract = next;
+    $("rpTokenCA").value = next;
+
+    document.dispatchEvent(
+      new CustomEvent("ri:premium-token", {
+        detail: { contract: next }
+      })
+    );
+  },
+
+  isActive: key => {
+    if (!available(key) || selected !== key) {
+      return false;
+    }
+
+    if (adminMode) {
+      return (
+        !root.closest(".admin-section").hidden &&
+        !document.getElementById("dashboard").hidden
+      );
+    }
+
+    if (embeddedView === "scanner") {
+      return (
+        location.hash === "#scanner" &&
+        ["lab", "volume", "early_buyers"].includes(key)
+      );
+    }
+
+    if (embeddedView === "trending") {
+      return (
+        location.hash === "#trending" &&
+        key === "smart_money"
+      );
+    }
+
+    return location.hash === "#premium";
+  },
 
   getHeaders: headers
 };

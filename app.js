@@ -554,6 +554,12 @@ async function analyzeToken(contract) {
 state.currentContract =
   contract;
 
+document.dispatchEvent(
+  new CustomEvent("ri:analysis-start", {
+    detail: { ca: contract }
+  })
+);
+
 riRenderVolume24h(null, contract);
 
 void riRefreshVolume24h(contract);
