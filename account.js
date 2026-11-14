@@ -270,12 +270,15 @@ client = window.supabase.createClient(
 
             <p id="raPremiumNote"></p>
 
-            <div class="ra-tools">
-              <span>Exit Lab</span>
-              <span>Whale X-Ray</span>
-              <span>Volume X-Ray</span>
-              <span>Early Buyers</span>
-            </div>
+<div class="ra-tools">
+  <span>Exit Lab</span>
+  <span>Volume X-Ray</span>
+  <span>Early Buyers</span>
+  <span>Smart Money Radar</span>
+  <span>Token Context</span>
+  <span>Risk Summary</span>
+  <span>Premium Telegram bot</span>
+</div>
 
             <a
               id="raOpenPremium"

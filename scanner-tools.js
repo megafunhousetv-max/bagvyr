@@ -39,33 +39,77 @@
     trendingHost.hidden = true;
     trending.after(trendingHost);
 
+    function toolIcon(content) {
+      return `
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+          style="display:block;flex-shrink:0;color:#35efb6"
+        >
+          ${content}
+        </svg>
+      `;
+    }
+
     const tools = [
       {
         key: "lab",
         title: "Exit Lab",
         description: "Simulate your exit",
-        icon: "▦",
+        icon: toolIcon(`
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <path d="M8 6h8"/>
+          <path d="
+            M8 10h.01 M12 10h.01 M16 10h.01
+            M8 14h.01 M12 14h.01 M16 14h.01
+            M8 18h.01 M12 18h.01 M16 18h.01
+          "/>
+        `),
         view: "scanner"
       },
       {
         key: "volume",
         title: "Volume X-Ray",
         description: "Inspect trading volume",
-        icon: "▥",
+        icon: toolIcon(`
+          <path d="M4 21V11"/>
+          <path d="M12 21V3"/>
+          <path d="M20 21V7"/>
+        `),
         view: "scanner"
       },
       {
         key: "early_buyers",
         title: "Early Buyers",
         description: "Explore first buyers",
-        icon: "♧",
+        icon: toolIcon(`
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M2 21v-2a7 7 0 0 1 14 0v2Z"/>
+          <path d="M17 3a4 4 0 0 1 0 8"/>
+          <path d="M22 21v-2a7 7 0 0 0-4-6.32"/>
+        `),
         view: "scanner"
       },
       {
         key: "smart_money",
         title: "Smart Money Radar",
         description: "Explore tracked smart money activity",
-        icon: "◎",
+        icon: toolIcon(`
+          <circle cx="12" cy="12" r="9"/>
+          <circle cx="12" cy="12" r="5"/>
+          <circle cx="12" cy="12" r="1"/>
+          <path d="m12 12 9-9"/>
+          <path d="M16 3h5v5"/>
+        `),
         view: "trending"
       }
     ];
