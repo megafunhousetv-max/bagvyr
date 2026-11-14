@@ -1566,18 +1566,46 @@ if (
 
   const body = make("tbody");
 
-  const rows = [
-    {
-      mint: SOL,
-      symbol: "SOL",
-      name: "Solana",
-      raw: h.solRaw,
-      decimals: 9,
-      price: h.solPrice
-    },
+function holdingValue(token) {
+  if (
+    token.price === null ||
+    token.price === undefined ||
+    String(token.price).trim() === ""
+  ) {
+    return -1;
+  }
 
-    ...h.tokens
-  ];
+  const price = Number(token.price);
+
+  const quantity = Number(
+    decimal(token.raw, token.decimals)
+  );
+
+  const value = quantity * price;
+
+  return (
+    Number.isFinite(price) &&
+    price >= 0 &&
+    Number.isFinite(quantity) &&
+    quantity >= 0 &&
+    Number.isFinite(value)
+  )
+    ? value
+    : -1;
+}
+
+const rows = [
+  {
+    mint: SOL,
+    symbol: "SOL",
+    name: "Solana",
+    raw: h.solRaw,
+    decimals: 9,
+    price: h.solPrice
+  },
+
+  ...h.tokens
+].sort((a, b) => holdingValue(b) - holdingValue(a));
 
 const pageSize = 5;
 

@@ -315,6 +315,18 @@ client = window.supabase.createClient(
             </p>
           </div>
 
+<div id="raTelegramBotLink" hidden>
+  <a
+    href="https://t.me/RugInspectPremium_bot"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="ra-primary"
+    style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:12px;text-decoration:none"
+  >
+    ✈️ Open Premium bot
+  </a>
+</div>
+
           <div id="raTelegramControls" hidden>
             <label
               for="raTelegramCode"
@@ -464,97 +476,115 @@ client = window.supabase.createClient(
     let telegramNextCheck = 0;
     let telegramGeneration = 0;
 
-    function renderTelegramAccess() {
-      const owner = session?.user.id;
+function renderTelegramAccess() {
+  const owner = session?.user.id;
 
-      const ready =
-        owner &&
-        profile?.id === owner &&
-        mode !== "password";
+  const ready =
+    owner &&
+    profile?.id === owner &&
+    mode !== "password";
 
-      const data =
-        ready && telegramAccess?.owner === owner
-          ? telegramAccess.data
-          : null;
+  const data =
+    ready && telegramAccess?.owner === owner
+      ? telegramAccess.data
+      : null;
 
-      const code = $("raTelegramCode");
-      const controls = $("raTelegramControls");
-      const copy = $("raTelegramCopy");
-      const status = $("raTelegramStatus");
+  const code = $("raTelegramCode");
+  const controls = $("raTelegramControls");
+  const copy = $("raTelegramCopy");
+  const status = $("raTelegramStatus");
+  const botLink = $("raTelegramBotLink");
 
-      controls.hidden = true;
-      copy.disabled = true;
-      $("raTelegramExpires").textContent = "";
+  // Odkaz aj kód zobrazíme až po overení Premium.
+  botLink.hidden = true;
+  controls.hidden = true;
+  copy.disabled = true;
 
-      if (!ready) {
-        code.value = "";
-        status.textContent =
-          "Sign in to check your Premium access.";
-        return;
-      }
+  $("raTelegramExpires").textContent = "";
 
-      if (!data) {
-        code.value = "";
-        status.textContent =
-          telegramAccess?.owner === owner &&
-          telegramAccess.error
-            ? "Premium verification is unavailable. Please retry shortly."
-            : "Checking your Premium access…";
-        return;
-      }
+  if (!ready) {
+    code.value = "";
 
-      const eligible = data.eligible === true;
+    status.textContent =
+      "Sign in to check your Premium access.";
 
-      $("raPremiumStatus").textContent = data.is_admin
-        ? "Admin · Full access"
-        : eligible
-          ? "Premium active"
-          : "Premium required";
+    return;
+  }
 
-      $("raPremiumNote").textContent = data.is_admin
-        ? "Your admin account has full access without tokens or a connected wallet."
-        : data.manual_premium
-          ? "Premium access was granted by an administrator. No token holding is required."
-          : eligible
-            ? "Your account meets the Premium requirements."
-            : "Your account does not currently meet the Premium requirements.";
+  if (!data) {
+    code.value = "";
 
-      $("raOpenPremium").hidden = !eligible;
-      $("raTokenSoon").hidden = eligible;
+    status.textContent =
+      telegramAccess?.owner === owner &&
+      telegramAccess.error
+        ? "Premium verification is unavailable. Please retry shortly."
+        : "Checking your Premium access…";
 
-      if (!eligible) {
-        code.value = "";
-        status.textContent =
-          "Premium is required to use this Telegram bot.";
-        return;
-      }
+    return;
+  }
 
-      if (data.state === "code_used") {
-        code.value = "";
-        status.textContent = "Code used";
-        return;
-      }
+  const eligible = data.eligible === true;
 
-      if (
-        data.state !== "code_ready" ||
-        !/^[1-9][0-9]{6}$/.test(data.code || "")
-      ) {
-        code.value = "";
-        status.textContent =
-          "Your activation code is unavailable. Please retry shortly.";
-        return;
-      }
+  $("raPremiumStatus").textContent = data.is_admin
+    ? "Admin · Full access"
+    : eligible
+      ? "Premium active"
+      : "Premium required";
 
-      if (code.value !== data.code) {
-        code.value = data.code;
-      }
+  $("raPremiumNote").textContent = data.is_admin
+    ? "Your admin account has full access without tokens or a connected wallet."
+    : data.manual_premium
+      ? "Premium access was granted by an administrator. No token holding is required."
+      : eligible
+        ? "Your account meets the Premium requirements."
+        : "Your account does not currently meet the Premium requirements.";
 
-      controls.hidden = false;
-      copy.disabled = busy;
+  $("raOpenPremium").hidden = !eligible;
+  $("raTokenSoon").hidden = eligible;
 
-      status.textContent =
-        "Send this one-time code to the Premium Telegram bot. Never share it with anyone else.";
-    }
+  if (!eligible) {
+    code.value = "";
+
+    status.textContent =
+      "Premium is required to use this Telegram bot.";
+
+    return;
+  }
+
+  // Aktívne Premium: odkaz zostáva aj po použití kódu.
+  botLink.hidden = false;
+
+  if (data.state === "code_used") {
+    code.value = "";
+
+    status.textContent =
+      "Activation code used. Open the bot to continue.";
+
+    return;
+  }
+
+  if (
+    data.state !== "code_ready" ||
+    !/^[1-9][0-9]{6}$/.test(data.code || "")
+  ) {
+    code.value = "";
+
+    status.textContent =
+      "Your activation code is unavailable. Please retry shortly.";
+
+    return;
+  }
+
+  if (code.value !== data.code) {
+    code.value = data.code;
+  }
+
+  controls.hidden = false;
+  copy.disabled = busy;
+
+  status.textContent =
+    "Open the bot and send your one-time activation code to connect your account. Never share this code.";
+}
 
     async function refreshTelegramAccess(force = false) {
       const owner = session?.user.id;
