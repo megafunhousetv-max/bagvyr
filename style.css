@@ -17153,3 +17153,38 @@ table.ri-overview-compact-table tbody > tr:hover {
   -webkit-mask: var(--inspected-icon) center / contain no-repeat !important;
   mask: var(--inspected-icon) center / contain no-repeat !important;
 }
+
+#trendingRoot .ri-inspected-launch {
+  min-width: 150px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+#trendingRoot .ri-inspected-launch[data-status="migrated"],
+#trendingRoot .ri-inspected-launch[data-status="bonding"] {
+  color: #35efb6;
+}
+
+#trendingRoot .ri-inspected-launch[data-status="pending"] {
+  color: #efc76b;
+}
+
+#trendingRoot .ri-inspected-launch-label {
+  display: block;
+  margin-bottom: 7px;
+}
+
+#trendingRoot .ri-inspected-launch-bar {
+  width: 125px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(53, 239, 182, 0.12);
+}
+
+#trendingRoot .ri-inspected-launch-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #35efb6;
+}

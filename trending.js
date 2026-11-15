@@ -107,6 +107,183 @@
     }
   }
 
+  const inspectedLaunchCache = new Map();
+  const inspectedLaunchJobs = new Map();
+  const inspectedLaunchQueue = [];
+
+  let inspectedLaunchActive = 0;
+
+  function runInspectedLaunchQueue() {
+    while (
+      inspectedLaunchActive < 2 &&
+      inspectedLaunchQueue.length
+    ) {
+      const task = inspectedLaunchQueue.shift();
+
+      inspectedLaunchActive++;
+
+      Promise.resolve()
+        .then(task)
+        .finally(() => {
+          inspectedLaunchActive--;
+          runInspectedLaunchQueue();
+        });
+    }
+  }
+
+  function loadInspectedLaunch(contract) {
+    const cached = inspectedLaunchCache.get(contract);
+
+    if (cached && cached.expires > Date.now()) {
+      return Promise.resolve(cached.data);
+    }
+
+    const existing = inspectedLaunchJobs.get(contract);
+
+    if (existing) return existing;
+
+    const job = new Promise(resolve => {
+      inspectedLaunchQueue.push(async () => {
+        let data = null;
+
+        try {
+          const url = new URL(
+            "/api/launch-status",
+            API
+          );
+
+          url.searchParams.set("ca", contract);
+
+          const response = await fetch(url, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(20000)
+          });
+
+          if (!response.ok) {
+            throw new Error("Launch status unavailable.");
+          }
+
+          const result = await response.json();
+
+          if (
+            result.success !== true ||
+            result.contract !== contract
+          ) {
+            throw new Error("Invalid launch status.");
+          }
+
+          data = result;
+        } catch {
+          // Nedostupné údaje nenahrádzame odhadom.
+        }
+
+        inspectedLaunchCache.set(contract, {
+          data,
+          expires: Date.now() + 60000
+        });
+
+        inspectedLaunchJobs.delete(contract);
+        resolve(data);
+      });
+    });
+
+    inspectedLaunchJobs.set(contract, job);
+    runInspectedLaunchQueue();
+
+    return job;
+  }
+
+  function inspectedLaunchCell(item) {
+    const cell = element(
+      "td",
+      "ri-inspected-launch"
+    );
+
+    cell.textContent = "…";
+    cell.title = "Checking launch status";
+
+    loadInspectedLaunch(item.contract).then(data => {
+      if (!cell.isConnected) return;
+
+      cell.replaceChildren();
+      cell.textContent = "—";
+      cell.title = "Launch status unavailable";
+
+      if (!data) return;
+
+      const checkedAt = Date.parse(
+        data.fetched_at || ""
+      );
+
+      const checkedText = Number.isFinite(checkedAt)
+        ? "Last checked: " +
+          new Date(checkedAt).toLocaleString()
+        : "Last check time unavailable";
+
+      if (data.status === "migrated") {
+        cell.textContent = "✓ Migrated";
+        cell.dataset.status = "migrated";
+        cell.title = checkedText;
+        return;
+      }
+
+      if (data.status === "migration_pending") {
+        cell.textContent = "Migrating";
+        cell.dataset.status = "pending";
+        cell.title =
+          "Curve completed. Migration not yet confirmed. " +
+          checkedText;
+        return;
+      }
+
+      const progress = data.progress_percent;
+
+      if (
+        data.status !== "bonding" ||
+        typeof progress !== "number" ||
+        !Number.isFinite(progress) ||
+        progress < 0 ||
+        progress > 100
+      ) {
+        return;
+      }
+
+      cell.textContent = "";
+      cell.dataset.status = "bonding";
+      cell.title = checkedText;
+
+      const label = element(
+        "span",
+        "ri-inspected-launch-label",
+        "Bonding · " + progress.toFixed(2) + "%"
+      );
+
+      const bar = element(
+        "div",
+        "ri-inspected-launch-bar"
+      );
+
+      bar.setAttribute("role", "progressbar");
+      bar.setAttribute(
+        "aria-label",
+        "Bonding curve progress"
+      );
+      bar.setAttribute("aria-valuemin", "0");
+      bar.setAttribute("aria-valuemax", "100");
+      bar.setAttribute(
+        "aria-valuenow",
+        String(progress)
+      );
+
+      const fill = element("span");
+      fill.style.width = progress + "%";
+
+      bar.append(fill);
+      cell.append(label, bar);
+    });
+
+    return cell;
+  }
 
   function renderInspected() {
     if (!inspectedItems.length) {
@@ -162,6 +339,7 @@
       "Market Cap",
       "Liquidity",
       "24h Volume",
+      "Launch status",
       ""
     ]) {
       const cell = element("th", "", label);
@@ -208,6 +386,9 @@
       }
 
       const actions = element("td");
+            row.append(
+        inspectedLaunchCell(item)
+      );
 
       const analyzeLink = scannerLink(
         item,
