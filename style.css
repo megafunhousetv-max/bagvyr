@@ -17123,3 +17123,33 @@ table.ri-overview-compact-table tbody > tr:hover {
     animation: none;
   }
 }
+
+
+#trendingRoot .ri-trend-tab[data-ri-board="inspected"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-image: none !important;
+}
+
+#trendingRoot .ri-trend-tab[data-ri-board="inspected"]::before {
+  --inspected-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M8 12l3 3 5-6'/%3E%3C/svg%3E");
+
+  content: "" !important;
+  display: inline-block !important;
+  position: static !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+
+  background: currentColor !important;
+
+  -webkit-mask: var(--inspected-icon) center / contain no-repeat !important;
+  mask: var(--inspected-icon) center / contain no-repeat !important;
+}
