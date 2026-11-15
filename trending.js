@@ -87,11 +87,27 @@
         return true;
       }).slice(0, 30);
 
-      const signature = JSON.stringify(items);
+      const signature = JSON.stringify(
+        items.map(item => [
+          item.contract,
+          item.inspected_at
+        ])
+      );
 
       if (signature !== inspectedSignature) {
         inspectedSignature = signature;
         inspectedItems = shuffleInspected(items);
+      } else {
+        const updated = new Map(
+          items.map(item => [
+            item.contract,
+            item
+          ])
+        );
+
+        inspectedItems = inspectedItems.map(
+          item => updated.get(item.contract) || item
+        );
       }
 
       inspectedLoaded = true;
@@ -107,180 +123,96 @@
     }
   }
 
-  const inspectedLaunchCache = new Map();
-  const inspectedLaunchJobs = new Map();
-  const inspectedLaunchQueue = [];
-
-  let inspectedLaunchActive = 0;
-
-  function runInspectedLaunchQueue() {
-    while (
-      inspectedLaunchActive < 2 &&
-      inspectedLaunchQueue.length
-    ) {
-      const task = inspectedLaunchQueue.shift();
-
-      inspectedLaunchActive++;
-
-      Promise.resolve()
-        .then(task)
-        .finally(() => {
-          inspectedLaunchActive--;
-          runInspectedLaunchQueue();
-        });
-    }
-  }
-
-  function loadInspectedLaunch(contract) {
-    const cached = inspectedLaunchCache.get(contract);
-
-    if (cached && cached.expires > Date.now()) {
-      return Promise.resolve(cached.data);
-    }
-
-    const existing = inspectedLaunchJobs.get(contract);
-
-    if (existing) return existing;
-
-    const job = new Promise(resolve => {
-      inspectedLaunchQueue.push(async () => {
-        let data = null;
-
-        try {
-          const url = new URL(
-            "/api/launch-status",
-            API
-          );
-
-          url.searchParams.set("ca", contract);
-
-          const response = await fetch(url, {
-            cache: "no-store",
-            signal: AbortSignal.timeout(20000)
-          });
-
-          if (!response.ok) {
-            throw new Error("Launch status unavailable.");
-          }
-
-          const result = await response.json();
-
-          if (
-            result.success !== true ||
-            result.contract !== contract
-          ) {
-            throw new Error("Invalid launch status.");
-          }
-
-          data = result;
-        } catch {
-          // Nedostupné údaje nenahrádzame odhadom.
-        }
-
-        inspectedLaunchCache.set(contract, {
-          data,
-          expires: Date.now() + 60000
-        });
-
-        inspectedLaunchJobs.delete(contract);
-        resolve(data);
-      });
-    });
-
-    inspectedLaunchJobs.set(contract, job);
-    runInspectedLaunchQueue();
-
-    return job;
-  }
-
   function inspectedLaunchCell(item) {
     const cell = element(
       "td",
       "ri-inspected-launch"
     );
 
-    cell.textContent = "…";
-    cell.title = "Checking launch status";
+    const data = item.launch;
 
-    loadInspectedLaunch(item.contract).then(data => {
-      if (!cell.isConnected) return;
+    cell.textContent = "—";
+    cell.title = "Launch status not yet available";
 
-      cell.replaceChildren();
-      cell.textContent = "—";
-      cell.title = "Launch status unavailable";
+    if (!data || data.contract !== item.contract) {
+      return cell;
+    }
 
-      if (!data) return;
+    const checkedAt = Date.parse(
+      data.fetched_at || ""
+    );
 
-      const checkedAt = Date.parse(
-        data.fetched_at || ""
-      );
+    const checkedText = Number.isFinite(checkedAt)
+      ? "Last verified: " +
+        new Date(checkedAt).toLocaleString()
+      : "Verification time unavailable";
 
-      const checkedText = Number.isFinite(checkedAt)
-        ? "Last checked: " +
-          new Date(checkedAt).toLocaleString()
-        : "Last check time unavailable";
-
-      if (data.status === "migrated") {
-        cell.textContent = "✓ Migrated";
-        cell.dataset.status = "migrated";
-        cell.title = checkedText;
-        return;
-      }
-
-      if (data.status === "migration_pending") {
-        cell.textContent = "Migrating";
-        cell.dataset.status = "pending";
-        cell.title =
-          "Curve completed. Migration not yet confirmed. " +
-          checkedText;
-        return;
-      }
-
-      const progress = data.progress_percent;
-
-      if (
-        data.status !== "bonding" ||
-        typeof progress !== "number" ||
-        !Number.isFinite(progress) ||
-        progress < 0 ||
-        progress > 100
-      ) {
-        return;
-      }
-
-      cell.textContent = "";
-      cell.dataset.status = "bonding";
+    if (data.status === "migrated") {
+      cell.textContent = "✓ Migrated";
+      cell.dataset.status = "migrated";
       cell.title = checkedText;
+      return cell;
+    }
 
-      const label = element(
-        "span",
-        "ri-inspected-launch-label",
-        "Bonding · " + progress.toFixed(2) + "%"
-      );
+    const stale =
+      !Number.isFinite(checkedAt) ||
+      Date.now() - checkedAt > 120000;
 
-      const bar = element(
-        "div",
-        "ri-inspected-launch-bar"
-      );
+    cell.title =
+      checkedText +
+      (stale
+        ? " · Showing the last verified status; refresh pending."
+        : "");
 
-      bar.setAttribute("role", "progressbar");
-      bar.setAttribute(
-        "aria-label",
-        "Bonding curve progress"
-      );
-      bar.setAttribute("aria-valuemin", "0");
-      bar.setAttribute("aria-valuemax", "100");
-      bar.setAttribute(
-        "aria-valuenow",
-        String(progress)
-      );
+    if (data.status === "migration_pending") {
+      cell.textContent = "Migrating";
+      cell.dataset.status = "pending";
+      return cell;
+    }
 
-      const fill = element("span");
-      fill.style.width = progress + "%";
+    const progress = data.progress_percent;
 
-      bar.append(fill);
-      cell.append(label, bar);
-    });
+    if (
+      data.status !== "bonding" ||
+      typeof progress !== "number" ||
+      !Number.isFinite(progress) ||
+      progress < 0 ||
+      progress > 100
+    ) {
+      return cell;
+    }
+
+    cell.textContent = "";
+    cell.dataset.status = "bonding";
+
+    const label = element(
+      "span",
+      "ri-inspected-launch-label",
+      "Bonding · " + progress.toFixed(2) + "%"
+    );
+
+    const bar = element(
+      "div",
+      "ri-inspected-launch-bar"
+    );
+
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute(
+      "aria-label",
+      "Last verified bonding curve progress"
+    );
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute(
+      "aria-valuenow",
+      String(progress)
+    );
+
+    const fill = element("span");
+    fill.style.width = progress + "%";
+
+    bar.append(fill);
+    cell.append(label, bar);
 
     return cell;
   }
