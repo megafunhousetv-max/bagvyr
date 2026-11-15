@@ -214,7 +214,12 @@
           sync();
         });
 
-        tabs.append(smartTab);
+        tabs.insertBefore(
+          smartTab,
+          tabs.querySelector(
+            '[data-ri-board="inspected"]'
+          )
+        );
       }
 
       smartTab.hidden = !allowed;
@@ -224,16 +229,20 @@
         String(showingSmart)
       );
 
+      const activeBoard =
+        trending.dataset.riActiveBoard ||
+        "trending";
+
       for (const button of tabs.querySelectorAll(
         ".ri-trend-tab:not([data-ri-smart-tab])"
       )) {
-        if (showingSmart) {
-          button.setAttribute("aria-selected", "false");
-        } else if (button === tabs.querySelector(
-          ".ri-trend-tab:not([data-ri-smart-tab])"
-        )) {
-          button.setAttribute("aria-selected", "true");
-        }
+        button.setAttribute(
+          "aria-selected",
+          String(
+            !showingSmart &&
+            button.dataset.riBoard === activeBoard
+          )
+        );
       }
 
       return showingSmart;

@@ -11,6 +11,315 @@
   let data = null;
   let loading = false;
 
+  let inspectedItems = [];
+  let inspectedPage = 1;
+  let inspectedLoaded = false;
+  let inspectedLoading = false;
+  let inspectedError = false;
+  let inspectedSignature = "";
+
+  const inspectedPageSize = 10;
+
+  const INSPECTED_API = new URL(
+    "/api/inspected",
+    API
+  ).href;
+
+
+  function shuffleInspected(items) {
+    const shuffled = [...items];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(
+        Math.random() * (i + 1)
+      );
+
+      [shuffled[i], shuffled[j]] =
+        [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+  }
+
+
+  async function refreshInspected() {
+    if (inspectedLoading) return;
+
+    inspectedLoading = true;
+
+    try {
+      const response = await fetch(
+        INSPECTED_API,
+        {
+          cache: "no-store",
+          signal: AbortSignal.timeout(15000)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Inspected HTTP error.");
+      }
+
+      const result = await response.json();
+
+      if (
+        result.success !== true ||
+        !Array.isArray(result.items)
+      ) {
+        throw new Error("Invalid inspected response.");
+      }
+
+      const seen = new Set();
+
+      const items = result.items.filter(item => {
+        if (
+          !validContract(item.contract) ||
+          typeof item.score !== "number" ||
+          !Number.isFinite(item.score) ||
+          item.score < 70 ||
+          item.score > 100 ||
+          seen.has(item.contract)
+        ) {
+          return false;
+        }
+
+        seen.add(item.contract);
+        return true;
+      }).slice(0, 30);
+
+      const signature = JSON.stringify(items);
+
+      if (signature !== inspectedSignature) {
+        inspectedSignature = signature;
+        inspectedItems = shuffleInspected(items);
+      }
+
+      inspectedLoaded = true;
+      inspectedError = false;
+    } catch {
+      inspectedError = true;
+    } finally {
+      inspectedLoading = false;
+
+      if (activeBoard === "inspected") {
+        render();
+      }
+    }
+  }
+
+
+  function renderInspected() {
+    if (!inspectedItems.length) {
+      root.append(
+        element(
+          "div",
+          "ri-trend-empty",
+          inspectedError
+            ? "Unable to load tokens. Retrying automatically."
+            : inspectedLoaded
+              ? "No inspected tokens match this list yet."
+              : "Loading tokens…"
+        )
+      );
+
+      return;
+    }
+
+    const pageCount = Math.ceil(
+      inspectedItems.length / inspectedPageSize
+    );
+
+    inspectedPage = Math.min(
+      Math.max(1, inspectedPage),
+      pageCount
+    );
+
+    const offset =
+      (inspectedPage - 1) * inspectedPageSize;
+
+    const items = inspectedItems.slice(
+      offset,
+      offset + inspectedPageSize
+    );
+
+    const scroll = element(
+      "div",
+      "ri-trend-scroll"
+    );
+
+    const table = element(
+      "table",
+      "ri-trend-table"
+    );
+
+    const head = element("thead");
+    const heading = element("tr");
+
+    for (const label of [
+      "#",
+      "Token",
+      "Score",
+      "Market Cap",
+      "Liquidity",
+      "24h Volume",
+      ""
+    ]) {
+      const cell = element("th", "", label);
+      cell.scope = "col";
+      heading.append(cell);
+    }
+
+    head.append(heading);
+    table.append(head);
+
+    const body = element("tbody");
+
+    items.forEach((item, index) => {
+      const row = element("tr");
+
+      row.append(
+        element(
+          "td",
+          "",
+          String(offset + index + 1)
+        )
+      );
+
+      // Použije existujúce obrázky, názov a Copy CA.
+      const tokenCell = riTrendingTokenCell(item);
+
+      // V tejto tabuľke má skóre vlastný stĺpec.
+      tokenCell.querySelector(
+        ".ri-trend-score"
+      )?.remove();
+
+      row.append(tokenCell);
+
+      const scoreCell = element("td");
+      scoreCell.append(trendingScoreBadge(item));
+      row.append(scoreCell);
+
+      for (const value of [
+        money(item.market_cap_usd),
+        money(item.liquidity_usd),
+        money(item.volume_24h_usd)
+      ]) {
+        row.append(element("td", "", value));
+      }
+
+      const actions = element("td");
+
+      const analyzeLink = scannerLink(
+        item,
+        "ri-trend-row-analyze"
+      );
+
+      analyzeLink.textContent = "Analyze";
+
+      const tradeButton = element(
+        "button",
+        "rt-button rt-primary rt-trend-trade",
+        "Buy / Sell"
+      );
+
+      tradeButton.type = "button";
+
+      tradeButton.addEventListener(
+        "click",
+        event => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          window.RI_TRADING?.open(
+            item.contract,
+            item.symbol || item.name || "TOKEN"
+          );
+        }
+      );
+
+      actions.append(
+        analyzeLink,
+        tradeButton
+      );
+
+      row.append(actions);
+      body.append(row);
+    });
+
+    table.append(body);
+    scroll.append(table);
+    root.append(scroll);
+
+    if (pageCount <= 1) return;
+
+    const pagination = element("nav");
+
+    pagination.setAttribute(
+      "aria-label",
+      "Inspected token pages"
+    );
+
+    pagination.style.cssText =
+      "display:flex;justify-content:center;" +
+      "align-items:center;gap:10px;" +
+      "flex-wrap:wrap;margin-top:24px";
+
+    function pageButton(label, target, disabled) {
+      const selected =
+        typeof label === "number" &&
+        target === inspectedPage;
+
+      const button = element(
+        "button",
+        selected
+          ? "rt-button rt-primary"
+          : "rt-button",
+        String(label)
+      );
+
+      button.type = "button";
+      button.disabled = disabled;
+
+      if (selected) {
+        button.setAttribute(
+          "aria-current",
+          "page"
+        );
+      }
+
+      button.addEventListener("click", () => {
+        inspectedPage = target;
+        render();
+      });
+
+      return button;
+    }
+
+    pagination.append(
+      pageButton(
+        "Previous",
+        inspectedPage - 1,
+        inspectedPage === 1
+      )
+    );
+
+    for (let page = 1; page <= pageCount; page++) {
+      pagination.append(
+        pageButton(page, page, false)
+      );
+    }
+
+    pagination.append(
+      pageButton(
+        "Next",
+        inspectedPage + 1,
+        inspectedPage === pageCount
+      )
+    );
+
+    root.append(pagination);
+  }
+
   const style = document.createElement("style");
 
   style.textContent = `
@@ -1588,6 +1897,7 @@ function riTrendingAllowed(item) {
 }
 
   function render() {
+        root.dataset.riActiveBoard = activeBoard;
     root.replaceChildren();
 
     const ads = (Array.isArray(data?.ads) ? data.ads : [])
@@ -1644,10 +1954,12 @@ function riTrendingAllowed(item) {
     const tabs = element("div", "ri-trend-tabs");
 
 for (const [board, label] of [
-  ["trending", "Trending"]
+  ["trending", "Trending"],
+  ["inspected", "Inspected"]
 ]) {
       const button = element("button", "ri-trend-tab", label);
       button.type = "button";
+            button.dataset.riBoard = board;
       button.setAttribute(
         "aria-selected",
         String(activeBoard === board)
@@ -1662,6 +1974,11 @@ for (const [board, label] of [
     }
 
     root.append(tabs);
+
+    if (activeBoard === "inspected") {
+      renderInspected();
+      return;
+    }
 
     const board = data?.boards?.[activeBoard];
 
@@ -1867,6 +2184,35 @@ for (const [board, label] of [
 
   render();
   refresh();
+  refreshInspected();
+
+  setInterval(() => {
+    if (
+      !document.hidden &&
+      location.hash === "#trending"
+    ) {
+      refreshInspected();
+    }
+  }, 30000);
+
+  window.addEventListener("hashchange", () => {
+    if (location.hash === "#trending") {
+      refreshInspected();
+    }
+  });
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (
+        !document.hidden &&
+        location.hash === "#trending"
+      ) {
+        refreshInspected();
+      }
+    }
+  );
+
 
   setInterval(() => {
     if (!document.hidden) refresh();
