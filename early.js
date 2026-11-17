@@ -189,6 +189,73 @@ function renderEarlyRows(rows) {
       wallet.append(badge);
     }
 
+    const profile = item.kol_profile;
+
+    if (
+      tags.includes("KOL") &&
+      profile &&
+      profile.wallet === item.wallet
+    ) {
+      const name =
+        typeof profile.name === "string"
+          ? profile.name.trim().slice(0, 80)
+          : "";
+
+      const match =
+        typeof profile.x_url === "string"
+          ? profile.x_url.match(
+              /^https:\/\/x\.com\/([A-Za-z0-9_]{1,15})$/
+            )
+          : null;
+
+      if (name || match) {
+        const info = document.createElement("div");
+
+        info.style.cssText = [
+          "display:flex",
+          "align-items:center",
+          "flex-wrap:wrap",
+          "gap:5px 10px",
+          "margin-top:6px",
+          "font-size:12px",
+          "line-height:1.5"
+        ].join(";");
+
+        if (name) {
+          const label = document.createElement("span");
+
+          label.textContent = name;
+
+          label.style.cssText = [
+            "color:#d9f5e9",
+            "font-weight:600"
+          ].join(";");
+
+          info.append(label);
+        }
+
+        if (match) {
+          const link = document.createElement("a");
+
+          link.href = "https://x.com/" + match[1];
+          link.textContent = "@" + match[1] + " ↗";
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+
+          link.style.cssText = [
+            "color:#66efbd",
+            "font-weight:600",
+            "text-decoration:none",
+            "border-bottom:1px solid rgba(102,239,189,.35)"
+          ].join(";");
+
+          info.append(link);
+        }
+
+        wallet.append(info);
+      }
+    }
+
     const first = cell(
       row,
       amount(item.first_tokens)
