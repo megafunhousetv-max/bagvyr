@@ -1,0 +1,127 @@
+name: Test Pump direct
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Test first 50 buyers
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.parse
+          import urllib.request
+
+          mint = (
+              "B8bkqfwkisTKcEQHpVZp5YeH5Wii2GWzjRiK4f7Cpump"
+          )
+
+          base = (
+              "https://frontend-api-v3.pump.fun/trades/"
+              "solana%3A5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/"
+              + mint
+          )
+
+          started = time.monotonic()
+          buyers = {}
+          cursor = None
+          previous = None
+
+          for page in range(5):
+              query = (
+                  "?after=0-0-0-0&limit=100"
+                  if page == 0
+                  else "?limit=100&cursor="
+                  + urllib.parse.quote(cursor, safe="")
+              )
+
+              request = urllib.request.Request(
+                  base + query,
+                  headers={"Accept": "application/json"}
+              )
+
+              with urllib.request.urlopen(
+                  request,
+                  timeout=20
+              ) as response:
+                  data = json.load(response)
+
+              trades = sorted(
+                  data["trades"],
+                  key=lambda trade: tuple(
+                      int(trade[key])
+                      for key in (
+                          "blockId",
+                          "txIndex",
+                          "eventIndex",
+                          "legIndex"
+                      )
+                  )
+              )
+
+              for trade in trades:
+                  order = tuple(
+                      int(trade[key])
+                      for key in (
+                          "blockId",
+                          "txIndex",
+                          "eventIndex",
+                          "legIndex"
+                      )
+                  )
+
+                  if previous is not None and order <= previous:
+                      raise RuntimeError(
+                          "Invalid history pagination"
+                      )
+
+                  previous = order
+
+                  if (
+                      trade.get("kind") == "swap"
+                      and trade.get("side") == "buy"
+                  ):
+                      wallet = trade["trader"]["address"]
+                      buyers.setdefault(wallet, trade)
+
+                  if len(buyers) == 50:
+                      break
+
+              print(
+                  "Page:", page + 1,
+                  "Distinct buyers:", len(buyers),
+                  flush=True
+              )
+
+              if len(buyers) == 50:
+                  break
+
+              cursor = data.get("cursor")
+
+              if not cursor:
+                  break
+
+          if len(buyers) != 50:
+              raise RuntimeError(
+                  "Could not retrieve 50 distinct buyers"
+              )
+
+          print(
+              "PUMP_DIRECT_OK",
+              "buyers=50",
+              "seconds=",
+              round(time.monotonic() - started, 2)
+          )
+          PY
