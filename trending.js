@@ -1172,7 +1172,7 @@ let dexRequested = false;
     item.image_url
   );
 
-if (savedImage && !item.contract) {
+if (savedImage) {
   candidates.push(
     ...trendingImageVariants(savedImage)
   );
