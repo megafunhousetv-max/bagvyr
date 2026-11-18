@@ -1812,28 +1812,50 @@ function changeStatLabel(
    ADJUSTED HOLDER VALUES
    ========================================================= */
 
-function getAdjustedTop10(
-  holders,
-  data
-) {
-  return firstNumber([
+function getAdjustedTop10(holders, data) {
+  const candidates = [
     holders?.adjusted?.top10Concentration,
     holders?.top10Concentration,
     data?.binanceHolderConcentration?.top10_percent,
     data?.pumpfun?.top10Percentage
-  ]);
+  ];
+
+  for (const candidate of candidates) {
+    const value = firstNumber([candidate]);
+
+    if (
+      value !== null &&
+      value >= 0 &&
+      value <= 100
+    ) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 
-function getAdjustedTop20(
-  holders,
-  data
-) {
-  return firstNumber([
+function getAdjustedTop20(holders, data) {
+  const candidates = [
     holders?.adjusted?.top20Concentration,
     holders?.top20Concentration,
     data?.pumpfun?.top20Percentage
-  ]);
+  ];
+
+  for (const candidate of candidates) {
+    const value = firstNumber([candidate]);
+
+    if (
+      value !== null &&
+      value >= 0 &&
+      value <= 100
+    ) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 
