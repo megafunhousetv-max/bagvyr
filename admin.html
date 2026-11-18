@@ -3139,6 +3139,21 @@ aria-controls="premiumSection"
       </svg>
       <span>AI Template</span>
     </button>
+
+<button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="fomo"
+  aria-controls="fomoSection"
+>
+  <span
+    class="nav-icon"
+    aria-hidden="true"
+  >F</span>
+
+  <span>Fomo</span>
+</button>
+
   </nav>
 
   <div class="ri-sidebar-footer">
@@ -3169,6 +3184,139 @@ aria-controls="premiumSection"
           </button>
         </div>
       </div>
+
+<section
+  id="fomoSection"
+  class="admin-section"
+  aria-label="Fomo"
+  hidden
+>
+  <h2>Fomo účty</h2>
+
+  <p class="muted">
+    Súkromný zoznam účtov a koncepty téz.
+    Uloženie účtu nie je prihlásenie do Fomo.
+    Pozície sa zatiaľ nenačítavajú a tézy
+    sa nepublikujú.
+  </p>
+
+  <p id="fomoAccountCount"></p>
+
+  <button
+    id="fomoReload"
+    type="button"
+  >
+    Obnoviť zoznam
+  </button>
+
+  <p
+    id="fomoStatus"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <form
+    id="fomoAccountForm"
+    class="card"
+  >
+    <h3>Pridať záznam účtu</h3>
+
+    <label for="fomoLabel">
+      Vlastný názov
+    </label>
+
+    <input
+      id="fomoLabel"
+      maxlength="80"
+      placeholder="Môj účet 1"
+      required
+    >
+
+    <label for="fomoHandle">
+      Fomo používateľské meno
+    </label>
+
+    <input
+      id="fomoHandle"
+      maxlength="65"
+      placeholder="@meno"
+      autocomplete="off"
+      spellcheck="false"
+      required
+    >
+
+    <button type="submit">
+      Uložiť účet
+    </button>
+  </form>
+
+  <div
+    id="fomoAccountList"
+    aria-label="Uložené účty"
+  ></div>
+
+  <div
+    id="fomoDetails"
+    hidden
+  >
+    <h3 id="fomoSelectedName"></h3>
+
+    <a
+      id="fomoProfile"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Otvoriť profil na Fomo ↗
+    </a>
+
+    <p class="muted">
+      Odkaz otvorí Fomo s účtom prihláseným
+      v tvojom prehliadači; neprepne
+      prihlásenie na vybraný účet.
+    </p>
+
+    <form
+      id="fomoDraftForm"
+      class="card"
+    >
+      <h3>Koncept tézy</h3>
+
+      <label for="fomoMint">
+        Solana CA (zatiaľ ručne)
+      </label>
+
+      <input
+        id="fomoMint"
+        minlength="32"
+        maxlength="44"
+        autocomplete="off"
+        spellcheck="false"
+        required
+      >
+
+      <label for="fomoBody">
+        Téza
+      </label>
+
+      <textarea
+        id="fomoBody"
+        maxlength="3000"
+        rows="6"
+        required
+      ></textarea>
+
+      <button type="submit">
+        Uložiť koncept
+      </button>
+    </form>
+
+    <h3>
+      Posledných 100 konceptov tohto účtu
+    </h3>
+
+    <div id="fomoDraftList"></div>
+  </div>
+</section>
 
 <section
   id="supportSection"
@@ -3562,6 +3710,73 @@ aria-controls="premiumSection"
   </section>
 </template>
 
+<style>
+  #fomoSection {
+    min-width: 0;
+  }
+
+  #fomoSection .card {
+    margin: 18px 0;
+  }
+
+  #fomoSection button {
+    margin: 8px 8px 0 0;
+  }
+
+  #fomoSection textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    background: #080e0a;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font: inherit;
+  }
+
+  #fomoSection textarea:focus-visible {
+    outline: 2px solid var(--green);
+  }
+
+  #fomoAccountList {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+
+  #fomoAccountList
+  button[aria-pressed="true"] {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  #fomoSection article {
+    padding: 16px;
+    margin: 12px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  #fomoSection article p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #fomoSection strong {
+    overflow-wrap: anywhere;
+  }
+
+  #fomoSection small {
+    display: block;
+    color: var(--muted);
+  }
+
+  #fomoStatus {
+    min-height: 24px;
+    margin: 12px 0;
+  }
+</style>
+
   <script src="supabase-config.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -3662,6 +3877,7 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
+    fomo: $("fomoSection"),
   support: $("supportSection"),
   users: $("usersSection"),
   premium: $("premiumSection"),
@@ -3678,6 +3894,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+    fomo: "Fomo",
   support: "Support",
   users: "Users",
   premium: "Premium",
@@ -6186,5 +6403,6 @@ const fields = {
   }
 })();
 </script>
+<script src="fomo.js?v=1"></script>
 </body>
 </html>
