@@ -395,10 +395,11 @@ function renderEarlyRows(rows) {
               !response.ok ||
               chunk?.success !== true
             ) {
-              throw new Error(
-                chunk?.error ||
-                "Early Buyers unavailable."
-              );
+throw new Error(
+  chunk?.detail ||
+  chunk?.error ||
+  "Early Buyers unavailable."
+);
             }
 
             if (
