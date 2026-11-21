@@ -37,10 +37,8 @@ function riPaintBoardMarket() {
     const contract =
       row.dataset.riMarketContract;
 
-    const snapshot =
-      riBoardLive.get(contract);
-
-    if (!snapshot) continue;
+const snapshot =
+  riBoardLive.get(contract) || {};
 
     const start = Number(
       row.dataset.riMarketStart
@@ -91,11 +89,14 @@ function riPaintBoardMarket() {
           );
     });
 
-    const mc = snapshot.marketCapUsd;
+const mc = numeric(
+  snapshot.marketCapUsd?.value ??
+  row.dataset.riSavedMarketCap
+);
 
-    const finished = Boolean(
-      mc && mc.value < 5000
-    );
+const finished =
+  mc !== null &&
+  mc < 5000;
 
     row.classList.toggle(
       "ri-token-finished",
@@ -2472,6 +2473,16 @@ const row = element("tr");
 
 row.dataset.riMarketContract = item.contract;
 row.dataset.riMarketStart = "2";
+
+row.dataset.riSavedMarketCap =
+  item.market_cap_usd == null
+    ? ""
+    : String(item.market_cap_usd);
+
+row.dataset.riSavedMarketCap =
+  item.market_cap_usd == null
+    ? ""
+    : String(item.market_cap_usd);
 
   row.classList.toggle(
     "ri-trend-featured",

@@ -1620,6 +1620,52 @@
   }
 </style>
 
+<style>
+  #trendingRoot
+  .ri-trend-table
+  tbody
+  tr.ri-token-finished > td {
+    background: #21120f !important;
+  }
+
+  #trendingRoot
+  .ri-trend-table
+  tbody
+  tr.ri-token-finished:hover > td {
+    background: #301813 !important;
+  }
+
+  #trendingRoot
+  tr.ri-token-finished[data-ri-market-start="3"]
+  > td:nth-child(4),
+
+  #trendingRoot
+  tr.ri-token-finished[data-ri-market-start="2"]
+  > td:nth-child(3) {
+    color: #ff8f7d !important;
+    font-weight: 700;
+  }
+
+  #trendingRoot .ri-finished-badge {
+    display: inline-block;
+    align-self: flex-start;
+    width: fit-content;
+
+    margin-top: 5px;
+    padding: 3px 8px;
+
+    border: 1px solid #b95d4c;
+    border-radius: 6px;
+
+    background: #351a14;
+    color: #ffad9b;
+
+    font-size: 10px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+</style>
+
 </head>
 
 
@@ -5104,7 +5150,7 @@
     });
   </script>
 
-  <script src="trending.js?v=23"></script>
+  <script src="trending.js?v=24"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="account.js?v=8"></script>
