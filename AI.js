@@ -573,7 +573,122 @@ function guest() {
   return status?.tier === "guest";
 }
 
+const riiSendButton = $(
+  "button[type=submit]",
+  form
+);
+
+riiSendButton.innerHTML = `
+  <span>Send</span>
+
+  <svg
+    class="rii-send-arrow"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 19V5"/>
+    <path d="m6 11 6-6 6 6"/>
+  </svg>
+
+  <span
+    class="rii-send-spinner"
+    aria-hidden="true"
+  ></span>
+`;
+
+riiSendButton.setAttribute(
+  "aria-label",
+  "Send message"
+);
+
+const riiSendStyle = document.createElement("style");
+
+riiSendStyle.textContent = `
+.rii-compose button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 104px;
+  min-height: 42px;
+  padding: 10px 17px;
+  border-radius: 12px;
+  font-weight: 750;
+  transition: background .15s, box-shadow .15s;
+}
+
+.rii-send-arrow {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.rii-compose button[type="submit"]:not(:disabled):hover {
+  box-shadow: 0 0 18px #26ebbb30;
+}
+
+.rii-send-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+.rii-compose button.rii-sending {
+  opacity: .85;
+  cursor: wait;
+}
+
+.rii-sending .rii-send-arrow {
+  display: none;
+}
+
+.rii-sending .rii-send-spinner {
+  display: block;
+  animation: rii-send-spin .75s linear infinite;
+}
+
+@keyframes rii-send-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rii-sending .rii-send-spinner {
+    animation: none;
+  }
+}
+`;
+
+document.head.append(riiSendStyle);
+
 function usage() {
+
+  riiSendButton.classList.toggle(
+    "rii-sending",
+    busy
+  );
+
+  riiSendButton.setAttribute(
+    "aria-busy",
+    String(busy)
+  );
+
+  riiSendButton.setAttribute(
+    "aria-label",
+    busy ? "Waiting for RII response" : "Send message"
+  );
+
   $(".rii-quota", mask).textContent = status
     ? status.unlimited
       ? "Admin · Unlimited questions"
@@ -1168,6 +1283,8 @@ form.addEventListener("submit", async event => {
   }
 
   bubble("user", text);
+  input.value = "";
+input.focus();
 
   const pending = document.createElement("div");
 
@@ -1212,10 +1329,9 @@ form.addEventListener("submit", async event => {
 
     retry = null;
 
-    if (selected.id === chat.id) {
-      input.value = "";
-      draw();
-    }
+if (selected.id === chat.id) {
+  draw();
+}
 
     await history();
   } catch (err) {
@@ -1225,10 +1341,14 @@ form.addEventListener("submit", async event => {
       retry = null;
     }
 
-    if (selected.id === chat.id) {
-      draw();
-      error.textContent = err.message;
-    }
+if (selected.id === chat.id) {
+  draw();
+  error.textContent = err.message;
+
+  if (!input.value.trim()) {
+    input.value = text;
+  }
+}
   } finally {
     if (version === epoch) {
       busy = false;
