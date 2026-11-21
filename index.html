@@ -1793,6 +1793,465 @@
   }
 </style>
 
+<style id="ri-premium-info-design">
+/* Pôvodné nástroje skryjeme iba na verejnej stránke Premium. */
+#premium #riPremiumRoot:not([data-premium-admin]) {
+  display: none !important;
+}
+
+#riPremiumInfo {
+  --rpi-accent: #26ebbb;
+  --rpi-text: #effaf5;
+  --rpi-muted: #b1c9bd;
+  --rpi-line: rgba(111, 197, 163, .28);
+
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 28px 96px;
+  color: var(--rpi-text);
+  font-family: inherit;
+}
+
+#riPremiumInfo,
+#riPremiumInfo * {
+  box-sizing: border-box;
+}
+
+#riPremiumInfo::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 -24px;
+  background:
+    radial-gradient(
+      ellipse at 85% 12%,
+      rgba(9, 116, 79, .18),
+      transparent 46%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 14, 9, .42),
+      rgba(0, 12, 8, .91) 70%
+    );
+  pointer-events: none;
+}
+
+#riPremiumInfo .rpi-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 50px;
+  padding-bottom: 38px;
+  border-bottom: 1px solid var(--rpi-line);
+}
+
+#riPremiumInfo .rpi-eyebrow {
+  margin: 0 0 14px;
+  color: var(--rpi-accent);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+
+#riPremiumInfo h1 {
+  margin: 0;
+  color: var(--rpi-text);
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 850;
+  line-height: .98;
+  letter-spacing: -.055em;
+}
+
+#riPremiumInfo h1 span {
+  color: var(--rpi-accent);
+  background: linear-gradient(115deg, #63f9c3, #0ee2b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#riPremiumInfo .rpi-lead {
+  max-width: 570px;
+  margin: 19px 0 22px;
+  color: #d0e3d8;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+#riPremiumInfo .rpi-contract {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+#riPremiumInfo .rpi-contract > span {
+  color: #d2e6d9;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+}
+
+#riPremiumInfo .rpi-contract strong {
+  padding: 5px 17px;
+  border: 1px solid #29ce9d;
+  border-radius: 10px;
+  background: rgba(3, 39, 27, .65);
+  color: #ebfff5;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#riPremiumInfo .rpi-note {
+  margin: 11px 0 0;
+  color: var(--rpi-muted);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+#riPremiumInfo .rpi-access {
+  min-width: 0;
+}
+
+#riPremiumInfo .rpi-crown {
+  display: block;
+  width: min(100%, 290px);
+  height: auto;
+  margin: -10px auto 4px;
+  overflow: visible;
+  filter: drop-shadow(0 0 15px rgba(33, 237, 164, .22));
+}
+
+#riPremiumInfo .rpi-access h2 {
+  margin: 0 0 9px;
+  color: var(--rpi-text);
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.3;
+  letter-spacing: -.025em;
+}
+
+#riPremiumInfo .rpi-access p {
+  margin: 0;
+  color: #c2d8cb;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+#riPremiumInfo .rpi-access .rpi-access-steps {
+  margin-top: 10px;
+  color: #e0eee6;
+  font-size: 13px;
+}
+
+#riPremiumInfo .rpi-toolkit {
+  margin-top: 35px;
+}
+
+#riPremiumInfo .rpi-toolkit > h2 {
+  margin: 0;
+  color: var(--rpi-text);
+  font-size: clamp(27px, 3.3vw, 38px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.04em;
+}
+
+#riPremiumInfo .rpi-toolkit-lead {
+  margin: 9px 0 16px;
+  color: var(--rpi-muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+#riPremiumInfo .rpi-features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 62px;
+}
+
+#riPremiumInfo .rpi-feature {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  min-width: 0;
+  padding: 21px 2px;
+  border-bottom: 1px solid var(--rpi-line);
+}
+
+#riPremiumInfo .rpi-feature:nth-last-child(-n+2) {
+  border-bottom: 0;
+}
+
+#riPremiumInfo .rpi-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 112, 77, .36),
+      rgba(5, 56, 37, .5)
+    );
+  color: #34efb7;
+}
+
+#riPremiumInfo .rpi-icon svg {
+  display: block;
+  width: 31px;
+  height: 31px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#riPremiumInfo .rpi-feature h3,
+#riPremiumInfo .rpi-telegram h3 {
+  margin: 0 0 5px;
+  color: var(--rpi-text);
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.3;
+  letter-spacing: -.025em;
+}
+
+#riPremiumInfo .rpi-feature p,
+#riPremiumInfo .rpi-telegram p {
+  margin: 0;
+  color: #bed4c8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#riPremiumInfo .rpi-telegram {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  margin-top: 17px;
+  padding: 19px 22px;
+  border-radius: 17px;
+  background:
+    linear-gradient(
+      105deg,
+      rgba(11, 65, 45, .76),
+      rgba(6, 40, 29, .68)
+    );
+}
+
+#riPremiumInfo .rpi-soon {
+  padding: 6px 12px;
+  border: 1px solid rgba(103, 167, 139, .28);
+  border-radius: 9px;
+  background: rgba(101, 175, 139, .07);
+  color: #b8e2ce;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#riPremiumInfo .rpi-support {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 32px;
+  padding: 6px 2px;
+}
+
+#riPremiumInfo .rpi-support > svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--rpi-accent);
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#riPremiumInfo .rpi-support p {
+  margin: 0;
+  color: #c7dcd0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+#riPremiumInfo .rpi-support button {
+  appearance: none;
+  display: inline;
+  min-height: 32px;
+  margin: 0;
+  padding: 2px 1px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--rpi-accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+#riPremiumInfo .rpi-support button:hover {
+  color: #9cffd7;
+}
+
+#riPremiumInfo .rpi-support button:focus-visible {
+  outline: 2px solid var(--rpi-accent);
+  outline-offset: 4px;
+}
+
+#riPremiumInfo #rpiSupportStatus:not(:empty) {
+  flex-basis: 100%;
+  color: #ffc5ac;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  #riPremiumInfo {
+    padding: 38px 22px 90px;
+  }
+
+  #riPremiumInfo .rpi-hero {
+    gap: 28px;
+  }
+
+  #riPremiumInfo h1 {
+    font-size: clamp(48px, 7vw, 66px);
+  }
+
+  #riPremiumInfo .rpi-features {
+    column-gap: 30px;
+  }
+
+  #riPremiumInfo .rpi-feature {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 650px) {
+  #riPremiumInfo {
+    padding: 32px 20px 104px;
+  }
+
+  #riPremiumInfo::before {
+    inset: 0;
+  }
+
+  #riPremiumInfo .rpi-hero {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding-bottom: 28px;
+  }
+
+  #riPremiumInfo h1 {
+    font-size: clamp(46px, 12vw, 66px);
+  }
+
+  #riPremiumInfo .rpi-eyebrow {
+    font-size: 11px;
+  }
+
+  #riPremiumInfo .rpi-lead {
+    font-size: 15px;
+  }
+
+  #riPremiumInfo .rpi-access {
+    position: relative;
+    padding-top: 8px;
+  }
+
+  #riPremiumInfo .rpi-crown {
+    width: 150px;
+    margin: 0 auto 10px;
+  }
+
+  #riPremiumInfo .rpi-access h2 {
+    font-size: 20px;
+  }
+
+  #riPremiumInfo .rpi-toolkit {
+    margin-top: 28px;
+  }
+
+  #riPremiumInfo .rpi-toolkit-lead {
+    font-size: 14px;
+  }
+
+  #riPremiumInfo .rpi-features {
+    grid-template-columns: 1fr;
+  }
+
+  #riPremiumInfo .rpi-feature {
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: 19px 0;
+    gap: 16px;
+  }
+
+  #riPremiumInfo .rpi-feature:nth-last-child(2) {
+    border-bottom: 1px solid var(--rpi-line);
+  }
+
+  #riPremiumInfo .rpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  #riPremiumInfo .rpi-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  #riPremiumInfo .rpi-feature h3,
+  #riPremiumInfo .rpi-telegram h3 {
+    font-size: 18px;
+  }
+
+  #riPremiumInfo .rpi-feature p,
+  #riPremiumInfo .rpi-telegram p {
+    font-size: 13px;
+  }
+
+  #riPremiumInfo .rpi-telegram {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 14px;
+    padding: 17px 14px;
+  }
+
+  #riPremiumInfo .rpi-soon {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  #riPremiumInfo .rpi-support {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #riPremiumInfo .rpi-support p {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+  }
+}
+</style>
+
 </head>
 
 
@@ -4770,7 +5229,321 @@
   class="app-page"
   aria-label="RugInspect Premium"
 >
-  <div id="riPremiumRoot"></div>
+<div id="riPremiumInfo" aria-labelledby="rpiTitle">
+
+  <header class="rpi-hero">
+    <div class="rpi-intro">
+      <p class="rpi-eyebrow">RUGINSPECT PREMIUM</p>
+
+      <h1 id="rpiTitle">
+        Go beyond<br>
+        <span>the surface.</span>
+      </h1>
+
+      <p class="rpi-lead">
+        A clearer view of every token.
+        Advanced tools for RugInspect holders.
+      </p>
+
+      <div class="rpi-contract">
+        <span>Token contract</span>
+        <strong>Coming soon</strong>
+      </div>
+
+      <p class="rpi-note">
+        Holding requirements will be announced.
+      </p>
+    </div>
+
+    <div class="rpi-access">
+      <svg
+        class="rpi-crown"
+        viewBox="0 0 320 200"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <linearGradient
+            id="rpiCrownFill"
+            x1="160"
+            y1="24"
+            x2="160"
+            y2="170"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop
+              stop-color="#4effcc"
+              stop-opacity=".28"
+            />
+
+            <stop
+              offset="1"
+              stop-color="#082d21"
+              stop-opacity=".5"
+            />
+          </linearGradient>
+
+          <linearGradient
+            id="rpiCrownEdge"
+            x1="86"
+            y1="38"
+            x2="230"
+            y2="172"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stop-color="#b4ffe3"/>
+
+            <stop
+              offset=".45"
+              stop-color="#36efb7"
+            />
+
+            <stop
+              offset="1"
+              stop-color="#126c4f"
+            />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="
+            m55 62 47 28 58-66 58 66 47-28-25 94
+            c-52 15-108 15-160 0L55 62Z
+          "
+          fill="url(#rpiCrownFill)"
+          stroke="url(#rpiCrownEdge)"
+          stroke-width="3"
+          stroke-linejoin="round"
+        />
+
+        <path
+          d="m64 78 38 22 58-65 58 65 38-22"
+          stroke="#8bffd9"
+          stroke-opacity=".2"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+
+        <path
+          d="
+            M80 168c52 16 108 16 160 0
+            M84 178c50 15 102 15 152 0
+          "
+          stroke="#28dc9f"
+          stroke-opacity=".25"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <h2>Access through ownership</h2>
+
+      <p>
+        Hold the RugInspect token in your connected
+        wallet to unlock Premium.
+      </p>
+
+      <p class="rpi-access-steps">
+        Sign in. Connect your wallet. Hold our token.
+      </p>
+    </div>
+  </header>
+
+  <section
+    class="rpi-toolkit"
+    aria-labelledby="rpiToolkitTitle"
+  >
+    <h2 id="rpiToolkitTitle">
+      Everything you need to look deeper.
+    </h2>
+
+    <p class="rpi-toolkit-lead">
+      Premium tools, built into your token analysis.
+    </p>
+
+    <div class="rpi-features">
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect
+              x="5"
+              y="2"
+              width="14"
+              height="20"
+              rx="2"
+            />
+
+            <path d="
+              M8 6h8
+              M8 10h.01 M12 10h.01 M16 10h.01
+              M8 14h.01 M12 14h.01 M16 14h.01
+              M8 18h.01 M12 18h.01 M16 18h.01
+            "/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Exit Lab</h3>
+          <p>Explore sell scenarios and price impact.</p>
+        </div>
+      </article>
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 20V11M12 20V4M19 20V8"/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Volume X-Ray</h3>
+          <p>Look deeper into trading activity.</p>
+        </div>
+      </article>
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="7" r="3"/>
+
+            <path d="
+              M3 21v-3a6 6 0 0 1 12 0v3H3Z
+              M16 4a3 3 0 0 1 0 6
+              M18 14a5 5 0 0 1 3 4v3h-3
+            "/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Early Buyers</h3>
+          <p>See early buyers and their current holdings.</p>
+        </div>
+      </article>
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/>
+            <circle cx="12" cy="12" r="5"/>
+            <circle cx="12" cy="12" r="1"/>
+            <path d="m12 12 9-9M16 3h5v5"/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Smart Money Radar</h3>
+          <p>Follow tracked smart money activity.</p>
+        </div>
+      </article>
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="
+              m12 3 10 5-10 5L2 8l10-5Z
+              M2 12l10 5 10-5
+              M2 16l10 5 10-5
+            "/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Token Context</h3>
+          <p>Understand the bigger picture behind a token.</p>
+        </div>
+      </article>
+
+      <article class="rpi-feature">
+        <span class="rpi-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="
+              m10.3 4.1-8 14A2 2 0 0 0 4 21h16
+              a2 2 0 0 0 1.7-2.9l-8-14
+              a2 2 0 0 0-3.4 0Z
+            "/>
+
+            <path d="M12 9v5M12 17h.01"/>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Risk Summary</h3>
+          <p>The key risks, in one clear overview.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <article class="rpi-telegram">
+      <span class="rpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="
+            m22 3-7 19-4-9L2 9 20 2
+            a1.5 1.5 0 0 1 2 1Z
+            M11 13 22 3
+          "/>
+        </svg>
+      </span>
+
+      <div>
+        <h3>Premium Telegram bot</h3>
+
+        <p>
+          Token monitoring and alerts, directly in Telegram.
+        </p>
+      </div>
+
+      <span class="rpi-soon">Coming soon</span>
+    </article>
+  </section>
+
+  <footer class="rpi-support">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="
+        M3 14v-3a9 9 0 0 1 18 0v3
+        M21 17v2a3 3 0 0 1-3 3h-3
+      "/>
+
+      <rect
+        x="2"
+        y="11"
+        width="4"
+        height="8"
+        rx="2"
+      />
+
+      <rect
+        x="18"
+        y="11"
+        width="4"
+        height="8"
+        rx="2"
+      />
+    </svg>
+
+    <p>
+      Having trouble?
+
+      <button type="button" data-rpi-support>
+        Contact Support
+      </button>
+
+      and we’ll help you.
+    </p>
+
+    <span
+      id="rpiSupportStatus"
+      role="status"
+      aria-live="polite"
+    ></span>
+  </footer>
+
+</div>
+
+<!-- Pôvodný panel musí zostať pre analýzu a trending. -->
+<div id="riPremiumRoot"></div>
 </section>
 
 <section
@@ -5313,5 +6086,43 @@
   data-sitekey="0x4AAAAAAFTMzFbveXwb2x4A"
 ></script>
 <script src="AI.js?v=5" defer></script>
+
+<script>
+document.addEventListener("click", event => {
+  const button = event.target.closest?.(
+    "#riPremiumInfo [data-rpi-support]"
+  );
+
+  if (!button) return;
+
+  const launch = document.getElementById(
+    "riSupportLaunch"
+  );
+
+  const message = document.getElementById(
+    "rpiSupportStatus"
+  );
+
+  if (!launch) {
+    if (message) {
+      message.textContent =
+        "Support is still loading. Please try again in a moment.";
+    }
+
+    return;
+  }
+
+  if (message) {
+    message.textContent = "";
+  }
+
+  if (launch.getAttribute("aria-expanded") !== "true") {
+    launch.click();
+  }
+
+  document.getElementById("riSupportTitle")?.focus();
+});
+</script>
+
 </body>
 </html>
