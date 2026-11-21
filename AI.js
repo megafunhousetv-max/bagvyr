@@ -16,10 +16,94 @@ const $ = (selector, root = document) =>
 const uid = () => crypto.randomUUID();
 
 const icon = `
-<svg viewBox="0 0 24 24" aria-hidden="true">
-  <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>
-  <path d="M19 3v4m-2-2h4"/>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="24"
+  height="24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.7"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  <!-- Anténa -->
+  <path d="M12 7V4.5"/>
+
+  <circle
+    cx="12"
+    cy="3"
+    r="1.3"
+    fill="currentColor"
+    stroke="none"
+  />
+
+  <!-- Hlava -->
+  <rect
+    x="5"
+    y="7"
+    width="14"
+    height="12"
+    rx="4"
+  />
+
+  <!-- Bočné časti -->
+  <rect
+    x="2"
+    y="10"
+    width="3"
+    height="6"
+    rx="1.4"
+  />
+
+  <rect
+    x="19"
+    y="10"
+    width="3"
+    height="6"
+    rx="1.4"
+  />
+
+  <!-- Oči -->
+  <circle
+    cx="9"
+    cy="12"
+    r="1.1"
+    fill="currentColor"
+    stroke="none"
+  />
+
+  <circle
+    cx="15"
+    cy="12"
+    r="1.1"
+    fill="currentColor"
+    stroke="none"
+  />
+
+  <!-- Ústa -->
+  <path d="M10 16h4"/>
 </svg>`;
+
+// Rovnaký robot aj v hornom menu a admin navigácii.
+document.querySelectorAll(
+  '.header-nav [data-rii-open="full"] svg, ' +
+  '[data-admin-section="rii"] svg'
+).forEach(oldIcon => {
+  const container = document.createElement("div");
+
+  container.innerHTML = icon.trim();
+
+  const robotIcon = container.firstElementChild;
+  const originalClass = oldIcon.getAttribute("class");
+
+  if (originalClass) {
+    robotIcon.setAttribute("class", originalClass);
+  }
+
+  oldIcon.replaceWith(robotIcon);
+});
 
 const style = document.createElement("style");
 
