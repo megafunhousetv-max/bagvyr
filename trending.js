@@ -533,16 +533,24 @@ async function riRefreshBoardMarket() {
 
     const body = element("tbody");
 
-    items.forEach((item, index) => {
-      const row = element("tr");
+items.forEach((item, index) => {
+  const row = element("tr");
 
-      row.append(
-        element(
-          "td",
-          "",
-          String(offset + index + 1)
-        )
-      );
+  row.dataset.riMarketContract = item.contract;
+  row.dataset.riMarketStart = "3";
+
+  row.dataset.riSavedMarketCap =
+    item.market_cap_usd == null
+      ? ""
+      : String(item.market_cap_usd);
+
+  row.append(
+    element(
+      "td",
+      "",
+      String(offset + index + 1)
+    )
+  );
 
       // Použije existujúce obrázky, názov a Copy CA.
       const tokenCell = riTrendingTokenCell(item);
