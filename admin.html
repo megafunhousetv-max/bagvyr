@@ -3140,6 +3140,25 @@ aria-controls="premiumSection"
       <span>AI Template</span>
     </button>
 
+    <button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="rii"
+  aria-controls="riiSection"
+>
+  <svg
+    class="nav-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"
+    />
+  </svg>
+
+  <span>RII Studio</span>
+</button>
+
 <button
   type="button"
   class="admin-nav-button"
@@ -3163,6 +3182,11 @@ aria-controls="premiumSection"
 </aside>
 
   <div class="admin-content">
+    <section
+  id="riiSection"
+  class="admin-section"
+  hidden
+></section>
     <div class="dashboard-top">
         <div>
           <p class="eyebrow">Website overview</p>
@@ -3877,6 +3901,7 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
+    rii: $("riiSection"),
     fomo: $("fomoSection"),
   support: $("supportSection"),
   users: $("usersSection"),
@@ -3894,6 +3919,7 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
+    rii: "RII Studio",
     fomo: "Fomo",
   support: "Support",
   users: "Users",
@@ -6404,5 +6430,6 @@ const fields = {
 })();
 </script>
 <script src="fomo.js?v=1"></script>
+<script src="AI.js?v=1" defer></script>
 </body>
 </html>
