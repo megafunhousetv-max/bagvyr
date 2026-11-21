@@ -40,6 +40,8 @@ function riPaintBoardMarket() {
 const snapshot =
   riBoardLive.get(contract) || {};
 
+  riUpdateInspectedAge(row, snapshot);
+
     const start = Number(
       row.dataset.riMarketStart
     );
@@ -227,6 +229,23 @@ async function riRefreshBoardMarket() {
             );
           }
 
+          const createdAt = Date.parse(
+  result.token_created_at || ""
+);
+
+if (
+  Number.isFinite(createdAt) &&
+  createdAt > 0 &&
+  createdAt <= Date.now() &&
+  (
+    result.age_source === "pump_creation" ||
+    result.age_source === "first_indexed_pool"
+  )
+) {
+  snapshot.createdAt = createdAt;
+  snapshot.ageSource = result.age_source;
+}
+
           let received = 0;
 
           for (const key of [
@@ -372,99 +391,293 @@ async function riRefreshBoardMarket() {
     }
   }
 
-  function inspectedLaunchCell(item) {
-    const cell = element(
-      "td",
-      "ri-inspected-launch"
+function riAgeText(timestamp) {
+  const minutes = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - timestamp) / 60000
+    )
+  );
+
+  if (minutes < 1) return "<1m";
+  if (minutes < 60) return minutes + "m";
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return (
+      hours + "h " +
+      minutes % 60 + "m"
     );
+  }
 
-    const data = item.launch;
+  return (
+    Math.floor(hours / 24) + "d " +
+    hours % 24 + "h"
+  );
+}
 
-    cell.textContent = "—";
-    cell.title = "Launch status not yet available";
+function inspectedAgeCell(item) {
+  const cell = element(
+    "td",
+    "ri-inspected-age"
+  );
 
-    if (!data || data.contract !== item.contract) {
-      return cell;
-    }
+  const clock = element(
+    "span",
+    "ri-age-clock",
+    "◷"
+  );
 
-    const checkedAt = Date.parse(
-      data.fetched_at || ""
-    );
+  clock.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
-    const checkedText = Number.isFinite(checkedAt)
-      ? "Last verified: " +
-        new Date(checkedAt).toLocaleString()
-      : "Verification time unavailable";
+  cell.append(
+    clock,
 
-    if (data.status === "migrated") {
-      cell.textContent = "✓ Migrated";
-      cell.dataset.status = "migrated";
-      cell.title = checkedText;
-      return cell;
-    }
+    element(
+      "span",
+      "ri-age-value",
+      "—"
+    )
+  );
 
-    const stale =
-      !Number.isFinite(checkedAt) ||
-      Date.now() - checkedAt > 120000;
+  return cell;
+}
+
+function riUpdateInspectedAge(row, snapshot) {
+  const cell = row.querySelector(
+    ".ri-inspected-age"
+  );
+
+  if (!cell) return;
+
+  const value = cell.querySelector(
+    ".ri-age-value"
+  );
+
+  const timestamp = snapshot.createdAt;
+
+  if (
+    !Number.isFinite(timestamp) ||
+    timestamp <= 0 ||
+    timestamp > Date.now()
+  ) {
+    value.textContent = "—";
 
     cell.title =
-      checkedText +
-      (stale
-        ? " · Showing the last verified status; refresh pending."
-        : "");
+      "Token creation time unavailable.";
 
-    if (data.status === "migration_pending") {
-      cell.textContent = "Migrating";
-      cell.dataset.status = "pending";
-      return cell;
-    }
+    return;
+  }
 
-    const progress = data.progress_percent;
+  const estimated =
+    snapshot.ageSource !== "pump_creation";
 
-    if (
-      data.status !== "bonding" ||
-      typeof progress !== "number" ||
-      !Number.isFinite(progress) ||
-      progress < 0 ||
-      progress > 100
-    ) {
-      return cell;
-    }
+  value.textContent =
+    (estimated ? "≈ " : "") +
+    riAgeText(timestamp);
 
-    cell.textContent = "";
-    cell.dataset.status = "bonding";
+  cell.title =
+    (
+      estimated
+        ? (
+            "Age of the earliest pool returned by " +
+            "DexScreener; token creation may be earlier. "
+          )
+        : "Token creation time from Pump.fun. "
+    ) +
+    new Date(timestamp).toLocaleString();
+}
 
-    const label = element(
+function riLaunchIcon(kind) {
+  const icon = element(
+    "span",
+    "ri-launch-icon"
+  );
+
+  icon.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  icon.innerHTML = kind === "migrated"
+    ? `
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="m8 12 3 3 5-6"/>
+      </svg>
+    `
+    : `
+      <svg viewBox="0 0 24 24">
+        <path d="M13 3c1 5-4 6-3 10-2-1-3-3-3-4-3 4-3 10 2 12 6 2 11-2 10-7 0-3-2-6-4-7 1 3 0 4-1 5 0-3 0-6-1-9Z"/>
+      </svg>
+    `;
+
+  return icon;
+}
+
+function inspectedLaunchCell(item) {
+  const cell = element(
+    "td",
+    "ri-inspected-launch"
+  );
+
+  const data = item.launch;
+
+  cell.textContent = "—";
+
+  if (
+    !data ||
+    data.contract !== item.contract
+  ) {
+    cell.title =
+      "Launch status unavailable.";
+
+    return cell;
+  }
+
+  const migrated =
+    data.status === "migrated";
+
+  const pending =
+    data.status === "migration_pending";
+
+  const progress =
+    data.progress_percent;
+
+  const bonding =
+    data.status === "bonding" &&
+    typeof progress === "number" &&
+    Number.isFinite(progress) &&
+    progress >= 0 &&
+    progress <= 100;
+
+  if (
+    !migrated &&
+    !pending &&
+    !bonding
+  ) {
+    return cell;
+  }
+
+  cell.textContent = "";
+
+  cell.dataset.status = migrated
+    ? "migrated"
+    : pending
+      ? "pending"
+      : "bonding";
+
+  const card = element(
+    "div",
+    "ri-launch-card"
+  );
+
+  const top = element(
+    "div",
+    "ri-launch-top"
+  );
+
+  const label = element(
+    "span",
+    "ri-launch-label"
+  );
+
+  label.append(
+    riLaunchIcon(
+      migrated ? "migrated" : "bonding"
+    ),
+
+    element(
       "span",
-      "ri-inspected-launch-label",
-      "Bonding · " + progress.toFixed(2) + "%"
+      "",
+      migrated
+        ? "Migrated"
+        : pending
+          ? "Migrating"
+          : "Bonding"
+    )
+  );
+
+  top.append(label);
+
+  const checkedAt = Date.parse(
+    data.fetched_at || ""
+  );
+
+  const stale =
+    !Number.isFinite(checkedAt) ||
+    Date.now() - checkedAt > 120000;
+
+  cell.title = Number.isFinite(checkedAt)
+    ? (
+        "Last verified: " +
+        new Date(checkedAt).toLocaleString()
+      )
+    : "Verification time unavailable.";
+
+  if (!migrated && stale) {
+    cell.title +=
+      " · Showing last verified status.";
+  }
+
+  card.append(top);
+
+  if (bonding) {
+    top.append(
+      element(
+        "strong",
+        "ri-launch-percent",
+        progress.toFixed(2) + "%"
+      )
     );
 
     const bar = element(
       "div",
-      "ri-inspected-launch-bar"
+      "ri-launch-progress"
     );
 
-    bar.setAttribute("role", "progressbar");
+    bar.setAttribute(
+      "role",
+      "progressbar"
+    );
+
     bar.setAttribute(
       "aria-label",
-      "Last verified bonding curve progress"
+      "Last verified bonding progress"
     );
-    bar.setAttribute("aria-valuemin", "0");
-    bar.setAttribute("aria-valuemax", "100");
+
+    bar.setAttribute(
+      "aria-valuemin",
+      "0"
+    );
+
+    bar.setAttribute(
+      "aria-valuemax",
+      "100"
+    );
+
     bar.setAttribute(
       "aria-valuenow",
       String(progress)
     );
 
     const fill = element("span");
-    fill.style.width = progress + "%";
+
+    fill.style.width =
+      progress + "%";
 
     bar.append(fill);
-    cell.append(label, bar);
-
-    return cell;
+    card.append(bar);
   }
+
+  cell.append(card);
+
+  return cell;
+}
 
   function renderInspected() {
     if (!inspectedItems.length) {
@@ -513,16 +726,17 @@ async function riRefreshBoardMarket() {
     const head = element("thead");
     const heading = element("tr");
 
-    for (const label of [
-      "#",
-      "Token",
-      "Score",
-      "Market Cap",
-      "Liquidity",
-      "24h Volume",
-      "Launch status",
-      ""
-    ]) {
+for (const label of [
+  "#",
+  "Token",
+  "Score",
+  "Market Cap",
+  "Liquidity",
+  "24h Volume",
+  "Age",
+  "Launch status",
+  ""
+]) {
       const cell = element("th", "", label);
       cell.scope = "col";
       heading.append(cell);
@@ -575,9 +789,10 @@ items.forEach((item, index) => {
       }
 
       const actions = element("td");
-            row.append(
-        inspectedLaunchCell(item)
-      );
+row.append(
+  inspectedAgeCell(item),
+  inspectedLaunchCell(item)
+);
 
       const analyzeLink = scannerLink(
         item,
@@ -2481,11 +2696,6 @@ const row = element("tr");
 
 row.dataset.riMarketContract = item.contract;
 row.dataset.riMarketStart = "2";
-
-row.dataset.riSavedMarketCap =
-  item.market_cap_usd == null
-    ? ""
-    : String(item.market_cap_usd);
 
 row.dataset.riSavedMarketCap =
   item.market_cap_usd == null

@@ -1666,6 +1666,133 @@
   }
 </style>
 
+<style>
+  #trendingRoot .ri-inspected-age {
+    min-width: 88px;
+    white-space: nowrap;
+    color: #a5bdaf;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #trendingRoot .ri-age-clock {
+    display: inline-block;
+    margin-right: 7px;
+    color: #7ea58f;
+    font-size: 19px;
+    line-height: 1;
+    vertical-align: -2px;
+  }
+
+  #trendingRoot .ri-inspected-launch {
+    min-width: 176px;
+    white-space: nowrap;
+  }
+
+  #trendingRoot .ri-launch-card {
+    width: 156px;
+    box-sizing: border-box;
+    padding: 10px 11px;
+
+    border: 1px solid #24563f;
+    border-radius: 10px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(21, 77, 51, 0.20),
+        rgba(4, 22, 14, 0.65)
+      );
+
+    color: #e4f7ec;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  #trendingRoot .ri-launch-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  #trendingRoot .ri-launch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  #trendingRoot .ri-launch-icon {
+    display: inline-flex;
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    color: #39e8ac;
+  }
+
+  #trendingRoot .ri-launch-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #trendingRoot .ri-launch-percent {
+    color: #48efb5;
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #trendingRoot .ri-launch-progress {
+    height: 5px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #10392a;
+  }
+
+  #trendingRoot .ri-launch-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+
+    background:
+      linear-gradient(
+        90deg,
+        #13c995,
+        #45edb1
+      );
+
+    transition: width 0.35s ease;
+  }
+
+  #trendingRoot
+  .ri-inspected-launch[data-status="pending"]
+  .ri-launch-card {
+    border-color: #716033;
+    color: #f0d594;
+  }
+
+  #trendingRoot
+  .ri-inspected-launch[data-status="pending"]
+  .ri-launch-icon {
+    color: #f0d594;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #trendingRoot .ri-launch-progress > span {
+      transition: none;
+    }
+  }
+</style>
+
 </head>
 
 
@@ -5150,7 +5277,7 @@
     });
   </script>
 
-  <script src="trending.js?v=25"></script>
+  <script src="trending.js?v=26"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="account.js?v=8"></script>
