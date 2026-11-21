@@ -490,6 +490,313 @@
       }
     `;
 
+    const smScope =
+  'body #riPremiumRoot [data-tool="smart_money"].sm-v2';
+
+style.textContent += `
+  body #riPremiumRoot.ri-embedded-smart-view.ri-smart-v2-open {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  body #riPremiumRoot.ri-embedded-smart-view.ri-smart-v2-open .ri-embedded-heading {
+    display: none;
+  }
+
+  ${smScope} {
+    margin-top: 0;
+  }
+
+  ${smScope} .sm-card {
+    padding: 10px 0 22px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  ${smScope} .sm-heading {
+    min-height: 165px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
+    border: 0;
+    border-left: 3px solid #26e8b0;
+    border-radius: 0;
+    background: radial-gradient(
+      ellipse at right,
+      #0b39263b,
+      transparent 65%
+    );
+  }
+
+  ${smScope} .sm-kicker {
+    display: block;
+    margin-bottom: 10px;
+    color: #43edba;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 2px;
+  }
+
+  ${smScope} .sm-heading h2 {
+    font-size: clamp(30px, 3.5vw, 46px);
+    font-weight: 800;
+  }
+
+  ${smScope} .sm-radar {
+    width: 230px;
+    height: 230px;
+    right: 45px;
+    box-shadow: 0 0 35px #13dd9f12;
+  }
+
+  ${smScope} .sm-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  ${smScope} .sm-summary-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    min-height: 104px;
+    overflow: hidden;
+    padding: 18px 20px;
+    border: 1px solid #245b44;
+    border-radius: 16px;
+
+    background:
+      radial-gradient(
+        ellipse at bottom right,
+        #0c5e3e75,
+        transparent 65%
+      ),
+      #041d15;
+  }
+
+  ${smScope} .sm-summary-card::after {
+    content: "";
+    position: absolute;
+    right: -36px;
+    bottom: -62px;
+    width: 155px;
+    height: 100px;
+    border: 1px solid #32e9b449;
+    border-radius: 50%;
+    transform: rotate(-25deg);
+
+    box-shadow:
+      0 -6px 15px #1fe3a81a,
+      0 -15px 0 -12px #2ceeb252;
+
+    pointer-events: none;
+  }
+
+  ${smScope} .sm-summary-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #176f51;
+    border-radius: 50%;
+    background: #07533266;
+    color: #66ffd0;
+    font-size: 26px;
+  }
+
+  ${smScope} .sm-summary-card small {
+    display: block;
+    margin-bottom: 5px;
+    color: #aec9ba;
+    font-size: 12px;
+  }
+
+  ${smScope} .sm-summary-card strong {
+    display: block;
+    color: #effff6;
+    font-size: clamp(22px, 2.8vw, 34px);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ${smScope} [data-sm-total="flow"] {
+    color: #3af3bc;
+  }
+
+  ${smScope} [data-sm-total="flow"].sm-negative {
+    color: #ff858d;
+  }
+
+  ${smScope} .sm-toolbar {
+    margin: 0 0 18px;
+  }
+
+  ${smScope} .sm-chain-v2 {
+    margin-left: auto;
+    padding: 7px 12px;
+    border: 1px solid #245b44;
+    border-radius: 999px;
+  }
+
+  ${smScope} .sm-card .sm-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  ${smScope} .sm-card .sm-table tbody td {
+    padding: 18px 14px;
+    border: 0;
+    border-bottom: 1px solid #183d2e;
+    border-radius: 0;
+    background: #031a12;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ${smScope} .sm-card .sm-table tbody tr:first-child td {
+    background: linear-gradient(
+      180deg,
+      #083d2b,
+      #042519
+    );
+
+    border-top: 1px solid #237a57;
+  }
+
+  ${smScope} .sm-card .sm-table tbody tr:first-child td:first-child {
+    border-radius: 14px 0 0 14px;
+    box-shadow: inset 4px 0 #32edb6;
+  }
+
+  ${smScope} .sm-card .sm-table tbody tr:first-child td:last-child {
+    border-radius: 0 14px 14px 0;
+  }
+
+  ${smScope} .sm-card .sm-table tbody tr:hover td {
+    background: #0a3023;
+  }
+
+  ${smScope} .sm-buy-badge {
+    display: none;
+  }
+
+  ${smScope} .sm-name {
+    max-width: 190px;
+    font-size: 16px;
+  }
+
+  ${smScope} .sm-buyer-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 6px 12px;
+    border: 1px solid #1b7051;
+    border-radius: 10px;
+    background: #07553655;
+    color: #70ffd0;
+    font-size: 15px;
+    font-weight: 750;
+  }
+
+  ${smScope} .sm-flow-value {
+    display: block;
+    font-size: 16px;
+  }
+
+  ${smScope} .sm-flow-track {
+    display: block;
+    width: 112px;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #163d2e;
+  }
+
+  ${smScope} .sm-flow-track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      #24db9f,
+      #68ffd0
+    );
+  }
+
+  ${smScope} .sm-negative .sm-flow-track {
+    background: #402723;
+  }
+
+  ${smScope} .sm-negative .sm-flow-track > span {
+    background: #ff858d;
+  }
+
+  ${smScope} .sm-live-mc {
+    color: #edfff4;
+    font-size: 15px;
+  }
+
+  ${smScope} .sm-mc-stale {
+    opacity: .6;
+  }
+
+  ${smScope}[data-sm-solana-only="true"] .sm-table th:nth-child(3),
+  ${smScope}[data-sm-solana-only="true"] .sm-table td:nth-child(3) {
+    display: none;
+  }
+
+  @media (max-width: 700px) {
+    ${smScope} .sm-summary {
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+
+    ${smScope} .sm-summary-card {
+      min-height: 76px;
+      padding: 14px 16px;
+    }
+
+    ${smScope} .sm-heading {
+      min-height: 135px;
+      padding: 16px;
+    }
+
+    ${smScope} .sm-heading > div:not(.sm-radar) {
+      max-width: 100%;
+    }
+
+    ${smScope} .sm-radar {
+      right: -80px;
+      opacity: .18;
+    }
+
+    ${smScope} .sm-chain-v2 {
+      margin-left: 0;
+    }
+
+    ${smScope} .sm-card .sm-table tbody tr td,
+    ${smScope} .sm-card .sm-table tbody tr:first-child td,
+    ${smScope} .sm-card .sm-table tbody tr:hover td {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    ${smScope} .sm-card .sm-table tbody tr:first-child {
+      border-color: #268b60;
+      background: #073022;
+    }
+  }
+`;
+
     document.head.append(style);
 
     panel.innerHTML = `
@@ -1532,6 +1839,538 @@ panel.querySelectorAll(
       next();
     }
 
+    const smMarket = new Map();
+const smMarketJobs = new Map();
+
+let smMarketVersion = 0;
+
+const smHeading = panel.querySelector(
+  ".sm-heading"
+);
+
+smHeading.firstElementChild.prepend(
+  node(
+    "small",
+    "ON-CHAIN INTELLIGENCE",
+    "sm-kicker"
+  )
+);
+
+smHeading.querySelector("p").textContent =
+  "Track the wallets. Understand the flow.";
+
+const smSummary = node(
+  "div",
+  undefined,
+  "sm-summary"
+);
+
+smSummary.setAttribute(
+  "aria-label",
+  "Summary of displayed tokens"
+);
+
+smSummary.innerHTML = `
+  <div class="sm-summary-card">
+    <span
+      class="sm-summary-icon"
+      aria-hidden="true"
+    >◇</span>
+
+    <div>
+      <small>Tokens in view</small>
+      <strong data-sm-total="tokens">0</strong>
+    </div>
+  </div>
+
+  <div class="sm-summary-card">
+    <span
+      class="sm-summary-icon"
+      aria-hidden="true"
+    >↗</span>
+
+    <div>
+      <small>Buy trades</small>
+      <strong data-sm-total="trades">0</strong>
+    </div>
+  </div>
+
+  <div class="sm-summary-card">
+    <span
+      class="sm-summary-icon"
+      aria-hidden="true"
+    >⇄</span>
+
+    <div>
+      <small>Net inflow</small>
+      <strong data-sm-total="flow">—</strong>
+    </div>
+  </div>
+`;
+
+smHeading.after(smSummary);
+
+const smChain = node(
+  "span",
+  "Solana",
+  "sm-network sm-network-solana sm-chain-v2"
+);
+
+panel.querySelector(
+  ".sm-periods"
+).after(smChain);
+
+panel.classList.add("sm-v2");
+
+function smTotals(items) {
+  smSummary.querySelector(
+    '[data-sm-total="tokens"]'
+  ).textContent = String(items.length);
+
+  smSummary.querySelector(
+    '[data-sm-total="trades"]'
+  ).textContent = new Intl.NumberFormat(
+    "en-US"
+  ).format(
+    items.reduce(
+      (sum, item) => sum + item.buy_trades,
+      0
+    )
+  );
+
+  const total = smSummary.querySelector(
+    '[data-sm-total="flow"]'
+  );
+
+  const complete = items.every(item => {
+    return Number.isFinite(
+      item.net_inflow_usd
+    );
+  });
+
+  const flow = complete
+    ? items.reduce(
+        (sum, item) =>
+          sum + item.net_inflow_usd,
+        0
+      )
+    : null;
+
+  total.textContent = money(flow, true);
+
+  total.classList.toggle(
+    "sm-negative",
+    flow !== null && flow < 0
+  );
+
+  total.title = complete
+    ? "Sum for the displayed tokens in the selected period."
+    : "Some displayed tokens have no net inflow value.";
+}
+
+function smPaintDesign(items) {
+  smTotals(items);
+
+  const isSolana = item => {
+    return (
+      item.chain_id === "CT_501" &&
+      [
+        "binance_row",
+        "binance_filter"
+      ].includes(item.chain_source)
+    );
+  };
+
+  const allSolana =
+    items.length > 0 &&
+    items.every(isSolana);
+
+  panel.dataset.smSolanaOnly =
+    String(allSolana);
+
+  smChain.hidden = !allSolana;
+
+  const maxFlow = Math.max(
+    1,
+    ...items.map(item => {
+      return Number.isFinite(
+        item.net_inflow_usd
+      )
+        ? Math.abs(item.net_inflow_usd)
+        : 0;
+    })
+  );
+
+  [...tbody.children].forEach(
+    (row, index) => {
+      const item = items[index];
+
+      if (!item) return;
+
+      row.dataset.smContract =
+        item.contract;
+
+      row.dataset.smSolana =
+        String(isSolana(item));
+
+      const buyers = row.children[3];
+
+      const buyersHelp =
+        buyers.querySelector(
+          ".sm-help-star"
+        );
+
+      const pill = node(
+        "span",
+        String(item.buyers),
+        "sm-buyer-pill"
+      );
+
+      buyers.replaceChildren(pill);
+
+      if (buyersHelp) {
+        buyers.append(buyersHelp);
+      }
+
+      const flowCell = row.children[5];
+
+      const flowHelp =
+        flowCell.querySelector(
+          ".sm-help-star"
+        );
+
+      const amount = node(
+        "strong",
+        money(item.net_inflow_usd, true),
+        "sm-flow-value"
+      );
+
+      const bar = node(
+        "span",
+        undefined,
+        "sm-flow-track"
+      );
+
+      bar.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      const fill = node("span");
+
+      fill.style.width = Number.isFinite(
+        item.net_inflow_usd
+      )
+        ? (
+            Math.abs(item.net_inflow_usd) /
+            maxFlow * 100
+          ) + "%"
+        : "0%";
+
+      bar.append(fill);
+
+      flowCell.replaceChildren(
+        amount,
+        bar
+      );
+
+      if (flowHelp) {
+        flowCell.append(flowHelp);
+      }
+
+      const mc = node(
+        "span",
+        money(item.market_cap_usd),
+        "sm-live-mc"
+      );
+
+      row.children[6].replaceChildren(mc);
+
+      const analyze = row.querySelector(
+        ".sm-analyze"
+      );
+
+      if (analyze) {
+        analyze.textContent = "Analyze →";
+      }
+    }
+  );
+
+  smPaintMarketCaps();
+}
+
+function smPaintMarketCaps() {
+  if (!active()) return;
+
+  const rows = tbody.querySelectorAll(
+    "tr[data-sm-contract]"
+  );
+
+  for (const row of rows) {
+    const cell = row.querySelector(
+      ".sm-live-mc"
+    );
+
+    if (!cell) continue;
+
+    const entry = smMarket.get(
+      row.dataset.smContract
+    );
+
+    if (Number.isFinite(entry?.value)) {
+      cell.textContent = money(
+        entry.value
+      );
+    }
+
+    const stale =
+      !Number.isFinite(entry?.value) ||
+      entry.failed ||
+      Date.now() - entry.time > 60000;
+
+    cell.classList.toggle(
+      "sm-mc-stale",
+      Boolean(stale)
+    );
+
+    cell.title = Number.isFinite(
+      entry?.value
+    )
+      ? (
+          stale
+            ? "Last known MC · "
+            : "MC updated · "
+        ) +
+        new Date(
+          entry.time
+        ).toLocaleTimeString()
+      : (
+          "MC from the Smart Money snapshot; " +
+          "live update pending."
+        );
+  }
+}
+
+async function smRefreshMarketCaps(
+  force = false
+) {
+  if (
+    !active() ||
+    document.hidden
+  ) {
+    return;
+  }
+
+  const version = smMarketVersion;
+
+  const rows = tbody.querySelectorAll(
+    'tr[data-sm-solana="true"]'
+  );
+
+  const contracts = [
+    ...new Set(
+      [...rows].map(row => {
+        return row.dataset.smContract;
+      })
+    )
+  ].filter(contract => {
+    return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+      .test(contract);
+  });
+
+  await Promise.allSettled(
+    contracts.map(async contract => {
+      let entry = smMarket.get(contract);
+
+      if (
+        smMarketJobs.has(contract) ||
+        (
+          !force &&
+          entry &&
+          Date.now() - entry.attempt < 25000
+        )
+      ) {
+        return;
+      }
+
+      if (!entry) {
+        if (smMarket.size >= 200) {
+          smMarket.delete(
+            smMarket.keys().next().value
+          );
+        }
+
+        entry = {};
+
+        smMarket.set(
+          contract,
+          entry
+        );
+      }
+
+      entry.attempt = Date.now();
+
+      const controller =
+        new AbortController();
+
+      smMarketJobs.set(
+        contract,
+        controller
+      );
+
+      const timer = setTimeout(
+        () => controller.abort(),
+        28000
+      );
+
+      try {
+        const url = new URL(
+          "/api/board-market",
+          API
+        );
+
+        url.searchParams.set(
+          "ca",
+          contract
+        );
+
+        const response = await fetch(url, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            "Market unavailable"
+          );
+        }
+
+        const result =
+          await response.json();
+
+        if (
+          version !== smMarketVersion ||
+          !active()
+        ) {
+          return;
+        }
+
+        const time = Date.parse(
+          result.timestamp || ""
+        );
+
+        if (
+          result.success !== true ||
+          result.contractAddress !== contract ||
+          typeof result.marketCapUsd !== "number" ||
+          !Number.isFinite(result.marketCapUsd) ||
+          result.marketCapUsd < 0 ||
+          !Number.isFinite(time) ||
+          Date.now() - time > 60000 ||
+          time > Date.now() + 10000
+        ) {
+          throw new Error(
+            "Invalid market response"
+          );
+        }
+
+        entry.value =
+          result.marketCapUsd;
+
+        entry.time = time;
+        entry.failed = false;
+
+      } catch {
+        if (
+          version === smMarketVersion
+        ) {
+          entry.failed = true;
+        }
+
+      } finally {
+        clearTimeout(timer);
+
+        if (
+          smMarketJobs.get(contract) ===
+          controller
+        ) {
+          smMarketJobs.delete(contract);
+        }
+
+        if (
+          version === smMarketVersion
+        ) {
+          smPaintMarketCaps();
+        }
+      }
+    })
+  );
+}
+
+function smResetMarket() {
+  smMarketVersion++;
+
+  for (
+    const controller
+    of smMarketJobs.values()
+  ) {
+    controller.abort();
+  }
+
+  smMarketJobs.clear();
+  smMarket.clear();
+}
+
+function smSyncDesign() {
+  root.classList.toggle(
+    "ri-smart-v2-open",
+    active()
+  );
+
+  if (!active()) {
+    smResetMarket();
+    smTotals([]);
+
+  } else {
+    void smRefreshMarketCaps();
+  }
+}
+
+new MutationObserver(() => {
+  if (!tbody.children.length) {
+    smTotals([]);
+  }
+}).observe(tbody, {
+  childList: true
+});
+
+document.addEventListener(
+  "ri:account-change",
+  () => {
+    smResetMarket();
+    smTotals([]);
+    smSyncDesign();
+  }
+);
+
+document.addEventListener(
+  "ri:premium-change",
+  smSyncDesign
+);
+
+document.addEventListener(
+  "visibilitychange",
+  smSyncDesign
+);
+
+setInterval(() => {
+  smPaintMarketCaps();
+
+  void smRefreshMarketCaps();
+}, 30000);
+
+smSyncDesign();
+
     function render(data) {
       imageQueue.length = 0;
 
@@ -1772,13 +2611,17 @@ if (label) {
           data.measured_at
         ).toLocaleTimeString();
 
-      message.textContent =
-        data.stale
-          ? "Refresh unavailable. Showing an older snapshot."
-          : items.length
-            ? ""
-            : "No tokens with known market cap of at least $10,000 for this period.";
-    }
+message.textContent =
+  data.stale
+    ? "Refresh unavailable. Showing an older snapshot."
+    : items.length
+      ? ""
+      : "No tokens with known market cap of at least $10,000 for this period.";
+
+smPaintDesign(items);
+
+void smRefreshMarketCaps();
+}
 
     async function load() {
       if (
@@ -2061,8 +2904,15 @@ if (label) {
       };
     });
 
-    refresh.onclick =
-      () => void load();
+refresh.onclick = () => {
+  cache.delete(period);
+
+  retryAt = 0;
+
+  void load();
+
+  void smRefreshMarketCaps(true);
+};
 
     document.addEventListener(
       "ri:premium-change",
