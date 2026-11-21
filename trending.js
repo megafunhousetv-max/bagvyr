@@ -25,6 +25,254 @@
     API
   ).href;
 
+const riBoardLive = new Map();
+const riBoardLiveJobs = new Map();
+
+function riPaintBoardMarket() {
+  const rows = root.querySelectorAll(
+    "tr[data-ri-market-contract]"
+  );
+
+  for (const row of rows) {
+    const contract =
+      row.dataset.riMarketContract;
+
+    const snapshot =
+      riBoardLive.get(contract);
+
+    if (!snapshot) continue;
+
+    const start = Number(
+      row.dataset.riMarketStart
+    );
+
+    const keys = [
+      "marketCapUsd",
+      "liquidityUsd",
+      "volume24hUsd"
+    ];
+
+    keys.forEach((key, index) => {
+      const cell =
+        row.children[start + index];
+
+      const field = snapshot[key];
+
+      if (!cell) return;
+
+      if (field) {
+        cell.textContent = money(
+          field.value
+        );
+      }
+
+      const stale =
+        !field ||
+        Date.now() - field.time > 60000 ||
+        snapshot.failed;
+
+      cell.classList.toggle(
+        "ri-market-stale",
+        Boolean(stale)
+      );
+
+      cell.title = field
+        ? (
+            stale
+              ? "Last known value · "
+              : "Updated · "
+          ) +
+          new Date(
+            field.time
+          ).toLocaleTimeString()
+        : (
+            "Current value unavailable; " +
+            "showing saved data."
+          );
+    });
+
+    const mc = snapshot.marketCapUsd;
+
+    const finished = Boolean(
+      mc && mc.value < 5000
+    );
+
+    row.classList.toggle(
+      "ri-token-finished",
+      finished
+    );
+
+    let badge = row.querySelector(
+      ".ri-finished-badge"
+    );
+
+    if (finished && !badge) {
+      badge = element(
+        "span",
+        "ri-finished-badge",
+        "Finished · MC below $5K"
+      );
+
+      row.querySelector(
+        ".ri-trend-token-details"
+      )?.append(badge);
+    }
+
+    if (!finished) {
+      badge?.remove();
+    }
+
+    if (badge) {
+      badge.title =
+        "Based on the last available market cap.";
+    }
+  }
+}
+
+async function riRefreshBoardMarket() {
+  if (
+    document.hidden ||
+    location.hash !== "#trending"
+  ) {
+    return;
+  }
+
+  const rows = root.querySelectorAll(
+    "tr[data-ri-market-contract]"
+  );
+
+  const contracts = [
+    ...new Set(
+      [...rows].map(row => {
+        return row.dataset.riMarketContract;
+      })
+    )
+  ].filter(validContract);
+
+  await Promise.allSettled(
+    contracts.map(async contract => {
+      const previous =
+        riBoardLive.get(contract);
+
+      if (
+        riBoardLiveJobs.has(contract) ||
+        (
+          previous &&
+          Date.now() - previous.attempt < 25000
+        )
+      ) {
+        return;
+      }
+
+      if (
+        riBoardLive.size >= 300 &&
+        !previous
+      ) {
+        riBoardLive.delete(
+          riBoardLive.keys().next().value
+        );
+      }
+
+      const snapshot = previous || {};
+
+      snapshot.attempt = Date.now();
+
+      riBoardLive.set(
+        contract,
+        snapshot
+      );
+
+      const job = (async () => {
+        try {
+          const url = new URL(
+            "/api/board-market",
+            API
+          );
+
+          url.searchParams.set(
+            "ca",
+            contract
+          );
+
+          const response = await fetch(url, {
+            cache: "no-store",
+
+            signal:
+              AbortSignal.timeout(28000)
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              "Market unavailable"
+            );
+          }
+
+          const result =
+            await response.json();
+
+          const time = Date.parse(
+            result.timestamp || ""
+          );
+
+          if (
+            result.success !== true ||
+            result.contractAddress !== contract ||
+            !Number.isFinite(time) ||
+            Date.now() - time > 60000 ||
+            time > Date.now() + 10000
+          ) {
+            throw new Error(
+              "Invalid market response"
+            );
+          }
+
+          let received = 0;
+
+          for (const key of [
+            "marketCapUsd",
+            "liquidityUsd",
+            "volume24hUsd"
+          ]) {
+            const value = result[key];
+
+            if (
+              typeof value === "number" &&
+              Number.isFinite(value) &&
+              value >= 0
+            ) {
+              snapshot[key] = {
+                value,
+                time
+              };
+
+              received++;
+            }
+          }
+
+          snapshot.failed =
+            received === 0;
+
+        } catch {
+          snapshot.failed = true;
+        }
+      })();
+
+      riBoardLiveJobs.set(
+        contract,
+        job
+      );
+
+      try {
+        await job;
+
+      } finally {
+        riBoardLiveJobs.delete(contract);
+
+        riPaintBoardMarket();
+      }
+    })
+  );
+}
 
   function shuffleInspected(items) {
     const shuffled = [...items];
@@ -859,28 +1107,36 @@ function normalizeTrendingImage(value) {
     return null;
   }
 
-  let url = value.trim();
+  let source = value.trim();
 
-  if (url.startsWith("ipfs://")) {
-    url =
-      "https://ipfs.io/ipfs/" +
-      url.slice(7).replace(/^ipfs\//, "");
+  if (source.startsWith("ipfs://")) {
+    let path = source.slice(7);
 
-  } else if (url.startsWith("ar://")) {
-    url =
+    if (path.startsWith("ipfs/")) {
+      path = path.slice(5);
+    }
+
+    source = "https://ipfs.io/ipfs/" + path;
+
+  } else if (source.startsWith("ar://")) {
+    source =
       "https://arweave.net/" +
-      url.slice(5);
+      source.slice(5);
+  }
+
+  if (source.startsWith("//")) {
+    source = "https:" + source;
   }
 
   try {
-    const parsed = new URL(url);
+    const url = new URL(source);
 
     return (
-      parsed.protocol === "https:" &&
-      !parsed.username &&
-      !parsed.password
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password
     )
-      ? parsed.href
+      ? url.href
       : null;
 
   } catch {
@@ -919,104 +1175,105 @@ function queueTrendingImageRequest(task) {
   });
 }
 
-async function getTrendingScanImages(contract) {
-  if (
-    !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(
-      contract || ""
-    )
-  ) {
+async function getTrendingScanImages(
+  contract,
+  fallback = ""
+) {
+  if (!validContract(contract)) {
     return [];
   }
 
-  if (trendingImageCache.has(contract)) {
-    return trendingImageCache.get(contract);
+  const key =
+    contract + ":" + fallback;
+
+  const cached =
+    trendingImageCache.get(key);
+
+  if (
+    cached &&
+    cached.expires > Date.now()
+  ) {
+    return cached.job;
   }
 
-  const request = queueTrendingImageRequest(
+  const entry = {
+    expires: Date.now() + 30000,
+    job: null
+  };
+
+  entry.job = queueTrendingImageRequest(
     async () => {
-      const controller = new AbortController();
-
-      const timeout = setTimeout(
-        () => controller.abort(),
-        25000
-      );
-
       try {
         const url = new URL(
-          API,
-          window.location.href
+          "/api/token-images",
+          API
         );
 
-        url.pathname = "/api/token-images";
-        url.search = "";
-        url.hash = "";
-
-        url.searchParams.set("ca", contract);
-
-        const response = await fetch(
-          url.toString(),
-          {
-            headers: {
-              Accept: "application/json"
-            },
-            signal: controller.signal
-          }
+        url.searchParams.set(
+          "ca",
+          contract
         );
 
-        if (!response.ok) {
-          throw new Error(
-            "Token images HTTP " + response.status
+        if (fallback) {
+          url.searchParams.set(
+            "fallback",
+            fallback
           );
         }
 
-        const result = await response.json();
+        const response = await fetch(url, {
+          signal:
+            AbortSignal.timeout(25000)
+        });
+
+        if (!response.ok) {
+          return [];
+        }
+
+        const result =
+          await response.json();
 
         if (
-          result?.success !== true ||
+          result.success !== true ||
           result.contract !== contract ||
           !Array.isArray(result.images)
         ) {
-          throw new Error(
-            "Invalid token image response."
-          );
+          return [];
         }
 
-        return [
+        const images = [
           ...new Set(
             result.images.flatMap(
               trendingImageVariants
             )
           )
-        ].slice(0, 36);
+        ];
 
-      } finally {
-        clearTimeout(timeout);
+        if (images.length) {
+          entry.expires =
+            Date.now() + 3600000;
+        }
+
+        return images;
+
+      } catch {
+        return [];
       }
     }
   );
 
-  trendingImageCache.set(contract, request);
-
-  try {
-    const images = await request;
-
-    if (!images.length) {
-      trendingImageCache.delete(contract);
-    }
-
-    return images;
-
-  } catch (error) {
-    trendingImageCache.delete(contract);
-
-    console.warn(
-      "Trending image unavailable:",
-      contract,
-      error
+  if (trendingImageCache.size >= 300) {
+    trendingImageCache.delete(
+      trendingImageCache.keys().next().value
     );
-
-    return [];
   }
+
+  trendingImageCache.set(
+    key,
+    entry
+  );
+
+  return entry.job;
 }
 
 function trendingImageVariants(value) {
@@ -1148,143 +1405,170 @@ async function getTrendingDexImages(contract) {
   }
 }
 
+const riGoodTrendingImages = new Map();
+
 function tokenIcon(item) {
   const container = element(
     "span",
     "ri-trend-icon"
   );
 
-  const letter = String(
-    item.symbol || item.name || "?"
+  container.textContent = String(
+    item.symbol ||
+    item.name ||
+    "?"
   )
     .slice(0, 1)
     .toUpperCase();
 
-  container.textContent = letter;
+  void (async () => {
+    // Počkáme na vloženie riadka do stránky.
+    await Promise.resolve();
 
-  const candidates = [];
-  const tried = new Set();
-
-let fallbackRequested = false;
-let dexRequested = false;
-
-  const savedImage = normalizeTrendingImage(
-    item.image_url
-  );
-
-if (savedImage) {
-  candidates.push(
-    ...trendingImageVariants(savedImage)
-  );
-}
-
-  async function loadNext() {
-    let url = candidates.shift();
-
-    while (url && tried.has(url)) {
-      url = candidates.shift();
-    }
-
-if (!url && !dexRequested && item.contract) {
-  dexRequested = true;
-
-  const dexImages = await getTrendingDexImages(
-    item.contract
-  );
-
-  candidates.push(
-    ...dexImages.filter(imageUrl => !tried.has(imageUrl))
-  );
-
-  if (savedImage) {
-    candidates.push(
-      ...trendingImageVariants(savedImage).filter(
-        imageUrl => !tried.has(imageUrl)
-      )
-    );
-  }
-
-  return loadNext();
-}
-
-    if (
-      !url &&
-      !fallbackRequested &&
-      item.contract
-    ) {
-      fallbackRequested = true;
-
-      const images =
-        await getTrendingScanImages(
-          item.contract
-        );
-
-      candidates.push(
-        ...images.filter(
-          imageUrl => !tried.has(imageUrl)
-        )
+    const cached =
+      riGoodTrendingImages.get(
+        item.contract
       );
 
-      return loadNext();
-    }
+    const initial = [
+      cached &&
+      cached.expires > Date.now()
+        ? cached.url
+        : null,
 
-    if (!url) {
-      container.textContent = letter;
-      return;
-    }
+      item.image_url
+    ].flatMap(trendingImageVariants);
 
-    tried.add(url);
+    const sources = [
+      () => initial,
 
-    const image = new Image();
+      () => getTrendingDexImages(
+        item.contract
+      ),
 
-    image.alt = "";
-    image.decoding = "async";
+      () => getTrendingScanImages(
+        item.contract
+      ),
 
-    image.style.cssText =
-      "display:block;" +
-      "width:100%;" +
-      "height:100%;" +
-      "object-fit:cover;" +
-      "border-radius:inherit;";
+      () => getTrendingScanImages(
+        item.contract,
+        "binance"
+      ),
 
-    let finished = false;
-    let timeout;
+      () => getTrendingScanImages(
+        item.contract,
+        "jupiter"
+      )
+    ];
 
-    function finish(success) {
-      if (finished) return;
+    const tried = new Set();
 
-      finished = true;
+    for (const source of sources) {
+      if (!container.isConnected) {
+        return;
+      }
 
-      clearTimeout(timeout);
+      for (const url of await source()) {
+        if (!container.isConnected) {
+          return;
+        }
 
-      image.onload = null;
-      image.onerror = null;
+        if (tried.has(url)) {
+          continue;
+        }
 
-      if (success) {
+        tried.add(url);
+
+        const image = await new Promise(
+          resolve => {
+            const img = new Image();
+
+            img.alt = "";
+            img.decoding = "async";
+
+            img.referrerPolicy =
+              "no-referrer";
+
+            img.style.cssText =
+              "display:block;" +
+              "width:100%;" +
+              "height:100%;" +
+              "object-fit:cover;" +
+              "border-radius:inherit;";
+
+            let done = false;
+
+            const finish = ok => {
+              if (done) return;
+
+              done = true;
+
+              clearTimeout(timer);
+
+              img.onload = null;
+              img.onerror = null;
+
+              if (!ok) {
+                img.removeAttribute("src");
+              }
+
+              resolve(ok ? img : null);
+            };
+
+            const timer = setTimeout(
+              () => finish(false),
+              6000
+            );
+
+            img.onload = () => {
+              finish(
+                img.naturalWidth > 0
+              );
+            };
+
+            img.onerror = () => {
+              finish(false);
+            };
+
+            img.src = url;
+          }
+        );
+
+        if (!container.isConnected) {
+          return;
+        }
+
+        if (!image) {
+          continue;
+        }
+
         container.replaceChildren(image);
-      } else {
-        image.removeAttribute("src");
-        void loadNext();
+
+        if (
+          riGoodTrendingImages.size >= 300
+        ) {
+          riGoodTrendingImages.delete(
+            riGoodTrendingImages
+              .keys()
+              .next()
+              .value
+          );
+        }
+
+        riGoodTrendingImages.set(
+          item.contract,
+          {
+            url,
+
+            expires:
+              Date.now() + 900000
+          }
+        );
+
+        return;
       }
     }
-
-    image.onload = () => {
-      finish(image.naturalWidth > 0);
-    };
-
-    image.onerror = () => {
-      finish(false);
-    };
-
-    timeout = setTimeout(
-      () => finish(false),
-      8000
-    );
-
-    image.src = url;
-  }
-
-  void loadNext();
+  })().catch(() => {});
 
   return container;
 }
@@ -2010,6 +2294,11 @@ function riTrendingAllowed(item) {
 }
 
   function render() {
+    queueMicrotask(() => {
+  riPaintBoardMarket();
+
+  void riRefreshBoardMarket();
+});
         root.dataset.riActiveBoard = activeBoard;
     root.replaceChildren();
 
@@ -2178,8 +2467,11 @@ for (const [board, label] of [
 
     const body = element("tbody");
 
-    items.forEach((item, index) => {
-  const row = element("tr");
+items.forEach((item, index) => {
+const row = element("tr");
+
+row.dataset.riMarketContract = item.contract;
+row.dataset.riMarketStart = "2";
 
   row.classList.toggle(
     "ri-trend-featured",
@@ -2294,6 +2586,28 @@ for (const [board, label] of [
       loading = false;
     }
   }
+
+  setInterval(() => {
+  void riRefreshBoardMarket();
+}, 30000);
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (!document.hidden) {
+      void riRefreshBoardMarket();
+    }
+  }
+);
+
+window.addEventListener(
+  "hashchange",
+  () => {
+    if (location.hash === "#trending") {
+      void riRefreshBoardMarket();
+    }
+  }
+);
 
   render();
   refresh();
