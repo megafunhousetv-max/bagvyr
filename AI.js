@@ -749,7 +749,166 @@ function renderHistory() {
   }
 }
 
-function bubble(role, text, sources) {
+const riiAnswerStyle = document.createElement("style");
+
+riiAnswerStyle.textContent = `
+.rii-message {
+  white-space: normal;
+  line-height: 1.65;
+}
+
+.rii-answer p {
+  margin: 0 0 12px;
+}
+
+.rii-answer p:last-child {
+  margin-bottom: 0;
+}
+
+.rii-answer h4 {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 750;
+  color: #34e9b8;
+}
+
+.rii-answer h4:first-child {
+  margin-top: 0;
+}
+
+.rii-answer ul,
+.rii-answer ol {
+  margin: 8px 0 16px;
+  padding-left: 22px;
+}
+
+.rii-answer li {
+  padding-left: 3px;
+  margin: 7px 0;
+}
+
+.rii-answer strong {
+  font-weight: 750;
+  color: #effff7;
+}
+
+.rii-user .rii-answer {
+  white-space: pre-wrap;
+}
+`;
+
+document.head.append(riiAnswerStyle);
+
+function riiInline(target, text) {
+  const pattern = /\*\*([^*\n]+)\*\*/g;
+
+  let cursor = 0;
+
+  for (const match of text.matchAll(pattern)) {
+    target.append(
+      document.createTextNode(
+        text.slice(cursor, match.index)
+      )
+    );
+
+    const strong = document.createElement("strong");
+
+    strong.textContent = match[1];
+
+    target.append(strong);
+
+    cursor = match.index + match[0].length;
+  }
+
+  target.append(
+    document.createTextNode(text.slice(cursor))
+  );
+}
+
+function riiAnswer(target, text) {
+  // Skryje aj poznámky so zdrojmi zo starých chatov.
+  const clean = String(text)
+    .replace(/\r/g, "")
+    .replace(
+      /(?:^|\n)\s*\*{0,2}(?:sources?|references?|data sources?)\s*:[\s\S]*$/i,
+      ""
+    )
+    .trim();
+
+  let paragraph = [];
+  let list = null;
+
+  const flush = () => {
+    if (!paragraph.length) return;
+
+    const element = document.createElement("p");
+
+    riiInline(element, paragraph.join(" "));
+
+    target.append(element);
+
+    paragraph = [];
+  };
+
+  for (const raw of clean.split("\n")) {
+    const line = raw.trim();
+
+    if (!line) {
+      flush();
+      list = null;
+      continue;
+    }
+
+    const bullet = /^[-*•]\s+(.+)$/.exec(line);
+    const numbered = /^\d+[.)]\s+(.+)$/.exec(line);
+
+    if (bullet || numbered) {
+      flush();
+
+      const tag = bullet ? "UL" : "OL";
+
+      if (!list || list.tagName !== tag) {
+        list = document.createElement(
+          tag.toLowerCase()
+        );
+
+        target.append(list);
+      }
+
+      const item = document.createElement("li");
+
+      riiInline(item, (bullet || numbered)[1]);
+
+      list.append(item);
+
+      continue;
+    }
+
+    list = null;
+
+    const heading =
+      /^#{1,4}\s+(.+)$/.exec(line) ||
+      /^\*\*([^*]+)\*\*:?$/.exec(line);
+
+    if (heading) {
+      flush();
+
+      const element = document.createElement("h4");
+
+      riiInline(element, heading[1]);
+
+      target.append(element);
+
+      continue;
+    }
+
+    paragraph.push(line);
+  }
+
+  flush();
+}
+
+function bubble(role, text) {
   const message = document.createElement("div");
 
   message.className = "rii-message" + (
@@ -762,30 +921,18 @@ function bubble(role, text, sources) {
 
   const content = document.createElement("div");
 
-  content.textContent = String(text);
+  content.className = "rii-answer";
+
+  if (role === "user") {
+    content.textContent = String(text);
+  } else {
+    riiAnswer(content, text);
+  }
 
   message.append(label, content);
 
-  if (sources?.length) {
-    const sourceLine = document.createElement("div");
-
-    sourceLine.className = "rii-sources";
-
-    sourceLine.textContent = "Sources: " + sources.map(
-      item =>
-        item.tool.replaceAll("_", " ") +
-        " · " +
-        (
-          item.data_time ||
-          item.retrieved_at ||
-          "time unavailable"
-        )
-    ).join(" | ");
-
-    message.append(sourceLine);
-  }
-
   log.append(message);
+
   log.scrollTop = log.scrollHeight;
 }
 
