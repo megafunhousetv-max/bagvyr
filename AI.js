@@ -151,8 +151,11 @@ style.textContent = `
   cursor:pointer;font:700 14px system-ui
 }
 .rii-mask{
-  position:fixed;inset:0;z-index:2500;
-  background:#0008;backdrop-filter:blur(4px)
+  position:fixed;
+  inset:0;
+  z-index:11000;
+  background:#0008;
+  backdrop-filter:blur(4px);
 }
 .rii-panel{
   position:absolute;right:18px;top:88px;bottom:20px;
@@ -1074,17 +1077,19 @@ function draw() {
       <div class="rii-suggestions"></div>
     `;
 
-    const suggestions = selected.context
-      ? [
-          "What are the main risks of this token?",
-          "Check market cap and liquidity.",
-          "Explain the holder concentration."
-        ]
-      : [
-          "What can RugInspect analyze?",
-          "How does the risk score work?",
-          "What does Premium include?"
-        ];
+const suggestions = selected.context
+  ? [
+      "What are the main risks of this token?",
+      "Check market cap and liquidity.",
+      "Explain the holder concentration.",
+      "Check X: is the team still posting and what are people saying?"
+    ]
+  : [
+      "What can RugInspect analyze?",
+      "How does the risk score work?",
+      "What does Premium include?",
+      "I want to check a token's activity on X. What do you need?"
+    ];
 
     for (const text of suggestions) {
       const button = document.createElement("button");
