@@ -1612,45 +1612,119 @@ function studio() {
   ).forEach(item => item.disabled = true);
 }
 
-async function loadStudio() {
-  const root = document.getElementById(
-    "riiSection"
-  );
+function renderRiiUsage(root, usage) {
+  let section = $(".rii-usage", root);
 
+  if (!section) {
+    section = document.createElement("section");
+    section.className = "rii-usage";
+    section.setAttribute("aria-label", "RII usage");
+    section.style.cssText =
+      "margin-top:24px;padding-top:18px;border-top:1px solid var(--ri-line)";
+
+    section.innerHTML = `
+      <h3 style="margin:0 0 12px">RII usage</h3>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;align-items:start">
+        <div class="rii-rule">
+          <span>Total RII users</span>
+          <strong data-rii-total style="display:block;font-size:28px;color:var(--ri-a)">—</strong>
+        </div>
+
+        <details class="rii-rule">
+          <summary style="cursor:pointer">
+            Today
+            <strong data-rii-today style="display:block;font-size:28px;color:var(--ri-a)">—</strong>
+            <small>Last 20 days</small>
+          </summary>
+
+          <table style="width:100%;margin-top:12px">
+            <thead>
+              <tr>
+                <th scope="col" style="text-align:left">Date</th>
+                <th scope="col" style="text-align:right">Users</th>
+              </tr>
+            </thead>
+            <tbody data-rii-days></tbody>
+          </table>
+        </details>
+      </div>
+
+      <p class="rii-note" data-rii-usage-status role="status"></p>
+    `;
+
+    $(".rii-studio", root).append(section);
+  }
+
+  const total = $("[data-rii-total]", section);
+  const today = $("[data-rii-today]", section);
+  const rows = $("[data-rii-days]", section);
+  const message = $("[data-rii-usage-status]", section);
+
+  if (!Number.isSafeInteger(usage?.total_users) || usage.daily?.length !== 20) {
+    total.textContent = "—";
+    today.textContent = "—";
+    rows.replaceChildren();
+    message.textContent = "Usage statistics unavailable. Use Reload to try again.";
+    return;
+  }
+
+  const number = new Intl.NumberFormat("en");
+  const date = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC"
+  });
+
+  total.textContent = number.format(usage.total_users);
+  today.textContent = number.format(usage.daily[0].users);
+
+  rows.replaceChildren(...usage.daily.map(day => {
+    const row = document.createElement("tr");
+    row.insertCell().textContent = date.format(new Date(day.date + "T00:00:00Z"));
+
+    const count = row.insertCell();
+    count.textContent = number.format(day.users);
+    count.style.textAlign = "right";
+
+    return row;
+  }));
+
+  message.textContent = "Europe/Bratislava. Earlier days may be incomplete.";
+}
+
+async function loadStudio() {
+  const root = document.getElementById("riiSection");
   if (!root) return;
 
   const version = epoch;
 
   try {
     const result = await api("/admin");
-
     if (version !== epoch) return;
 
     const form = $("#rii-settings", root);
     const settings = result.settings;
 
     for (const key of ["guest", "user", "premium"]) {
-      form.elements[key + "-enabled"].checked =
-        settings[key].enabled;
-
-      form.elements[key + "-limit"].value =
-        settings[key].limit;
+      form.elements[key + "-enabled"].checked = settings[key].enabled;
+      form.elements[key + "-limit"].value = settings[key].limit;
     }
 
     form.elements.history.value = settings.history;
+    form.querySelectorAll("input,button[type=submit]")
+      .forEach(item => item.disabled = false);
 
-    form.querySelectorAll(
-      "input,button[type=submit]"
-    ).forEach(item => item.disabled = false);
+    $(".rii-studio-message", root).textContent = result.configured
+      ? "RII backend connected."
+      : "Add OPENAI_API_KEY and RII_MODEL in Cloudflare to activate answers.";
 
-    $(".rii-studio-message", root).textContent =
-      result.configured
-        ? "RII backend connected."
-        : "Add OPENAI_API_KEY and RII_MODEL in Cloudflare to activate answers.";
+    renderRiiUsage(root, result.usage);
   } catch (err) {
     if (version === epoch) {
-      $(".rii-studio-message", root).textContent =
-        err.message;
+      $(".rii-studio-message", root).textContent = err.message;
+      renderRiiUsage(root, null);
     }
   }
 }
@@ -1659,14 +1733,11 @@ if (admin) {
   studio();
 }
 
-document.addEventListener(
-  "bagvyr:admin-section",
-  event => {
-    if (event.detail?.section === "rii") {
-      loadStudio();
-    }
+document.addEventListener("bagvyr:admin-section", event => {
+  if (event.detail?.section === "rii") {
+    loadStudio();
   }
-);
+});
 
 window.addEventListener("focus", () => {
   bindAuth();
