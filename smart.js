@@ -797,6 +797,45 @@ style.textContent += `
   }
 `;
 
+style.textContent += `
+  ${smScope} .sm-summary-icon {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+
+    border: 1px solid rgba(55, 237, 177, .28);
+    border-radius: 14px;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(34, 204, 145, .16),
+        rgba(5, 42, 28, .45)
+      );
+
+    color: #66f8c8;
+
+    box-shadow:
+      inset 0 1px 0 rgba(147, 255, 212, .06),
+      0 5px 16px rgba(0, 0, 0, .15);
+  }
+
+  ${smScope} .sm-summary-icon svg {
+    display: block;
+    width: 25px;
+    height: 25px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+`;
+
     document.head.append(style);
 
     panel.innerHTML = `
@@ -1875,7 +1914,13 @@ smSummary.innerHTML = `
     <span
       class="sm-summary-icon"
       aria-hidden="true"
-    >◇</span>
+    >
+      <svg viewBox="0 0 24 24">
+        <path d="m3 7 9-4 9 4-9 4Z"/>
+        <path d="m3 12 9 4 9-4"/>
+        <path d="m3 17 9 4 9-4"/>
+      </svg>
+    </span>
 
     <div>
       <small>Tokens in view</small>
@@ -1887,7 +1932,14 @@ smSummary.innerHTML = `
     <span
       class="sm-summary-icon"
       aria-hidden="true"
-    >↗</span>
+    >
+      <svg viewBox="0 0 24 24">
+        <path d="M5 8h14l1 12H4L5 8Z"/>
+        <path d="M8 8V6a4 4 0 0 1 8 0v2"/>
+        <path d="M12 12v5"/>
+        <path d="M9.5 14.5h5"/>
+      </svg>
+    </span>
 
     <div>
       <small>Buy trades</small>
@@ -1899,7 +1951,15 @@ smSummary.innerHTML = `
     <span
       class="sm-summary-icon"
       aria-hidden="true"
-    >⇄</span>
+    >
+      <svg viewBox="0 0 24 24">
+        <path d="M4 8V6a2 2 0 0 1 2-2h12"/>
+        <path d="M4 8h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/>
+        <path d="M21 12h-5v5h5"/>
+        <path d="M2 12h9"/>
+        <path d="m8 9 3 3-3 3"/>
+      </svg>
+    </span>
 
     <div>
       <small>Net inflow</small>
