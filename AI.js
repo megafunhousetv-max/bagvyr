@@ -1764,4 +1764,11 @@ draw();
 bindAuth();
 accountChanged();
 
+if (
+  !admin &&
+  new URL(location.href).searchParams.get("ai") === "1"
+) {
+  open("full").catch(console.error);
+}
+
 })();
