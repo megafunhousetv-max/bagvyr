@@ -9,14 +9,11 @@
   const contexts = new WeakMap();
 
   const valid = value =>
-    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(
-      value || ""
-    );
+    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value || "");
 
   const escape = value =>
     String(value ?? "").replace(
       /[&<>"']/g,
-
       character => ({
         "&": "&amp;",
         "<": "&lt;",
@@ -40,8 +37,7 @@
     </svg>
   `;
 
-  const style =
-    document.createElement("style");
+  const style = document.createElement("style");
 
   style.textContent = `
     .dh {
@@ -262,7 +258,6 @@
 
   document.head.append(style);
 
-
   function client() {
     return (
       window.BAGVYR_ADMIN_CLIENT ||
@@ -270,81 +265,61 @@
     );
   }
 
-
-  async function request(
-    path,
-    body
-  ) {
+  async function request(path, body) {
     const session = (
       await client()?.auth.getSession()
     )?.data?.session;
 
-    const response = await fetch(
-      API + path,
+    const response = await fetch(API + path, {
+      method: body === undefined ? "GET" : "POST",
 
-      {
-        method:
-          body === undefined
-            ? "GET"
-            : "POST",
+      cache: "no-store",
 
-        cache:
-          "no-store",
+      headers: {
+        "Content-Type": "application/json",
 
-        headers: {
-          "Content-Type":
-            "application/json",
+        ...(session?.access_token
+          ? {
+              Authorization:
+                "Bearer " + session.access_token
+            }
+          : {})
+      },
 
-          ...(
-            session?.access_token
-              ? {
-                  Authorization:
-                    "Bearer " +
-                    session.access_token
-                }
-              : {}
-          )
-        },
+      ...(body === undefined
+        ? {}
+        : {
+            body: JSON.stringify(body)
+          }),
 
-        ...(
-          body === undefined
-            ? {}
-            : {
-                body:
-                  JSON.stringify(body)
-              }
-        ),
+      signal: AbortSignal.timeout(115000)
+    });
 
-        signal:
-          AbortSignal.timeout(115000)
-      }
-    );
-
-    const data =
-      await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-        "Request failed."
+        data.error || "Request failed."
       );
     }
 
     return data;
   }
 
-
   function draw(box, context) {
     const data = context.data;
+    const done = data?.phase === "done";
 
-    const done =
-      data?.phase === "done";
+    const previousCount = done
+      ? data.items.filter(
+          item => item.mint !== context.mint
+        ).length
+      : 0;
 
     const money = value =>
       typeof value === "number"
         ? "$" + value.toLocaleString(
             "en-US",
-
             {
               maximumFractionDigits: 0
             }
@@ -377,8 +352,7 @@
           class="dh-primary"
           data-start
           ${
-            context.busy ||
-            !valid(context.mint)
+            context.busy || !valid(context.mint)
               ? "disabled"
               : ""
           }
@@ -401,7 +375,7 @@
             <div class="dh-grid">
               <div class="dh-metric">
                 <div class="dh-label">
-                  TOKENS LAUNCHED
+                  LAUNCHES FOUND
                 </div>
 
                 <div class="dh-value">
@@ -425,23 +399,46 @@
                 <div class="dh-value dh-amber">
                   ${
                     data.percentage === null
-                      ? "—"
+                      ? `
+                        <span style="
+                          display:block;
+                          font-size:20px;
+                          line-height:1.4;
+                        ">
+                          ${
+                            previousCount === 0
+                              ? "No previous launches found"
+                              : "Market cap unavailable"
+                          }
+                        </span>
+                      `
                       : data.percentage + "%"
                   }
                 </div>
 
                 <small>
-                  ${data.low} of ${data.known}
-                  previous tokens with known MC
+                  ${
+                    previousCount === 0
+                      ? "No earlier launches were found in the scanned history."
+                      : data.known === 0
+                        ? "Previous launches were found, but their market caps are unavailable."
+                        : `${data.low} of ${data.known} previous tokens with known MC`
+                  }
                 </small>
 
-                <div class="dh-track">
+                <div
+                  class="dh-track"
+                  ${
+                    data.percentage === null
+                      ? "hidden"
+                      : ""
+                  }
+                >
                   <div
                     class="dh-fill"
                     style="width:${
                       Math.min(
                         100,
-
                         Math.max(
                           0,
                           data.percentage || 0
@@ -452,6 +449,13 @@
                 </div>
               </div>
             </div>
+
+            <p>
+              <small>
+                Based on the last ${data.checked}
+                wallet transactions (maximum 500).
+              </small>
+            </p>
 
             <p>
               Current token excluded from the percentage
@@ -483,8 +487,8 @@
             <div class="dh-list" hidden>
               ${
                 data.items
-                  .filter(item =>
-                    item.mint !== context.mint
+                  .filter(
+                    item => item.mint !== context.mint
                   )
                   .map(item => `
                     <div class="dh-row">
@@ -561,16 +565,13 @@
 
       <p
         class="dh-status ${
-          context.error
-            ? "dh-error"
-            : ""
+          context.error ? "dh-error" : ""
         }"
         role="status"
       >
         ${
           escape(
             context.error ||
-
             (
               context.busy
                 ? "Checking available history. You can leave and resume this scan."
@@ -582,36 +583,24 @@
       </p>
     `;
 
-    box.querySelector(
-      "[data-start]"
-    ).onclick = () =>
-      run(box, context);
+    box.querySelector("[data-start]").onclick =
+      () => run(box, context);
 
-    box.querySelector(
-      "[data-list]"
-    )?.addEventListener(
-      "click",
-
-      event => {
+    box.querySelector("[data-list]")
+      ?.addEventListener("click", event => {
         const list =
           box.querySelector(".dh-list");
 
-        list.hidden =
-          !list.hidden;
+        list.hidden = !list.hidden;
 
         event.currentTarget.textContent =
           list.hidden
             ? "View previous tokens ↓"
             : "Hide previous tokens ↑";
-      }
-    );
+      });
   }
 
-
-  async function run(
-    box,
-    context
-  ) {
+  async function run(box, context) {
     if (context.busy) return;
 
     context.busy = true;
@@ -639,7 +628,7 @@
         }
 
         context.key =
-          "ri-dh:" +
+          "ri-dh:v2:" +
           session.user.id +
           ":" +
           context.mint;
@@ -660,8 +649,7 @@
             23 * 3600000 &&
           !context.data
         ) {
-          context.id =
-            pending.id;
+          context.id = pending.id;
         } else {
           context.id =
             crypto.randomUUID();
@@ -669,25 +657,17 @@
 
         sessionStorage.setItem(
           context.key,
-
           JSON.stringify({
-            id:
-              context.id,
-
-            at:
-              Date.now()
+            id: context.id,
+            at: Date.now()
           })
         );
 
         const data = await request(
           "/start",
-
           {
-            id:
-              context.id,
-
-            mint:
-              context.mint
+            id: context.id,
+            mint: context.mint
           }
         );
 
@@ -702,26 +682,22 @@
       }
 
       /*
-       * Continue at most 25 small pages per click.
+       * Continue at most 250 small pages per click.
        * Resume uses the same scan and credit.
        */
       for (
         let index = 0;
-
-        index < 25 &&
+        index < 250 &&
         context.data?.phase !== "done" &&
         active();
-
         index++
       ) {
         draw(box, context);
 
         const data = await request(
           "/next",
-
           {
-            id:
-              context.id
+            id: context.id
           }
         );
 
@@ -731,10 +707,7 @@
 
         if (data.phase !== "done") {
           await new Promise(resolve => {
-            setTimeout(
-              resolve,
-              800
-            );
+            setTimeout(resolve, 800);
           });
         }
       }
@@ -764,9 +737,7 @@
         context.id = null;
       }
 
-      if (
-        /expired/i.test(context.error)
-      ) {
+      if (/expired/i.test(context.error)) {
         if (context.key) {
           sessionStorage.removeItem(
             context.key
@@ -785,42 +756,24 @@
     }
   }
 
-
   function mount(box, mint) {
     if (!box) return;
 
     const context = {
       mint,
-
-      busy:
-        false,
-
-      id:
-        null,
-
-      data:
-        null,
-
-      error:
-        ""
+      busy: false,
+      id: null,
+      data: null,
+      error: ""
     };
 
-    contexts.set(
-      box,
-      context
-    );
-
-    draw(
-      box,
-      context
-    );
+    contexts.set(box, context);
+    draw(box, context);
   }
-
 
   window.RI_DEV_HISTORY = {
     mount
   };
-
 
   function initAdmin() {
     const section =
@@ -855,7 +808,6 @@
             type="checkbox"
             data-enabled
           >
-
           Enable for Premium users
         </label>
 
@@ -928,9 +880,8 @@
       card.querySelector(selector);
 
     async function load() {
-      query(
-        "[data-status]"
-      ).textContent = "Loading…";
+      query("[data-status]").textContent =
+        "Loading…";
 
       try {
         const data =
@@ -942,119 +893,100 @@
           );
         }
 
-        query(
-          "[data-enabled]"
-        ).checked = data.enabled;
+        query("[data-enabled]").checked =
+          data.enabled;
 
-        query(
-          "[data-limit]"
-        ).value = data.daily_limit;
+        query("[data-limit]").value =
+          data.daily_limit;
 
-        query(
-          "[data-save]"
-        ).disabled = false;
+        query("[data-save]").disabled =
+          false;
 
-        query(
-          "[data-status]"
-        ).textContent =
+        query("[data-status]").textContent =
           "Settings loaded.";
       } catch (error) {
-        query(
-          "[data-status]"
-        ).textContent =
+        query("[data-status]").textContent =
           error.message;
       }
     }
 
-    query(
-      "[data-reload]"
-    ).onclick = load;
+    query("[data-reload]").onclick =
+      load;
 
-    query(
-      "[data-save]"
-    ).onclick = async () => {
-      const button =
-        query("[data-save]");
+    query("[data-save]").onclick =
+      async () => {
+        const button =
+          query("[data-save]");
 
-      button.disabled = true;
+        button.disabled = true;
 
-      try {
-        const input =
-          query("[data-limit]");
+        try {
+          const input =
+            query("[data-limit]");
 
-        if (
-          !input.value.trim() ||
-          !input.checkValidity()
-        ) {
-          throw new Error(
-            "Enter a whole number from 0 to 1000000."
-          );
-        }
+          if (
+            !input.value.trim() ||
+            !input.checkValidity()
+          ) {
+            throw new Error(
+              "Enter a whole number from 0 to 1000000."
+            );
+          }
 
-        await request(
-          "/config",
-
-          {
+          await request("/config", {
             enabled:
-              query(
-                "[data-enabled]"
-              ).checked,
+              query("[data-enabled]")
+                .checked,
 
             daily_limit:
               Number(input.value)
-          }
+          });
+
+          query(
+            "[data-status]"
+          ).textContent =
+            "Saved. New limits apply immediately.";
+        } catch (error) {
+          query(
+            "[data-status]"
+          ).textContent =
+            error.message;
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+    query("[data-preview]").onclick =
+      () => {
+        const mint =
+          query("[data-mint]")
+            .value.trim();
+
+        if (!valid(mint)) {
+          query(
+            "[data-status]"
+          ).textContent =
+            "Enter a valid Solana address.";
+
+          return;
+        }
+
+        mount(
+          query("[data-preview-root]"),
+          mint
         );
-
-        query(
-          "[data-status]"
-        ).textContent =
-          "Saved. New limits apply immediately.";
-      } catch (error) {
-        query(
-          "[data-status]"
-        ).textContent =
-          error.message;
-      } finally {
-        button.disabled = false;
-      }
-    };
-
-    query(
-      "[data-preview]"
-    ).onclick = () => {
-      const mint = query(
-        "[data-mint]"
-      ).value.trim();
-
-      if (!valid(mint)) {
-        query(
-          "[data-status]"
-        ).textContent =
-          "Enter a valid Solana address.";
-
-        return;
-      }
-
-      mount(
-        query("[data-preview-root]"),
-        mint
-      );
-    };
+      };
 
     if (client()) {
       client().auth.onAuthStateChange(
         () => {
-          setTimeout(
-            load,
-            0
-          );
+          setTimeout(load, 0);
         }
       );
 
       void load();
     }
   }
-
 
   if (
     document.readyState === "loading"
