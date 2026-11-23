@@ -2216,10 +2216,102 @@ function renderCreator(
       ? wallet
       : null;
 
-  void riLoadDevActivity(
-    state.currentContract,
-    state.creatorWallet
-  );
+  /*
+   * Developer History:
+   * render only; scanning starts after clicking.
+   */
+  {
+    const activityBox =
+      document.getElementById(
+        "riDevActivity"
+      );
+
+    if (activityBox) {
+      /*
+       * Cancel an older recent-activity polling loop.
+       */
+      activityBox.dataset.request =
+        "idle:" + crypto.randomUUID();
+
+      state.riDevActivity = null;
+      state.transactionsLoaded = false;
+
+      elements.transactionsSection
+        ?.classList.add("hidden");
+
+      let historyBox =
+        document.getElementById(
+          "riDeveloperHistory"
+        );
+
+      if (!historyBox) {
+        historyBox =
+          document.createElement("div");
+
+        historyBox.id =
+          "riDeveloperHistory";
+
+        activityBox.before(historyBox);
+      }
+
+      window.RI_DEV_HISTORY?.mount(
+        historyBox,
+        state.currentContract
+      );
+
+      /*
+       * Keep the existing recent-wallet-activity tool,
+       * but load it only after clicking.
+       */
+      const recentButton =
+        document.createElement("button");
+
+      recentButton.type = "button";
+
+      recentButton.textContent =
+        "Load recent wallet activity →";
+
+      recentButton.style.cssText = [
+        "padding:12px 16px",
+        "border:1px solid #28604b",
+        "border-radius:10px",
+        "background:#09271b",
+        "color:#bafbdc",
+        "font:inherit",
+        "cursor:pointer"
+      ].join(";");
+
+      const contract =
+        state.currentContract;
+
+      const wallet =
+        state.creatorWallet;
+
+      recentButton.disabled =
+        !wallet;
+
+      recentButton.addEventListener(
+        "click",
+
+        () => {
+          recentButton.disabled = true;
+
+          void riLoadDevActivity(
+            contract,
+            wallet
+          );
+        },
+
+        {
+          once: true
+        }
+      );
+
+      activityBox.replaceChildren(
+        recentButton
+      );
+    }
+  }
 
   renderCreatorWallet(
     wallet,
