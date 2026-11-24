@@ -576,7 +576,7 @@
               context.busy
                 ? "Checking available history. You can leave and resume this scan."
                 : context.note ||
-                  "Premium access required. Admin has unlimited scans."
+                  "Scan access and daily limits are set by RugInspect. Admin has unlimited scans."
             )
           )
         }
@@ -621,15 +621,9 @@
           await client()?.auth.getSession()
         )?.data?.session;
 
-        if (!session) {
-          throw new Error(
-            "Please sign in to use Developer History."
-          );
-        }
-
         context.key =
-          "ri-dh:v2:" +
-          session.user.id +
+          "ri-dh:v3:" +
+          (session?.user?.id || "guest") +
           ":" +
           context.mint;
 
@@ -798,7 +792,7 @@
       <h3>
         Developer History
         <span class="dh-badge">
-          PREMIUM
+          ACCESS SETTINGS
         </span>
       </h3>
 
@@ -812,7 +806,7 @@
         </label>
 
         <label>
-          Scans per user / day
+          Premium scans / day
 
           <input
             type="number"
@@ -820,6 +814,41 @@
             max="1000000"
             step="1"
             data-limit
+          >
+        </label>
+      </div>
+
+      <div
+        class="dh-settings"
+        style="
+          border-top:1px solid #214d3e;
+          padding-top:20px;
+        "
+      >
+        <label>
+          <input
+            type="checkbox"
+            data-public-enabled
+          >
+          Enable for public users
+
+          <small style="
+            display:block;
+            margin-top:8px;
+          ">
+            Visitors without Premium, including guests.
+          </small>
+        </label>
+
+        <label>
+          Public scans / day
+
+          <input
+            type="number"
+            min="0"
+            max="1000000"
+            step="1"
+            data-public-limit
           >
         </label>
       </div>
@@ -848,7 +877,7 @@
       </button>
 
       <p>
-        0 blocks new Premium scans.
+        0 blocks new scans for that group.
         Admin stays unlimited.
         Resuming a scan uses no additional credit.
       </p>
@@ -899,6 +928,12 @@
         query("[data-limit]").value =
           data.daily_limit;
 
+        query("[data-public-enabled]").checked =
+          data.public_enabled;
+
+        query("[data-public-limit]").value =
+          data.public_daily_limit;
+
         query("[data-save]").disabled =
           false;
 
@@ -921,35 +956,42 @@
         button.disabled = true;
 
         try {
-          const input =
+          const premium =
             query("[data-limit]");
 
+          const publicInput =
+            query("[data-public-limit]");
+
           if (
-            !input.value.trim() ||
-            !input.checkValidity()
+            [premium, publicInput].some(
+              input =>
+                !input.value.trim() ||
+                !input.checkValidity()
+            )
           ) {
             throw new Error(
-              "Enter a whole number from 0 to 1000000."
+              "Enter whole numbers from 0 to 1000000."
             );
           }
 
           await request("/config", {
             enabled:
-              query("[data-enabled]")
-                .checked,
+              query("[data-enabled]").checked,
 
             daily_limit:
-              Number(input.value)
+              Number(premium.value),
+
+            public_enabled:
+              query("[data-public-enabled]").checked,
+
+            public_daily_limit:
+              Number(publicInput.value)
           });
 
-          query(
-            "[data-status]"
-          ).textContent =
+          query("[data-status]").textContent =
             "Saved. New limits apply immediately.";
         } catch (error) {
-          query(
-            "[data-status]"
-          ).textContent =
+          query("[data-status]").textContent =
             error.message;
         } finally {
           button.disabled = false;
@@ -959,13 +1001,10 @@
     query("[data-preview]").onclick =
       () => {
         const mint =
-          query("[data-mint]")
-            .value.trim();
+          query("[data-mint]").value.trim();
 
         if (!valid(mint)) {
-          query(
-            "[data-status]"
-          ).textContent =
+          query("[data-status]").textContent =
             "Enter a valid Solana address.";
 
           return;
