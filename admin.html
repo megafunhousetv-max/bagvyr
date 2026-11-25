@@ -2915,6 +2915,233 @@ main:has(#dashboard:not([hidden])) > header {
   }
 </style>
 
+<style id="ri-sidebar-design">
+  /* RugInspect admin sidebar */
+  #dashboard .admin-sidebar {
+    position: sticky;
+    top: 18px;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: auto;
+    padding: 26px 12px 18px;
+    overflow: hidden;
+
+    border: 1px solid rgba(74, 220, 153, .28);
+    border-radius: 20px;
+
+    background:
+      radial-gradient(
+        ellipse at top left,
+        rgba(16, 71, 45, .22),
+        transparent 65%
+      ),
+      linear-gradient(160deg, #081b12, #041009);
+
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+  }
+
+  #dashboard .admin-sidebar .ri-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 0 12px 26px;
+
+    color: #f2faf5;
+    font-size: 24px;
+    font-weight: 750;
+    line-height: 1.2;
+    letter-spacing: -.9px;
+  }
+
+  #dashboard .admin-sidebar .ri-sidebar-brand svg {
+    flex: 0 0 29px;
+    width: 29px;
+    height: 29px;
+    color: #58eeb0;
+    stroke-width: 1.8;
+  }
+
+  #dashboard .admin-sidebar .sidebar-title {
+    margin: 0 13px 18px;
+    color: #96b2a2;
+
+    font-size: 10px;
+    font-weight: 650;
+    line-height: 1.5;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+  }
+
+  #dashboard .admin-sidebar .admin-nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Remove Website heading and its separator */
+  #dashboard .admin-sidebar .admin-nav > .ri-sidebar-divider,
+  #dashboard .admin-sidebar .admin-nav > .ri-sidebar-group {
+    display: none !important;
+  }
+
+  #dashboard .admin-sidebar .admin-nav-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+
+    width: 100%;
+    min-height: 45px;
+    gap: 13px;
+    margin: 0;
+    padding: 10px 13px;
+
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    box-shadow: none;
+
+    color: #adc5b6;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: normal;
+    text-align: left;
+
+    cursor: pointer;
+    transition:
+      background-color .16s ease,
+      border-color .16s ease,
+      color .16s ease;
+  }
+
+  #dashboard .admin-sidebar .nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 21px;
+
+    width: 21px;
+    height: 21px;
+    color: #58eeb0;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  #dashboard .admin-sidebar svg.nav-icon {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.65;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #dashboard .admin-sidebar .admin-nav-button:hover {
+    border-color: rgba(83, 235, 166, .15);
+    background: rgba(43, 145, 91, .10);
+    color: #f0faf4;
+  }
+
+  #dashboard .admin-sidebar .admin-nav-button.active {
+    border-color: rgba(82, 235, 164, .48);
+
+    background: linear-gradient(
+      100deg,
+      rgba(27, 128, 77, .30),
+      rgba(15, 76, 46, .14)
+    );
+
+    color: #f1fcf5;
+    font-weight: 650;
+    box-shadow: inset 0 1px 0 rgba(156, 255, 205, .03);
+  }
+
+  #dashboard .admin-sidebar .admin-nav-button.active::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: -2px;
+
+    width: 4px;
+    border-radius: 5px;
+    background: #58eeb0;
+    box-shadow: 0 0 10px rgba(88, 238, 176, .18);
+  }
+
+  #dashboard .admin-sidebar .admin-nav-button:focus-visible {
+    outline: 2px solid #58eeb0;
+    outline-offset: 3px;
+  }
+
+  #dashboard .admin-sidebar .ri-sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin: 26px 13px 0;
+    padding-top: 17px;
+    border-top: 1px solid rgba(79, 211, 145, .25);
+
+    color: #9bb7a7;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  #dashboard .admin-sidebar .ri-sidebar-footer > span {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #58eeb0;
+  }
+
+  @media (max-width: 760px) {
+    #dashboard .admin-sidebar {
+      position: static;
+      min-height: auto;
+      padding: 22px 12px 18px;
+    }
+
+    #dashboard .admin-sidebar .ri-sidebar-brand {
+      margin-bottom: 20px;
+    }
+
+    #dashboard .admin-sidebar .admin-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    #dashboard .admin-sidebar .admin-nav-button {
+      min-height: 44px;
+      gap: 10px;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    #dashboard .admin-sidebar .ri-sidebar-footer {
+      margin-top: 20px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    #dashboard .admin-sidebar .admin-nav {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #dashboard .admin-sidebar .admin-nav-button {
+      transition: none;
+    }
+  }
+</style>
+
 </head>
 
 <body>
