@@ -3082,6 +3082,29 @@ aria-controls="premiumSection"
       <span>Users</span>
     </button>
 
+<button
+  type="button"
+  class="admin-nav-button"
+  data-admin-section="telegram"
+  aria-controls="telegramSection"
+>
+  <svg
+    class="nav-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="m22 2-7 20-4-9-9-4 20-7Z"
+    ></path>
+
+    <path
+      d="M22 2 11 13"
+    ></path>
+  </svg>
+
+  <span>Telegram</span>
+</button>
+
     <button
       type="button"
       class="admin-nav-button"
@@ -3350,6 +3373,13 @@ aria-controls="premiumSection"
 >
   <div id="riAdminSupport"></div>
 </section>
+
+<section
+  id="telegramSection"
+  class="admin-section"
+  aria-label="Telegram"
+  hidden
+></section>
 
 <section
   id="usersSection"
@@ -3901,8 +3931,9 @@ $("overviewSection").parentElement.append(
 );
 
 const adminSections = {
-    rii: $("riiSection"),
-    fomo: $("fomoSection"),
+  telegram: $("telegramSection"),
+  rii: $("riiSection"),
+  fomo: $("fomoSection"),
   support: $("supportSection"),
   users: $("usersSection"),
   premium: $("premiumSection"),
@@ -3919,8 +3950,9 @@ const adminNavigation = document.querySelectorAll(
 );
 
 const adminTitles = {
-    rii: "RII Studio",
-    fomo: "Fomo",
+  telegram: "Telegram",
+  rii: "RII Studio",
+  fomo: "Fomo",
   support: "Support",
   users: "Users",
   premium: "Premium",
@@ -6203,6 +6235,7 @@ const fields = {
 <script src="admin-support.js?v=1"></script>
 <script src="admin-daily.js?v=3"></script>
 <script src="admin-telegram.js?v=1"></script>
+<script src="admin-telegram-messages.js?v=1"></script>
 <script>
 (() => {
   "use strict";
