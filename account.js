@@ -479,6 +479,151 @@ client = window.supabase.createClient(
     let telegramNextCheck = 0;
     let telegramGeneration = 0;
 
+let tokenAccessOwner = null;
+let tokenAccessRequest = null;
+let tokenAccessNextCheck = 0;
+let webPremium = null;
+let tokenAccessState = "";
+
+function renderWebPremium() {
+  const admin = isAdmin() || webPremium?.is_admin === true;
+  const active = admin || webPremium?.premium_active === true;
+
+  $("raPremiumStatus").textContent = admin
+    ? "Admin · Full access"
+    : active
+      ? "Premium active"
+      : webPremium
+        ? "Premium required"
+        : "Checking Premium…";
+
+  const notes = {
+    disabled: "Automatic Premium is currently disabled.",
+    wallet_required: "Connect and verify your Solana wallet.",
+    checked: "Your wallet does not currently meet the token requirement.",
+    unavailable: "Token verification is temporarily unavailable. Retrying shortly."
+  };
+
+  $("raPremiumNote").textContent = admin
+    ? "Your admin account has full access."
+    : webPremium?.manual_premium
+      ? "Premium access was granted by an administrator."
+      : active
+        ? "Your account meets the Premium requirements."
+        : notes[tokenAccessState] || "";
+
+  $("raOpenPremium").hidden = !active;
+  $("raTokenSoon").hidden = true;
+}
+
+async function refreshTokenAccess(force = false) {
+  const owner = session?.user?.id ?? null;
+
+  if (owner !== tokenAccessOwner) {
+    tokenAccessRequest?.abort();
+    tokenAccessRequest = null;
+    tokenAccessOwner = owner;
+    tokenAccessNextCheck = 0;
+    webPremium = null;
+    tokenAccessState = "";
+  }
+
+  if (force) tokenAccessNextCheck = 0;
+
+  if (
+    !owner || !session.access_token || document.hidden ||
+    tokenAccessRequest || Date.now() < tokenAccessNextCheck
+  ) {
+    return;
+  }
+
+  const request = new AbortController();
+  tokenAccessRequest = request;
+  tokenAccessNextCheck = Date.now() + 65000;
+
+  const isCurrent = () =>
+    tokenAccessRequest === request && session?.user?.id === owner;
+
+  const timeout = setTimeout(() => request.abort(), 25000);
+
+  function retrySoon() {
+    tokenAccessNextCheck = Math.min(
+      tokenAccessNextCheck,
+      Date.now() + 10000
+    );
+  }
+
+  let state = "unavailable";
+
+  try {
+    try {
+      const response = await fetch(
+        "https://bagvyr-api.megafunhousetv.workers.dev/api/trading/token-access/check",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + session.access_token,
+            "Content-Type": "application/json"
+          },
+          body: "{}",
+          signal: request.signal
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Token Access check failed.");
+      }
+
+      state = data.state || (data.recorded === true ? "checked" : "");
+    } catch {
+      if (!isCurrent()) return;
+      retrySoon();
+    }
+
+    if (!isCurrent()) return;
+
+    const { data, error } = await client.rpc("ri_premium_access");
+
+    if (!isCurrent()) return;
+
+    if (error || typeof data?.premium_active !== "boolean") {
+      throw new Error("Premium access could not be loaded.");
+    }
+
+    const changed =
+      (webPremium?.premium_active === true) !== data.premium_active;
+
+    webPremium = data;
+    tokenAccessState = state;
+    renderWebPremium();
+
+    if (changed) {
+      document.dispatchEvent(new Event("ri:account-change"));
+    }
+  } catch {
+    if (!isCurrent()) return;
+
+    webPremium = null;
+    tokenAccessState = "unavailable";
+    renderWebPremium();
+    retrySoon();
+  } finally {
+    clearTimeout(timeout);
+
+    if (tokenAccessRequest === request) {
+      tokenAccessRequest = null;
+    }
+  }
+}
+
+document.addEventListener("ri:account-change", () => void refreshTokenAccess());
+document.addEventListener("ri:wallet-verified", () => void refreshTokenAccess(true));
+document.addEventListener("visibilitychange", () => void refreshTokenAccess());
+
+setInterval(() => void refreshTokenAccess(), 5000);
+
 function renderTelegramAccess() {
   const owner = session?.user.id;
 
@@ -527,25 +672,7 @@ function renderTelegramAccess() {
   }
 
   const eligible = data.eligible === true;
-
-  $("raPremiumStatus").textContent = data.is_admin
-    ? "Admin · Full access"
-    : eligible
-      ? "Premium active"
-      : "Premium required";
-
-  $("raPremiumNote").textContent = data.is_admin
-    ? "Your admin account has full access without tokens or a connected wallet."
-    : data.manual_premium
-      ? "Premium access was granted by an administrator. No token holding is required."
-      : eligible
-        ? "Your account meets the Premium requirements."
-        : "Your account does not currently meet the Premium requirements.";
-
-  $("raOpenPremium").hidden = !eligible;
-  $("raTokenSoon").hidden = eligible;
-
-  if (!eligible) {
+   if (!eligible) {
     code.value = "";
 
     status.textContent =
@@ -965,19 +1092,8 @@ function renderTelegramAccess() {
             ? "Email verified"
             : "Email confirmation pending";
 
-        $("raPremiumStatus").textContent =
-          isAdmin()
-            ? "Admin · Full access"
-            : "Coming soon";
-
-        $("raPremiumNote").textContent =
-          isAdmin()
-            ? "Your admin account has full access without tokens or a connected wallet."
-            : "Token eligibility will be available after launch.";
-
+        renderWebPremium();
         $("raAdmin").hidden = !isAdmin();
-        $("raOpenPremium").hidden = !isAdmin();
-        $("raTokenSoon").hidden = isAdmin();
 
         $("raEditName").value =
           profile.display_name;

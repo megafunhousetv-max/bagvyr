@@ -958,6 +958,13 @@ async function pickWallet() {
         state.linked = proof.wallet;
         state.holdings = null;
 
+                state.linked = proof.wallet;
+        state.holdings = null;
+
+        document.dispatchEvent(new Event("ri:wallet-verified"));
+
+        clearPending();
+
         clearPending();
       }
 
