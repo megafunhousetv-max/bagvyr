@@ -3142,6 +3142,350 @@ main:has(#dashboard:not([hidden])) > header {
   }
 </style>
 
+<style id="ri-users-design">
+  #dashboard #usersSection {
+    --users-border: #244b38;
+    --users-muted: #9bb4a5;
+    --users-accent: #57eeb0;
+    padding-top: 0;
+  }
+
+  #dashboard #usersSection .ri-users-panel {
+    overflow: hidden;
+    border: 1px solid var(--users-border);
+    border-radius: 16px;
+    background: #071a11;
+  }
+
+  #dashboard #usersSection .ri-users-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0;
+    padding: 20px 24px;
+    border: 0;
+    border-bottom: 1px solid var(--users-border);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  #dashboard #usersSection h2 {
+    margin: 0;
+    color: #eff8f2;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+  }
+
+  #dashboard #usersSection #usersCount {
+    margin: 7px 0 0;
+    color: var(--users-muted);
+    font-size: 13px;
+  }
+
+  #dashboard #usersSection button {
+    box-sizing: border-box;
+    min-height: 34px;
+    padding: 7px 13px;
+    border: 1px solid #3c6b50;
+    border-radius: 8px;
+    background: transparent;
+    color: #daf8e7;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  #dashboard #usersSection button:hover:not(:disabled) {
+    border-color: #57eeb0;
+    background: rgba(72, 219, 148, .08);
+  }
+
+  #dashboard #usersSection button:focus-visible {
+    outline: 2px solid var(--users-accent);
+    outline-offset: 3px;
+  }
+
+  #dashboard #usersSection button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+
+  #dashboard #usersSection #usersReload {
+    min-height: 38px;
+    border-color: #57d99c;
+    background: transparent;
+    color: #a1f4c7;
+  }
+
+  #dashboard #usersSection #usersStatus {
+    margin: 0;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--users-border);
+    color: #e6ce90;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  #dashboard #usersSection #usersStatus:empty {
+    display: none;
+  }
+
+  #dashboard #usersSection .ri-users-scroll {
+    margin: 0;
+    overflow-x: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    scrollbar-color: #315d42 #071a11;
+  }
+
+  #dashboard #usersSection .ri-users-table {
+    width: 100%;
+    min-width: 1080px;
+    border-collapse: collapse;
+  }
+
+  #dashboard #usersSection th {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--users-border);
+    background: #0c2418;
+    color: #c0d5c8;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  #dashboard #usersSection td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(92, 151, 115, .18);
+    color: #e0eee5;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  #dashboard #usersSection tbody tr,
+  #dashboard #usersSection tbody tr:nth-child(even) {
+    background: transparent;
+  }
+
+  #dashboard #usersSection tbody tr:hover {
+    background: rgba(53, 133, 83, .07);
+  }
+
+  #dashboard #usersSection tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  #dashboard #usersSection th:first-child,
+  #dashboard #usersSection td:first-child {
+    padding-left: 24px;
+    text-align: left;
+  }
+
+  #dashboard #usersSection td:first-child {
+    min-width: 230px;
+    max-width: 320px;
+  }
+
+  #dashboard #usersSection .ri-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #dashboard #usersSection .ri-user-avatar {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #356348;
+    border-radius: 50%;
+    background: linear-gradient(140deg, #24543a, #123321);
+    color: #e6f9ec;
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  #dashboard #usersSection .ri-user-details {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  #dashboard #usersSection td strong {
+    display: block;
+    color: #f0f8f3;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  #dashboard #usersSection td small {
+    display: block;
+    margin-top: 3px;
+    color: var(--users-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  #dashboard #usersSection .ri-user-flag {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 26px;
+    height: 26px;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  #dashboard #usersSection .ri-user-flag.is-yes {
+    border-color: #329a64;
+    background: rgba(49, 175, 105, .12);
+    color: #66edaa;
+  }
+
+  #dashboard #usersSection .ri-user-flag.is-no {
+    border-color: #3a5143;
+    background: #23362b;
+    color: #9cb3a4;
+  }
+
+  #dashboard #usersSection .ri-user-premium {
+    display: inline-block;
+    box-sizing: border-box;
+    min-width: 74px;
+    padding: 5px 12px;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  #dashboard #usersSection .ri-user-premium.is-yes {
+    border-color: #5aeba6;
+    background: #68efad;
+    color: #062412;
+  }
+
+  #dashboard #usersSection .ri-user-premium.is-no {
+    border-color: #42594b;
+    background: #283b30;
+    color: #c5d3cb;
+  }
+
+  #dashboard #usersSection td:nth-child(6) {
+    min-width: 110px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  #dashboard #usersSection th:last-child,
+  #dashboard #usersSection td:last-child {
+    padding-right: 24px;
+    text-align: left !important;
+  }
+
+  #dashboard #usersSection td:last-child {
+    min-width: 285px;
+    width: 300px;
+  }
+
+  #dashboard #usersSection td:last-child > button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 3px 6px 3px 0 !important;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  #dashboard #usersSection td:last-child > button:first-of-type {
+    min-width: 134px;
+    border-color: #67dca1;
+    color: #e2f9eb;
+  }
+
+  #dashboard #usersSection
+  td:last-child > button:first-of-type[aria-pressed="true"] {
+    border-color: #688173;
+    color: #d6e3db;
+  }
+
+  #dashboard #usersSection td:last-child > button:nth-of-type(2) {
+    min-width: 114px;
+    border: 1px solid #405c4a;
+    background: transparent;
+    color: #abe6c4;
+  }
+
+  /* Preserve the existing bot code preview and Send code controls */
+  #dashboard #usersSection td:last-child > div:empty {
+    display: none;
+  }
+
+  #dashboard #usersSection td:last-child > div:not(:empty) {
+    margin-top: 10px !important;
+    padding: 12px;
+    border: 1px solid #315e42;
+    border-radius: 9px;
+    background: #0b2416;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #dashboard #usersSection .ri-users-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 16px 24px;
+    border-top: 1px solid var(--users-border);
+    background: transparent;
+  }
+
+  #dashboard #usersSection #usersPage {
+    color: #dcebe2;
+    font-size: 12px;
+  }
+
+  #dashboard #usersSection .ri-users-note {
+    display: grid;
+    gap: 6px;
+    margin: 16px 8px 0;
+    color: #a2b9ab;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 760px) {
+    #dashboard #usersSection .ri-users-heading {
+      padding: 18px 16px;
+    }
+
+    #dashboard #usersSection h2 {
+      font-size: 20px;
+    }
+
+    #dashboard #usersSection .ri-users-pagination {
+      padding: 14px 16px;
+    }
+  }
+</style>
+
 </head>
 
 <body>
@@ -3614,39 +3958,76 @@ aria-controls="premiumSection"
   aria-label="Users"
   hidden
 >
-  <div class="ri-users-heading">
-    <div>
-      <h2>Registered users</h2>
-      <p id="usersCount">10 users per page</p>
+  <div class="ri-users-panel">
+    <div class="ri-users-heading">
+      <div>
+        <h2>Registered users</h2>
+        <p id="usersCount">10 users per page</p>
+      </div>
+
+      <button id="usersReload" type="button">
+        Refresh users
+      </button>
     </div>
 
-    <button id="usersReload" type="button">
-      Refresh users
-    </button>
+    <p
+      id="usersStatus"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <div class="ri-users-scroll">
+      <table class="ri-users-table">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col">Email</th>
+            <th scope="col">Wallet</th>
+            <th scope="col">Premium</th>
+            <th scope="col">Premium bot</th>
+            <th scope="col">Token balance</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="usersRows"></tbody>
+      </table>
+    </div>
+
+    <div class="ri-users-pagination">
+      <button id="usersPrev" type="button" disabled>
+        Previous
+      </button>
+
+      <span id="usersPage">Page 1 of 1</span>
+
+      <button id="usersNext" type="button" disabled>
+        Next
+      </button>
+    </div>
   </div>
 
-  <p
-    id="usersStatus"
-    role="status"
-    aria-live="polite"
-  ></p>
+  <p class="ri-users-note">
+    <span>✓ Verified · − Not verified</span>
+    <span>
+      Token balances show the last verified holding.
+      — Balance not checked yet.
+    </span>
+  </p>
+</section>
 
-  <div class="ri-users-scroll">
-    <table class="ri-users-table">
-      <thead>
-        <tr>
-          <th scope="col">User</th>
-          <th scope="col">Email verified</th>
-          <th scope="col">Wallet verified</th>
-          <th scope="col">Premium access</th>
-          <th scope="col">Premium bot verified</th>
-<th scope="col">Token balance</th>
-<th scope="col">Premium &amp; bot</th>
-        </tr>
-      </thead>
+<section
+  id="premiumSection"
+  class="admin-section"
+  aria-label="Premium"
+  hidden
+>
+  <div
+    id="riPremiumRoot"
+    data-premium-admin
+  ></div>
+</section>
 
-      <tbody id="usersRows"></tbody>
-    </table>
   </div>
 
   <div class="ri-users-pagination">
@@ -4287,17 +4668,28 @@ function usersBalance(value) {
   );
 }
 
-function usersFlag(value) {
+function usersFlag(value, premium = false) {
   const badge = document.createElement("span");
   const yes = value === true;
 
   badge.className =
-    "ri-user-flag " + (yes ? "is-yes" : "is-no");
+    (premium ? "ri-user-premium " : "ri-user-flag ") +
+    (yes ? "is-yes" : "is-no");
 
-  badge.textContent = yes ? "✓" : "✕";
-  badge.setAttribute("role", "img");
-  badge.setAttribute("aria-label", yes ? "Yes" : "No");
-  badge.title = yes ? "Yes" : "No";
+  const description = premium
+    ? (yes ? "Active" : "Inactive")
+    : (yes ? "Verified" : "Not verified");
+
+  badge.textContent = premium
+    ? description
+    : (yes ? "✓" : "−");
+
+  badge.setAttribute("aria-label", description);
+  badge.title = description;
+
+  if (!premium) {
+    badge.setAttribute("role", "img");
+  }
 
   return badge;
 }
@@ -4400,10 +4792,33 @@ if (!$("usersRows").children.length) {
       const name = document.createElement("strong");
       const email = document.createElement("small");
 
-      name.textContent = user.display_name || "Member";
+      const displayName = user.display_name || "Member";
+
+      name.textContent = displayName;
       email.textContent = user.email || "—";
 
-      identity.append(name, email);
+      const avatar = document.createElement("span");
+      avatar.className = "ri-user-avatar";
+      avatar.setAttribute("aria-hidden", "true");
+
+      const words = displayName.trim().split(/\s+/);
+
+      avatar.textContent = (
+        words.length > 1
+          ? Array.from(words[0])[0] +
+            Array.from(words[words.length - 1])[0]
+          : Array.from(displayName).slice(0, 2).join("")
+      ).toUpperCase();
+
+      const details = document.createElement("div");
+      details.className = "ri-user-details";
+      details.append(name, email);
+
+      const profile = document.createElement("div");
+      profile.className = "ri-user-profile";
+      profile.append(avatar, details);
+
+      identity.append(profile);
       row.append(identity);
 
       for (const key of [
@@ -4414,7 +4829,9 @@ if (!$("usersRows").children.length) {
       ]) {
         const cell = document.createElement("td");
 
-        cell.append(usersFlag(user[key]));
+        cell.append(
+          usersFlag(user[key], key === "premium_active")
+        );
         row.append(cell);
       }
 
@@ -4449,8 +4866,8 @@ if (!$("usersRows").children.length) {
       manualButton.type = "button";
 
       manualButton.textContent = granted
-        ? "Odobrať ručné"
-        : "Zapnúť Premium";
+        ? "Revoke Premium"
+        : "Enable Premium";
 
       manualButton.setAttribute(
         "aria-pressed",
