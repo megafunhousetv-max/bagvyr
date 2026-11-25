@@ -840,6 +840,168 @@
       }
     `;
 
+    style.textContent += `
+      /* Compact tool table — override original card styles */
+      #premiumSection.ri-premium-design #riPremiumRoot .rp-grid {
+        overflow: visible !important;
+        padding: 18px 22px !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .ri-tools-title {
+        margin: 0 0 16px !important;
+        font-size: 19px !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .ri-tool-columns,
+      #premiumSection.ri-premium-design #riPremiumRoot .rp-card {
+        grid-template-columns:
+          minmax(180px, 1.35fr)
+          minmax(220px, 2.1fr)
+          minmax(100px, .85fr)
+          minmax(100px, .85fr);
+        column-gap: 16px;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .rp-card {
+        box-sizing: border-box;
+        position: relative;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 9px 0 !important;
+        align-items: center !important;
+        transform: none !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .rp-card::before {
+        top: 50% !important;
+        left: 2px !important;
+        width: 22px !important;
+        height: 22px !important;
+        transform: translateY(-50%);
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      .rp-card > button[data-open] {
+        position: relative !important;
+        inset: auto !important;
+        z-index: 3;
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        box-sizing: border-box;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 26px !important;
+        margin: 0 !important;
+        padding: 0 0 0 36px !important;
+        border: 0 !important;
+        border-radius: 4px;
+        background: transparent !important;
+        color: #edf8f2 !important;
+        font-size: 13px !important;
+        font-weight: 650;
+        line-height: 1.4;
+        text-align: left;
+        white-space: normal;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      .rp-card > button[data-open]:hover {
+        color: #73f1b7 !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .rp-card > p {
+        position: static !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #b0c4b9;
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      .rp-card > .rp-controls {
+        align-self: center;
+        align-items: center;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      .rp-card .rp-controls label {
+        min-height: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      #rpSharedToken {
+        padding: 16px 20px !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot #rpTokenForm {
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 14px !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot .ri-token-title {
+        flex: 0 0 180px;
+        margin: 0;
+        color: #edf8f2;
+        font-size: 14px;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot #rpTokenCA {
+        min-height: 38px !important;
+        margin: 0 !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot
+      #rpTokenForm button {
+        min-height: 38px !important;
+        margin: 0 !important;
+        padding: 8px 22px !important;
+      }
+
+      #premiumSection.ri-premium-design #riPremiumRoot #rpTokenMessage {
+        margin: 7px 0 0 194px !important;
+        font-size: 12px !important;
+      }
+
+      @media (max-width: 1000px) {
+        #premiumSection.ri-premium-design #riPremiumRoot .ri-tool-columns,
+        #premiumSection.ri-premium-design #riPremiumRoot .rp-card {
+          grid-template-columns:
+            minmax(140px, 1.3fr)
+            minmax(0, 1.7fr)
+            90px
+            90px;
+          column-gap: 10px;
+        }
+      }
+
+      @media (max-width: 680px) {
+        #premiumSection.ri-premium-design #riPremiumRoot .rp-card {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          row-gap: 10px;
+          padding: 14px 0 !important;
+        }
+
+        #premiumSection.ri-premium-design #riPremiumRoot .rp-card::before {
+          top: 16px !important;
+          transform: none;
+        }
+
+        #premiumSection.ri-premium-design #riPremiumRoot .ri-token-title {
+          flex: 0 0 100%;
+        }
+
+        #premiumSection.ri-premium-design #riPremiumRoot #rpTokenMessage {
+          margin-left: 0 !important;
+        }
+      }
+    `;
+
     document.head.append(style);
 
     const observer = new MutationObserver(refreshAppearance);
