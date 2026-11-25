@@ -4022,6 +4022,82 @@ aria-controls="premiumSection"
   aria-label="Premium"
   hidden
 >
+  <details id="riTaPanel" class="card" style="margin-bottom: 20px">
+    <summary style="cursor: pointer; font-weight: 700">
+      Token Access
+      <span id="riTaStatus" class="muted"></span>
+    </summary>
+
+    <form id="riTaForm">
+      <fieldset
+        id="riTaFields"
+        disabled
+        style="border: 0; padding: 0; margin: 0; min-width: 0"
+      >
+        <label for="riTaEnabled">
+          <input id="riTaEnabled" type="checkbox" style="width: auto">
+          Enable automatic Premium
+        </label>
+
+        <label for="riTaMint">Solana token mint</label>
+        <input
+          id="riTaMint"
+          minlength="32"
+          maxlength="44"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Token contract address"
+        >
+
+        <label for="riTaMode">Requirement type</label>
+        <select
+          id="riTaMode"
+          style="padding: 10px; border-radius: 10px; color-scheme: dark"
+        >
+          <option value="usd">USD value</option>
+          <option value="tokens">Token amount</option>
+        </select>
+
+        <label for="riTaMinimum">Minimum holding</label>
+        <input
+          id="riTaMinimum"
+          inputmode="decimal"
+          maxlength="80"
+          required
+        >
+
+        <button type="submit" style="margin-top: 14px">
+          Save settings
+        </button>
+      </fieldset>
+    </form>
+
+    <form id="riTaPreview" style="margin-top: 20px">
+      <fieldset
+        id="riTaPreviewFields"
+        disabled
+        style="border: 0; padding: 0; margin: 0; min-width: 0"
+      >
+        <label for="riTaWallet">Test wallet address</label>
+        <input
+          id="riTaWallet"
+          minlength="32"
+          maxlength="44"
+          autocomplete="off"
+          spellcheck="false"
+          required
+        >
+
+        <button type="submit" style="margin-top: 14px">
+          Test wallet
+        </button>
+      </fieldset>
+    </form>
+
+    <p id="riTaMessage" class="muted" role="status" style="margin: 14px 0 0"></p>
+    <p id="riTaResult" role="status" style="margin: 8px 0 0"></p>
+  </details>
+
   <div
     id="riPremiumRoot"
     data-premium-admin
@@ -5201,6 +5277,214 @@ client.auth.onAuthStateChange((event, nextSession) => {
 
 const monitorAPI =
   "https://bagvyr-api.megafunhousetv.workers.dev";
+
+(() => {
+  const panel = $("riTaPanel");
+  const form = $("riTaForm");
+  const preview = $("riTaPreview");
+  const fields = $("riTaFields");
+  const previewFields = $("riTaPreviewFields");
+  const message = $("riTaMessage");
+  const result = $("riTaResult");
+
+  let saved = null;
+  let busy = false;
+  let version = 0;
+
+  async function tokenAccessRPC(name, args = {}) {
+    const { data, error } = await client.rpc(name, args);
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async function tokenAccessWorker(action, body) {
+    const { data, error } = await client.auth.getSession();
+    const jwt = data?.session?.access_token;
+
+    if (error || !jwt) throw new Error("Please sign in again.");
+
+    const response = await fetch(
+      monitorAPI + "/api/trading/token-access/" + action,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + jwt,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30000)
+      }
+    );
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || !payload) {
+      throw new Error(payload?.error || "The Token Access request failed.");
+    }
+
+    return payload;
+  }
+
+  function showSettings(settings) {
+    if (typeof settings?.revision !== "string") {
+      throw new Error("Invalid Token Access settings.");
+    }
+
+    saved = settings;
+    $("riTaEnabled").checked = settings.enabled === true;
+    $("riTaMint").value = settings.token_mint ?? "";
+    $("riTaMode").value = settings.requirement_type;
+    $("riTaMinimum").value = settings.minimum_holding;
+    $("riTaStatus").textContent = settings.enabled ? "Enabled" : "Disabled";
+  }
+
+  async function run(label, action) {
+    if (busy || !session?.user?.id) return;
+
+    const userId = session.user.id;
+    const started = version;
+    const current = () => version === started && session?.user?.id === userId;
+
+    busy = true;
+    fields.disabled = true;
+    previewFields.disabled = true;
+    message.textContent = label;
+
+    try {
+      await action(current);
+    } catch (error) {
+      if (current()) {
+        message.textContent = error.message || "The request failed.";
+      }
+    } finally {
+      if (version === started) {
+        busy = false;
+        fields.disabled = !current() || !saved;
+        previewFields.disabled = !current() || !saved?.token_mint;
+      }
+    }
+  }
+
+  panel.addEventListener("toggle", () => {
+    if (!panel.open || !session?.user?.id) return;
+
+    result.textContent = "";
+
+    void run("Loading settings…", async current => {
+      const settings = await tokenAccessRPC("ri_token_access_admin_get");
+      if (!current()) return;
+
+      showSettings(settings);
+      message.textContent = "";
+    });
+  });
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    void run("Saving settings…", async current => {
+      if (!saved) return;
+
+      const enabled = $("riTaEnabled").checked;
+      const mint = $("riTaMint").value.trim() || null;
+      const mode = $("riTaMode").value;
+      const minimum = $("riTaMinimum").value.trim().replace(",", ".");
+
+      if (enabled && !mint) {
+        throw new Error("Enter a token mint before enabling.");
+      }
+
+      if (!/^\d+(\.\d+)?$/.test(minimum) || !/[1-9]/.test(minimum)) {
+        throw new Error("Enter a minimum holding greater than zero.");
+      }
+
+      if (mint && (mint !== saved.token_mint || (enabled && !saved.enabled))) {
+        await tokenAccessWorker("validate", { mint });
+      }
+
+      if (!current()) return;
+
+      await tokenAccessRPC("ri_token_access_admin_save", {
+        p_enabled: enabled,
+        p_token_mint: mint,
+        p_requirement_type: mode,
+        p_minimum_holding: minimum,
+        p_expected_revision: saved.revision
+      });
+
+      if (!current()) return;
+
+      saved = null;
+      result.textContent = "";
+
+      const settings = await tokenAccessRPC("ri_token_access_admin_get");
+      if (!current()) return;
+
+      showSettings(settings);
+      message.textContent = "Settings saved.";
+    });
+  });
+
+  preview.addEventListener("submit", event => {
+    event.preventDefault();
+
+    void run("Checking wallet…", async current => {
+      result.textContent = "";
+
+      if (!saved?.token_mint) {
+        throw new Error("Save the token mint first.");
+      }
+
+      const minimum = $("riTaMinimum").value.trim().replace(",", ".");
+
+      if (
+        $("riTaMint").value.trim() !== saved.token_mint ||
+        $("riTaMode").value !== saved.requirement_type ||
+        minimum !== saved.minimum_holding
+      ) {
+        throw new Error("Save your changes before testing a wallet.");
+      }
+
+      const data = await tokenAccessWorker("test", {
+        wallet: $("riTaWallet").value.trim()
+      });
+
+      if (!current()) return;
+
+      if (typeof data.eligible !== "boolean") {
+        throw new Error("Invalid test result.");
+      }
+
+      const outcome = data.eligible ? "Meets requirement" : "Below requirement";
+      const value = data.holding_usd == null
+        ? ""
+        : " · USD value: $" + data.holding_usd;
+
+      result.textContent =
+        outcome + " · Balance: " + data.token_balance + " tokens" + value;
+
+      message.textContent = "";
+    });
+  });
+
+  client.auth.onAuthStateChange(event => {
+    if (event !== "SIGNED_OUT") return;
+
+    version += 1;
+    busy = false;
+    saved = null;
+    panel.open = false;
+
+    form.reset();
+    preview.reset();
+    fields.disabled = true;
+    previewFields.disabled = true;
+
+    $("riTaStatus").textContent = "";
+    message.textContent = "";
+    result.textContent = "";
+  });
+})();
 
 const monitorDefinitions = [
   ["web", "Website", "Homepage response"],
