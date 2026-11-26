@@ -6586,9 +6586,12 @@ function hideLoading() {
   );
 }
 
-
 function showResults() {
   prepareResultsLayout();
+
+  window.RI_SCANNER_ANALYSIS?.mount(
+    state.currentContract
+  );
 
   elements.resultsSection?.classList.remove(
     "hidden"
@@ -6601,7 +6604,6 @@ function showResults() {
 
   void riLoadTokenFees();
 }
-
 
 function hideResults() {
   elements.resultsSection?.classList.add(
