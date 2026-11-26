@@ -206,11 +206,10 @@
       });
 
       details.hidden = !visibleSections.length;
-      if (visibleSections.length) move(details, panels[key]);
+      if (visibleSections.length) move(details, sectionDestinations[key]);
 
-      if (key === "wallets" && !openedTabs.has(key)) {
-        const distribution = byId("tokenInfoSection")?.closest("details");
-        if (distribution) distribution.open = true;
+      if (key === "wallets") {
+        showWalletView(openedTabs.has(key) ? walletView : "distribution");
         openedTabs.add(key);
       }
     }
@@ -241,7 +240,13 @@
       if (tradeButton.hidden !== tradeHidden) tradeButton.hidden = tradeHidden;
       if (tradeHidden && view === "trade") select("overview");
 
-      move(byId("riRiskSummary"), panels.project);
+      const riskSummary = byId("riRiskSummary");
+      move(riskSummary, projectRisk);
+
+      const riskHidden = !riskSummary || riskSummary.hidden;
+      if (projectRisk.hidden !== riskHidden) {
+        projectRisk.hidden = riskHidden;
+      }
 
       fieldsToUpdate.forEach(field => {
         const value = byId(field.dataset.valueFrom)?.textContent.trim();
@@ -312,9 +317,8 @@
         select(key);
 
         if (button.dataset.jump) {
-          const insiders = byId("insiderNetworks")?.closest("details");
-          if (insiders) insiders.open = true;
-          byId(`rsa-tab-${key}`)?.focus();
+          showWalletView("insiders");
+          walletNav.querySelector('[data-wallet-view="insiders"]')?.focus();
         }
       } else if (button.matches("[data-score]")) {
         byId("riskScore")?.click();
@@ -344,27 +348,316 @@
     move(context, panels.overview);
     move(byId("analysisHighlights"), panels.overview);
     move(sidebar, panels.wallets);
-    move(quick.querySelector(".result-group-market"), panels.market);
-    move(byId("peakMarketCap")?.closest(".metric-card"), panels.market);
-    move(byId("dropFromPeak")?.closest(".metric-card"), panels.market);
-    move(layout.querySelector(".result-group-signals"), panels.market);
-    move(quick.querySelector(".result-summary"), panels.market);
+    const market = quick.querySelector(".result-group-market");
+    move(market, panels.market);
+
+    const marketStrip = market?.querySelector(".ri-market-strip") || panels.market;
+    move(byId("peakMarketCap")?.closest(".metric-card"), marketStrip);
+    move(byId("dropFromPeak")?.closest(".metric-card"), marketStrip);
+
+    const marketNotes = document.createElement("details");
+    marketNotes.className = "rsa-card rsa-more";
+    marketNotes.innerHTML = "<summary>Market signals and analysis status</summary>";
+    panels.market.append(marketNotes);
+
+    move(layout.querySelector(".result-group-signals"), marketNotes);
+    move(quick.querySelector(".result-summary"), marketNotes);
+    move(byId("launchPlatform")?.closest(".token-metric-card"), panels.token);
     move(byId("riTokenFees"), panels.token);
     move(details, panels.overview);
 
     knownSections.forEach(section => details.append(section));
     layout.remove();
 
-    const observer = new MutationObserver(update);
+    const walletTabs = [
+      ["distribution", "Distribution"],
+      ["holders", "Top holders"],
+      ["insiders", "Insider networks"],
+      ["bundlers", "Bundler wallets"],
+      ["creator", "Creator & history"]
+    ];
+
+    const distribution = document.createElement("div");
+    distribution.className = "rsa-distribution";
+    distribution.innerHTML = `
+      <dl class="rsa-wallet-stats">
+        ${fields([
+          ["Holders", "holderCount"],
+          ["Adjusted top 10", "highlightTop10"],
+          ["Supply", "tokenSupply"]
+        ])}
+      </dl>
+
+      <div class="rsa-columns">
+        <section class="rsa-card">
+          <h3>Share of supply</h3>
+          <dl class="rsa-checks">
+            ${[
+              ["Creator", "Dev holdings"],
+              ["Insiders", "Insider holdings"],
+              ["Bundlers", "Bundler holdings"],
+              ["KOL", "KOL holdings"],
+              ["Smart money", "Smart money"]
+            ].map(([label, source]) =>
+              `<div><dt>${label}</dt><dd data-wallet-share="${source}">—</dd></div>`
+            ).join("")}
+          </dl>
+          <small>Wallet groups may overlap.</small>
+        </section>
+
+        <section class="rsa-card">
+          <h3>Holder composition</h3>
+          <dl class="rsa-checks">
+            <div>
+              <dt>Pro holders</dt>
+              <dd data-wallet-count="Pro holders">—</dd>
+            </div>
+            <div>
+              <dt>New wallets</dt>
+              <dd data-wallet-count="New wallets">—</dd>
+            </div>
+          </dl>
+          <div class="rsa-links">
+            <button type="button" data-wallet-early hidden>Early Buyers →</button>
+            <button type="button" data-wallet-refresh>Refresh token info</button>
+          </div>
+          <small data-wallet-status role="status"></small>
+        </section>
+      </div>
+    `;
+
+    const walletNav = document.createElement("div");
+    walletNav.className = "rsa-wallet-nav";
+    walletNav.setAttribute("role", "group");
+    walletNav.setAttribute("aria-label", "Wallet analysis");
+    walletNav.innerHTML = walletTabs.map(([key, title]) =>
+      `<button type="button" data-wallet-view="${key}" aria-pressed="false">
+        ${title}
+      </button>`
+    ).join("");
+
+    panels.wallets.append(walletNav, distribution);
+    fieldsToUpdate.push(...distribution.querySelectorAll("[data-value-from]"));
+
+    const early = distribution.querySelector("[data-wallet-early]");
+    const refresh = distribution.querySelector("[data-wallet-refresh]");
+    const walletStatus = distribution.querySelector("[data-wallet-status]");
+    let walletView = "distribution";
+
+    function showWalletView(key) {
+      walletView = key;
+      const detailIds = {
+        holders: "holdersTableBody",
+        insiders: "insiderNetworks",
+        bundlers: "bundlerHoldersSection",
+        creator: "creatorWallet"
+      };
+
+      const detail = byId(detailIds[key])?.closest(".ri-analysis-accordion");
+      const showDetails = key !== "distribution" && Boolean(detail);
+
+      walletNav.querySelectorAll("button").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.walletView === key));
+      });
+
+      distribution.hidden = key !== "distribution";
+      details.hidden = !showDetails;
+      originalSections.forEach(section => {
+        section.hidden = section !== detail || !showDetails;
+      });
+
+      if (showDetails) detail.open = true;
+    }
+
+    walletNav.addEventListener("click", event => {
+      const button = event.target.closest("[data-wallet-view]");
+      if (button) showWalletView(button.dataset.walletView);
+    });
+
+    early.addEventListener("click", () => {
+      toolButtons.find(button => button.dataset.tool === "early_buyers")?.click();
+    });
+
+    refresh.addEventListener("click", () => byId("tokenInfoReload")?.click());
+
+    function updateWalletDistribution() {
+      const original = byId("tokenInfoGrid");
+      const metrics = new Map();
+
+      for (const metric of original?.querySelectorAll(".ri-overview-metric") || []) {
+        const label = metric.querySelector(".ri-overview-label")?.textContent.trim();
+        if (label) metrics.set(label, metric);
+      }
+
+      for (const field of distribution.querySelectorAll("[data-wallet-share]")) {
+        const value = metrics.get(field.dataset.walletShare)
+          ?.querySelector(".ri-overview-ring strong")?.textContent.trim();
+        setText(field, value || "—");
+      }
+
+      for (const field of distribution.querySelectorAll("[data-wallet-count]")) {
+        const caption = metrics.get(field.dataset.walletCount)
+          ?.querySelector("small")?.textContent.trim();
+        const count = caption?.match(/^([\d,]+) of ([\d,]+) holders$/);
+        setText(field, count ? `${count[1]} / ${count[2]}` : "—");
+      }
+
+      const earlyTool = toolButtons.find(button => button.dataset.tool === "early_buyers");
+      const unavailable = earlyTool.hidden;
+      if (early.hidden !== unavailable) early.hidden = unavailable;
+
+      const pending = Boolean(byId("tokenInfoReload")?.disabled);
+      if (refresh.disabled !== pending) refresh.disabled = pending;
+
+      const status = byId("tokenInfoStatus")?.textContent.trim();
+      const loaded = status === "Token information loaded." || (
+        metrics.size > 0 && status === "Open this section to load token information."
+      );
+      setText(walletStatus, loaded ? "" : status || "");
+    }
+
+    const more = document.createElement("details");
+    more.className = "rsa-card rsa-more";
+    more.innerHTML = "<summary>More analysis</summary>";
+    panels.overview.append(more);
+    move(byId("analysisHighlights"), more);
+
+    const sectionDestinations = { ...panels, overview: more };
+
+    sourcePanel.classList.add("rsa-project");
+    sourcePanel.querySelector("h3").innerHTML =
+      '<span class="rsa-badge">RII</span> Project verification';
+
+    const projectTable = document.createElement("div");
+    projectTable.className = "rsa-project-table";
+    projectTable.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Check</th>
+            <th scope="col">Finding</th>
+            <th scope="col">Status</th>
+            <th scope="col">Source</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    `;
+    sourcePanel.querySelector("h3").after(projectTable);
+    sources.classList.add("rsa-project-sources");
+
+    const projectRisk = document.createElement("details");
+    projectRisk.className = "rsa-card rsa-more";
+    projectRisk.innerHTML = "<summary>Risk Summary</summary>";
+    projectRisk.hidden = true;
+    panels.project.append(projectRisk);
+
+    let projectSignature;
+
+    function updateProject() {
+      const contextLinks = [];
+
+      for (const anchor of sources.querySelectorAll("a")) {
+        const url = new URL(anchor.href);
+        const onX = /(^|\.)(x\.com|twitter\.com)$/i.test(url.hostname);
+        const isCommunity = /^\/(i\/)?communities\//.test(url.pathname);
+
+        contextLinks.push({
+          href: url.href,
+          label: anchor.textContent.replace(/\s*↗$/, ""),
+          kind: onX ? (isCommunity ? "community" : "social") : "website"
+        });
+      }
+
+      const summaryAvailable = Boolean(
+        context && !context.hidden &&
+        context.querySelector(".ri-context__summary p")?.textContent.trim()
+      );
+      const signature = JSON.stringify([contextLinks, summaryAvailable]);
+      if (signature === projectSignature) return;
+      projectSignature = signature;
+
+      const site = contextLinks.find(link => link.kind === "website");
+      const community = contextLinks.find(link => link.kind === "community");
+      const social = community || contextLinks.find(link => link.kind === "social");
+
+      const rows = [
+        [
+          "Project website",
+          site ? "Website listed in Token Context" : "No website linked in Token Context",
+          site ? "Website listed" : "Unavailable",
+          site
+        ],
+        [
+          "Community",
+          community ? "X Community listed for this token"
+            : social ? "X link listed for this token" : "No X link in Token Context",
+          social ? "Link available" : "Unavailable",
+          social
+        ],
+        [
+          "Token utility",
+          summaryAvailable ? "See the full RII description in Overview"
+            : "RII description unavailable",
+          summaryAvailable ? "See Overview" : "Unavailable"
+        ],
+        [
+          "Official token address",
+          "Exact Solana address has not been checked",
+          "Not checked"
+        ]
+      ];
+
+      const body = projectTable.querySelector("tbody");
+      body.replaceChildren(...rows.map(([title, finding, status, source]) => {
+        const row = document.createElement("tr");
+        const header = document.createElement("th");
+        header.scope = "row";
+        header.textContent = title;
+
+        const findingCell = document.createElement("td");
+        findingCell.textContent = finding;
+
+        const statusCell = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = "rsa-status";
+        if (source) badge.dataset.linked = "true";
+        badge.textContent = status;
+        statusCell.append(badge);
+
+        const sourceCell = document.createElement("td");
+        if (source) {
+          const anchor = document.createElement("a");
+          anchor.href = source.href;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = `${source.label} ↗`;
+          sourceCell.append(anchor);
+        } else {
+          sourceCell.textContent = "—";
+        }
+
+        row.append(header, findingCell, statusCell, sourceCell);
+        return row;
+      }));
+    }
+
+    function refreshDashboard() {
+      update();
+      updateWalletDistribution();
+      updateProject();
+    }
+
+    const observer = new MutationObserver(refreshDashboard);
     observer.observe(root, {
       childList: true,
       characterData: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["hidden"]
+      attributeFilter: ["hidden", "disabled"]
     });
 
-    return { select, update, openedTabs, contract: null };
+    return { select, update: refreshDashboard, openedTabs, contract: null };
   }
 
   window.RI_SCANNER_ANALYSIS = {

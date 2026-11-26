@@ -273,3 +273,262 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+#resultsSection .quick-result-card:has(> #riScannerAnalysis) {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+#resultsSection .quick-result-card > .token-overview:has(+ #riScannerAnalysis) {
+  margin-bottom: 20px;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid #21483a;
+  border-radius: 16px;
+  background: #061610;
+}
+
+#riScannerAnalysis .rsa-bar {
+  padding-inline: 8px;
+}
+
+#riScannerAnalysis .rsa-bar button {
+  min-height: 48px;
+  padding-inline: clamp(12px, 1.6vw, 26px);
+  font-size: 14px;
+}
+
+#riScannerAnalysis .rsa-metrics > div {
+  padding: 12px clamp(12px, 1.8vw, 28px);
+}
+
+#riScannerAnalysis .rsa-metrics dd {
+  font-size: 17px;
+}
+
+#riScannerAnalysis .rsa-card {
+  padding: 16px 18px;
+}
+
+#riScannerAnalysis .rsa-card h3 {
+  font-size: 17px;
+}
+
+#riScannerAnalysis .rsa-finding {
+  border-left: 3px solid #efc76b;
+  padding-left: 10px;
+  margin-bottom: 4px;
+}
+
+#riScannerAnalysis .rsa-finding:not(:has([data-severity="warning"], [data-severity="high"])) {
+  border-left-color: var(--rsa-line);
+}
+
+#riScannerAnalysis .rsa-finding:has([data-severity="high"]) {
+  border-left-color: #ff9393;
+}
+
+#riScannerAnalysis .rsa-wallet-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--rsa-line);
+}
+
+#riScannerAnalysis .rsa-wallet-nav button {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--rsa-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#riScannerAnalysis .rsa-wallet-nav button[aria-pressed="true"] {
+  border-bottom-color: var(--rsa-accent);
+  color: #edf7f1;
+}
+
+#riScannerAnalysis .rsa-distribution {
+  display: grid;
+  gap: 16px;
+}
+
+#riScannerAnalysis .rsa-distribution[hidden],
+#riScannerAnalysis [data-wallet-early][hidden],
+#riScannerAnalysis #rsa-wallets > .ri-overview-sidebar,
+#riScannerAnalysis .rsa-more[hidden] {
+  display: none !important;
+}
+
+#riScannerAnalysis .rsa-distribution small {
+  color: var(--rsa-muted);
+}
+
+#riScannerAnalysis .rsa-wallet-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0;
+}
+
+#riScannerAnalysis .rsa-wallet-stats > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 12px;
+}
+
+#riScannerAnalysis .rsa-wallet-stats dt {
+  color: var(--rsa-muted);
+  font-size: 12px;
+}
+
+#riScannerAnalysis .rsa-wallet-stats dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+#riScannerAnalysis .rsa-more > summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#riScannerAnalysis .rsa-more[open] > summary {
+  margin-bottom: 14px;
+}
+
+#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+
+#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip .metric-card {
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+}
+
+#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip .metric-value {
+  font-size: 16px;
+}
+
+#resultsSection #riScannerAnalysis #rsa-market .rsa-more .result-summary {
+  display: flex;
+}
+
+#riScannerAnalysis #rsa-token > .token-metric-card {
+  padding: 14px 16px;
+  border: 1px solid var(--rsa-line);
+  border-radius: 12px;
+  background: var(--rsa-surface);
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__content {
+  display: contents;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext :is(
+  .ri-context__category, .ri-context__summary
+) {
+  flex-basis: 100%;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout:has(a)::before {
+  content: "Sources";
+  order: 1;
+  color: var(--rsa-muted);
+  font-size: 12px;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext :is(
+  .ri-context__links, .ri-context__aside
+) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  order: 2;
+  margin: 0;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__aside h4,
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__social small {
+  display: none;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__social {
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+
+#resultsSection #riScannerAnalysis #riTokenContext :is(
+  .ri-context__link, .ri-context__social
+) {
+  min-height: 30px;
+  padding: 4px 9px;
+  font-size: 12px;
+}
+
+#riScannerAnalysis .rsa-project-table {
+  overflow-x: auto;
+  border: 1px solid var(--rsa-line);
+  border-radius: 10px;
+}
+
+#riScannerAnalysis .rsa-project-table table {
+  width: 100%;
+  min-width: 610px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+#riScannerAnalysis .rsa-project-table :is(th, td) {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--rsa-line);
+  text-align: left;
+}
+
+#riScannerAnalysis .rsa-project-table thead {
+  background: #0d291e;
+}
+
+#riScannerAnalysis .rsa-project-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+#riScannerAnalysis :is(.rsa-status, .rsa-badge, .rsa-project a) {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--rsa-line);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+#riScannerAnalysis .rsa-status {
+  color: var(--rsa-muted);
+}
+
+#riScannerAnalysis :is(.rsa-badge, .rsa-status[data-linked], .rsa-project a) {
+  color: var(--rsa-accent);
+}
+
+#riScannerAnalysis .rsa-project-sources {
+  margin-top: 12px;
+}
+
+#riScannerAnalysis .rsa-project-sources:has(a)::before {
+  content: "Sources";
+  color: var(--rsa-muted);
+}
