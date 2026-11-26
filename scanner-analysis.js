@@ -2,7 +2,14 @@
   "use strict";
 
   const tabs = [["overview","Overview"],["wallets","Wallets"],["market","Exit & market"],["token","Token & fees"],["project","Project"]];
-  const wallets = [["distribution","Distribution"],["holders","Top holders"],["insiders","Insider networks"],["bundlers","Bundler wallets"],["creator","Creator & history"]];
+  const wallets = [
+    ["distribution", "Distribution"],
+    ["holders", "Top holders"],
+    ["insiders", "Insider networks"],
+    ["bundlers", "Bundler wallets"],
+    ["kol", "KOL Holdings"],
+    ["creator", "Creator & history"]
+  ];
   const tools = [["lab","Exit Lab"],["volume","Volume X-Ray"],["early_buyers","Early Buyers"]];
   const paths = {
     cap: "M4 20V13m5 7V9m5 11V5m5 15V3",
@@ -88,6 +95,29 @@
           ${metrics([["Insiders detected","insidersDetected","people"],["Networks","rsaNetworkCount","supply"]],"rsa-two")}
           <div class="rsa-table"><table><thead><tr><th>Network</th><th>Type</th><th>Accounts</th><th>Token holdings</th><th>Share of supply</th></tr></thead><tbody data-networks></tbody></table></div>
           <small>Transfer connections do not confirm insider ownership. Networks may overlap.</small>
+        </div>
+        <div data-wallet-panel="kol" hidden>
+          <div class="rsa-kol-head">
+            <h3>KOL Holdings</h3>
+            <strong data-kol-share hidden></strong>
+            <span data-kol-coverage hidden></span>
+            <button type="button" class="ri-info-reload" data-kol-refresh>Refresh</button>
+          </div>
+
+          <div class="rsa-table rsa-kol-table">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">KOL / Wallet</th>
+                  <th scope="col">X profile</th>
+                  <th scope="col">Current holdings</th>
+                </tr>
+              </thead>
+              <tbody data-kol-rows></tbody>
+            </table>
+          </div>
+
+          <small data-kol-status role="status"></small>
         </div>
       </section>
       <section id="rsa-market" hidden>
@@ -185,8 +215,130 @@
       if (active === "wallets") selectWallet(wallet);
     }
 
+    let kolRequest;
+    let kolLoadedFor;
+
+    function kolLink(href, label) {
+      const link = document.createElement("a");
+      link.href = href;
+      link.textContent = label;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      return link;
+    }
+
+    function renderKol(data) {
+      const share = find("[data-kol-share]");
+      const coverage = find("[data-kol-coverage]");
+      const list = Array.isArray(data?.wallets) ? data.wallets : null;
+      const total = data?.totalWallets;
+
+      const percent = value => {
+        if (!Number.isFinite(value)) return "—";
+        if (value > 0 && value < 0.01) return "<0.01%";
+        return value.toLocaleString("en-US", { maximumFractionDigits: 2 }) + "%";
+      };
+
+      hide(share, !Number.isFinite(data?.totalPercent));
+      write(share, percent(data?.totalPercent) + " of supply");
+
+      hide(coverage, !list && !Number.isSafeInteger(total));
+      write(coverage, list
+        ? Number.isSafeInteger(total) && total >= list.length
+          ? `${list.length} of ${total} wallets listed`
+          : `${list.length} wallets listed`
+        : `${total} KOL wallets reported`);
+
+      const compact = new Intl.NumberFormat("en-US", {
+        notation: "compact",
+        maximumFractionDigits: 2
+      });
+
+      rows(find("[data-kol-rows]"), (list || []).map(item => {
+        const identity = document.createElement("div");
+        identity.className = "rsa-kol-identity";
+
+        const name = document.createElement("strong");
+        name.textContent = item.label || "Unknown KOL";
+
+        const wallet = kolLink(
+          "https://solscan.io/account/" + encodeURIComponent(item.wallet),
+          item.wallet.slice(0, 6) + "…" + item.wallet.slice(-4) + " ↗"
+        );
+        wallet.title = item.wallet;
+        identity.append(name, wallet);
+
+        const social = /^[a-z0-9_]{1,15}$/i.test(item.xHandle || "")
+          ? kolLink("https://x.com/" + item.xHandle, "@" + item.xHandle + " ↗")
+          : "X unavailable";
+
+        const holdings = document.createElement("div");
+        holdings.className = "rsa-kol-holdings";
+
+        const amount = document.createElement("span");
+        amount.textContent = item.amount === null ? "—"
+          : Number(item.amount) > 0 && Number(item.amount) < 0.01
+            ? "<0.01 tokens"
+            : compact.format(Number(item.amount)) + " tokens";
+        if (item.amount !== null) amount.title = item.amount + " tokens";
+
+        const badge = document.createElement("strong");
+        badge.textContent = percent(item.holding);
+        holdings.append(amount, badge);
+
+        return [identity, social, holdings];
+      }));
+    }
+
+    async function loadKol(force = false) {
+      const mint = contract;
+      if (!mint || (!force && (kolRequest || kolLoadedFor === mint))) return;
+
+      kolRequest?.abort();
+      const request = new AbortController();
+      kolRequest = request;
+      kolLoadedFor = undefined;
+
+      const button = find("[data-kol-refresh]");
+      const status = find("[data-kol-status]");
+      button.disabled = true;
+      renderKol(null);
+      write(status, "Loading KOL holdings…");
+
+      try {
+        const response = await fetch(
+          "https://bagvyr-api.megafunhousetv.workers.dev/api/kol-holders?ca=" +
+            encodeURIComponent(mint),
+          { signal: request.signal }
+        );
+        if (!response.ok) throw new Error("KOL request failed");
+
+        const data = await response.json();
+        if (kolRequest !== request || mint !== contract) return;
+        if (!data.success || data.contract !== mint) {
+          throw new Error("Unexpected KOL response");
+        }
+
+        renderKol(data);
+        write(status, data.wallets === null ? "Wallet list unavailable. Try Refresh."
+          : data.wallets.length ? ""
+          : "No KOL wallets found in the available holder ranking.");
+        kolLoadedFor = mint;
+      } catch {
+        if (kolRequest === request && mint === contract) {
+          write(status, "KOL holdings are temporarily unavailable. Try Refresh.");
+        }
+      } finally {
+        if (kolRequest === request) {
+          kolRequest = undefined;
+          button.disabled = false;
+        }
+      }
+    }
+
     function selectWallet(next) {
       wallet = next;
+      if (wallet === "kol") void loadKol();
       all("[data-wallet]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.wallet === wallet)));
       all("[data-wallet-panel]").forEach(section => hide(section, section.dataset.walletPanel !== wallet));
       const native = wallet === "bundlers" ? bundler : wallet === "creator" ? creator : null;
@@ -336,6 +488,12 @@
     shell.addEventListener("click", event => {
       const button = event.target.closest("button");
       if (!button) return;
+
+      if (button.hasAttribute("data-kol-refresh")) {
+        void loadKol(true);
+        return;
+      }
+
       if (button.dataset.view) select(button.dataset.view);
       if (button.dataset.wallet) selectWallet(button.dataset.wallet);
       const key = button.dataset.tool;
@@ -354,6 +512,9 @@
 
     return next => {
       if (contract !== next) {
+        kolRequest?.abort();
+        kolRequest = undefined;
+        kolLoadedFor = undefined;
         contract = next;
         wallet = "distribution";
         select("overview");

@@ -135,3 +135,76 @@
 #riScannerAnalysis #holdersTableBody small { display:block }
 #riScannerAnalysis .rsa-table:has([data-networks]) tr > :nth-child(n+3),
 #riScannerAnalysis .modern-holder-table-wrapper tr > :last-child { text-align:right }
+
+#riScannerAnalysis .rsa-kol-head {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 14px;
+}
+#riScannerAnalysis .rsa-kol-head > :is(strong,span) {
+  padding-left:14px;
+  border-left:1px solid var(--rsa-line);
+  font-size:13px;
+}
+#riScannerAnalysis .rsa-kol-head > strong { color:var(--rsa-accent); }
+#riScannerAnalysis .rsa-kol-head > span { color:var(--rsa-muted); }
+#riScannerAnalysis .rsa-kol-head button { margin-left:auto; }
+
+#riScannerAnalysis .rsa-kol-table table {
+  min-width:580px;
+  table-layout:fixed;
+}
+#riScannerAnalysis .rsa-kol-table thead th:first-child { width:41%; }
+#riScannerAnalysis .rsa-kol-table thead th:nth-child(2) { width:25%; }
+#riScannerAnalysis .rsa-kol-table th:last-child,
+#riScannerAnalysis .rsa-kol-table td:last-child { text-align:right; }
+#riScannerAnalysis .rsa-kol-table tbody tr:last-child > * { border-bottom:0; }
+#riScannerAnalysis .rsa-kol-table tbody td:nth-child(2) { color:var(--rsa-muted); }
+
+#riScannerAnalysis .rsa-kol-identity,
+#riScannerAnalysis .rsa-kol-holdings {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px 10px;
+}
+#riScannerAnalysis .rsa-kol-identity a {
+  font-family:monospace;
+  font-size:12px;
+}
+#riScannerAnalysis .rsa-kol-holdings {
+  justify-content:flex-end;
+  font-variant-numeric:tabular-nums;
+}
+#riScannerAnalysis .rsa-kol-holdings strong {
+  min-width:58px;
+  padding:3px 7px;
+  border-radius:6px;
+  background:#10382a;
+  color:#c8fbe8;
+  text-align:center;
+}
+
+@media (max-width:600px) {
+  #riScannerAnalysis .rsa-kol-head > :is(strong,span) {
+    padding-left:0;
+    border-left:0;
+  }
+  #riScannerAnalysis .rsa-kol-table table { min-width:0; }
+  #riScannerAnalysis .rsa-kol-table :is(th,td) {
+    padding:8px 7px;
+    overflow-wrap:anywhere;
+    font-size:11px;
+  }
+  #riScannerAnalysis .rsa-kol-identity { display:grid; }
+  #riScannerAnalysis .rsa-kol-identity a { font-size:10px; }
+  #riScannerAnalysis .rsa-kol-holdings {
+    display:grid;
+    justify-items:end;
+  }
+  #riScannerAnalysis .rsa-kol-holdings strong {
+    min-width:0;
+    padding:2px 5px;
+  }
+}
