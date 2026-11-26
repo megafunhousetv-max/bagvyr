@@ -765,7 +765,6 @@ function renderAnalysis(data) {
 
   renderInsiderAnalysis(data);
   renderAnalysisHighlights(data);
-  riUpdateExitVerification();
 
   document.dispatchEvent(
     new CustomEvent("ri:token-context", {
@@ -2115,7 +2114,8 @@ function normalizeHolderArray(
     of possibilities
   ) {
     if (
-      Array.isArray(candidate)
+      Array.isArray(candidate) &&
+      candidate.length > 0
     ) {
       return candidate;
     }
@@ -2171,30 +2171,37 @@ function toggleHoldersTable() {
 
 function renderHolderTable(holders) {
   const body = elements.holdersTableBody;
-
   if (!body) return;
 
-  const table = body.closest("table");
+  const headings = body.closest("table")?.tHead?.rows[0];
 
-  table?.classList.add(
-    "ri-overview-compact-table"
-  );
+  if (headings) {
+    headings.innerHTML = '<th scope="col">#</th><th scope="col">Wallet / account</th><th scope="col">Share of supply</th>';
+  }
 
-  table?.closest(".table-wrapper")
-    ?.classList.add(
-      "ri-overview-compact-wrapper"
-    );
+  const holdersToShow = riOverviewHolderRows(holders);
 
-  body.replaceChildren();
+  if (!holdersToShow.length) {
+    body.innerHTML = '<tr><td colspan="3" class="rsa-empty">Holder list unavailable.</td></tr>';
+    return;
+  }
 
-  const row = document.createElement("tr");
-  const cell = document.createElement("td");
+  body.innerHTML = holdersToShow.map((row, index) => {
+    const valid = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(row.wallet);
+    const address = valid
+      ? `<a href="https://solscan.io/account/${encodeURIComponent(row.wallet)}"
+           target="_blank" rel="noopener noreferrer" title="${escapeAttribute(row.wallet)}">
+           ${escapeHTML(shortenAddress(row.wallet))}
+         </a>`
+      : escapeHTML(row.wallet || "—");
+    const balance = row.amount === null ? "" : `${formatTokenAmount(row.amount)} tokens · `;
 
-  cell.colSpan = 5;
-  cell.innerHTML = riOverviewHolderList(holders);
-
-  row.append(cell);
-  body.append(row);
+    return `<tr>
+      <td>${index + 1}</td>
+      <td>${address}<small>${escapeHTML(balance + row.type)}</small></td>
+      <td>${escapeHTML(riOverviewPercentText(row.percent))}</td>
+    </tr>`;
+  }).join("");
 }
 
 /* =========================================================
@@ -2642,83 +2649,44 @@ function renderCreatorWallet(
    EXIT / RUG ANALYSIS
    ========================================================= */
 
-async function loadExitAnalysis(
-  contract
-) {
-  if (!contract) {
-    return;
-  }
+async function loadExitAnalysis(contract) {
+  if (!contract) return;
+
+  const request = Symbol();
+  state.exitRequest = request;
+  const root = elements.resultsSection;
+  const isCurrent = () =>
+    state.currentContract === contract &&
+    state.exitRequest === request;
 
   resetExitAnalysisDisplay();
-
-  setText(
-    elements.exitStatus,
-    "ANALYZING..."
-  );
+  root?.setAttribute("data-ri-exit-pending", "");
 
   try {
-    const data =
-      await apiRequest(
-        `${CONFIG.ENDPOINTS.exitAnalysis}?ca=${encodeURIComponent(contract)}`
-      );
-
-    /*
-      Ignore an old response if the user
-      scanned another token meanwhile.
-    */
-
-    if (
-      state.currentContract !==
-      contract
-    ) {
-      return;
-    }
-
-    if (
-      !data ||
-      data.success === false
-    ) {
-      throw new Error(
-        data?.error ||
-        "Exit analysis failed."
-      );
-    }
-
-    renderExitAnalysis(
-      data
+    const data = await apiRequest(
+      `${CONFIG.ENDPOINTS.exitAnalysis}?ca=${encodeURIComponent(contract)}`
     );
 
+    if (!isCurrent()) return;
+
+    if (!data || data.success === false || (data.contractAddress && data.contractAddress !== contract)) {
+      throw new Error(data?.error || "Exit analysis failed.");
+    }
+
+    renderExitAnalysis(data);
     riUpdateExitVerification(data);
-
   } catch (error) {
-    console.error(
-      "Exit analysis error:",
-      error
-    );
+    if (!isCurrent()) return;
 
-    if (
-      state.currentContract !==
-      contract
-    ) {
-      return;
-    }
-
-    setText(
-      elements.exitStatus,
-      "INSUFFICIENT DATA"
-    );
-
-    setExitClass(
-      elements.exitStatus,
-      "warning"
-    );
-
-    setText(
-      elements.exitAnalysisNote,
-      friendlyErrorMessage(error)
-    );
-
+    console.error("Exit analysis error:", error);
+    setText(elements.exitStatus, "INSUFFICIENT DATA");
+    setExitClass(elements.exitStatus, "warning");
+    setText(elements.exitAnalysisNote, friendlyErrorMessage(error));
     riUpdateExitVerification();
+  } finally {
+    if (state.exitRequest === request) {
+      root?.removeAttribute("data-ri-exit-pending");
+    }
   }
 }
 
@@ -4730,11 +4698,6 @@ async function riSyncVolumeScore(contract) {
     riRenderVolume24h(
       volume,
       contract
-    );
-
-    riRenderHolderOverview(
-      data.providerTokenInfo?.token_info || {},
-      data
     );
 
     void riLoadLaunchRiskSignals(

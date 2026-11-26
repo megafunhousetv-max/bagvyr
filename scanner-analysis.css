@@ -1,534 +1,137 @@
 #riScannerAnalysis {
-  --rsa-line: #21483a;
-  --rsa-surface: #071b14;
-  --rsa-muted: #a9bfb5;
-  --rsa-accent: #35efb6;
-  display: grid;
-  gap: 14px;
-  min-width: 0;
+  --rsa-line:#21483a; --rsa-surface:#071b14; --rsa-muted:#a9bfb5; --rsa-accent:#35efb6;
+  display:grid; gap:14px; min-width:0;
 }
-
-#riScannerAnalysis > section[hidden],
-#riScannerAnalysis .rsa-bar button[hidden],
-#riScannerAnalysis #allInfoSection[hidden],
-#riScannerAnalysis .ri-analysis-accordion[hidden] {
-  display: none !important;
-}
-
-#riScannerAnalysis > section {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
-}
-
-#resultsSection #riScannerAnalysis :is(
-  #allInfoSection, .ri-highlights, .ri-core-signals, .ri-overview-sidebar
-) {
-  grid-area: auto;
-}
-
-#riScannerAnalysis .rsa-bar {
-  display: flex;
-  justify-content: space-between;
-  overflow-x: auto;
-  border: 1px solid var(--rsa-line);
-  border-radius: 12px;
-  background: var(--rsa-surface);
-}
-
-#riScannerAnalysis :is(.rsa-tabs, .rsa-actions) {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: stretch;
-}
-
-#riScannerAnalysis .rsa-bar button {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 3px;
-  min-height: 48px;
-  padding: 5px 13px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--rsa-muted);
-  font: inherit;
-  font-size: 13px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-#riScannerAnalysis .rsa-bar button:is(
-  :hover, [aria-selected="true"], [aria-expanded="true"]
-) {
-  color: #f0faf5;
-  background: #0d291e;
-}
-
-#riScannerAnalysis .rsa-bar button:is(
-  [aria-selected="true"], [aria-expanded="true"]
-) {
-  border-bottom-color: var(--rsa-accent);
-}
-
-#riScannerAnalysis .rsa-bar button:focus-visible {
-  outline: 2px solid var(--rsa-accent);
-  outline-offset: -4px;
-}
-
-#riScannerAnalysis .rsa-actions button {
-  border-left: 1px solid var(--rsa-line);
-}
-
-#riScannerAnalysis .rsa-actions svg {
-  width: 13px;
-  height: 13px;
-  color: var(--rsa-accent);
-}
-
-#riScannerAnalysis :is(.rsa-metrics, .rsa-card) {
-  margin: 0;
-  border: 1px solid var(--rsa-line);
-  border-radius: 12px;
-  background: var(--rsa-surface);
-}
-
-#riScannerAnalysis .rsa-metrics {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  background: var(--rsa-line);
-}
-
-#riScannerAnalysis .rsa-metrics > div {
-  padding: 10px 12px;
-  background: var(--rsa-surface);
-}
-
-#riScannerAnalysis :is(.rsa-metrics, .rsa-checks) dt {
-  color: var(--rsa-muted);
-  font-size: 12px;
-}
-
-#riScannerAnalysis :is(.rsa-metrics, .rsa-checks) dd {
-  margin: 0;
-  color: #edf7f1;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-
-#riScannerAnalysis .rsa-columns {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 14px;
-}
-
-#riScannerAnalysis .rsa-card {
-  min-width: 0;
-  padding: 14px 16px;
-}
-
-#riScannerAnalysis .rsa-card h3 {
-  margin: 0 0 10px;
-  font-size: 15px;
-}
-
-#riScannerAnalysis :is(.rsa-checks, .rsa-finding p, [data-checked]) {
-  margin: 0;
-}
-
-#riScannerAnalysis .rsa-checks > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 7px 0;
-  border-top: 1px solid var(--rsa-line);
-}
-
-#riScannerAnalysis .rsa-finding {
-  padding-bottom: 8px;
-  font-size: 13px;
-}
-
-#riScannerAnalysis .rsa-finding p,
-#riScannerAnalysis [data-checked] {
-  color: var(--rsa-muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-#riScannerAnalysis [data-severity="warning"] {
-  color: #efc76b;
-}
-
-#riScannerAnalysis [data-severity="high"] {
-  color: #ff9393;
-}
-
-#riScannerAnalysis .rsa-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  color: var(--rsa-muted);
-  font-size: 12px;
-}
-
-#riScannerAnalysis .rsa-links :is(button, a) {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--rsa-accent);
-  font: inherit;
-  cursor: pointer;
-}
-
-#resultsSection #riScannerAnalysis :is(
-  #riTokenContext, #riRiskSummary, #riScannerToolsHost
-) {
-  margin: 0;
-  min-width: 0;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext {
-  padding: 14px 16px;
-  border: 1px solid #21483a;
-  border-radius: 12px;
-  background: #071b14;
-  box-shadow: none;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__header {
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__heading h3 {
-  font-size: 15px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__heading h3::before {
-  content: "RII";
-  display: inline-block;
-  margin-right: 8px;
-  padding: 2px 6px;
-  border: 1px solid #246750;
-  border-radius: 6px;
-  color: #35efb6;
-  font-size: 10px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext :is(
-  .ri-context__main-icon, .ri-context__quote
-),
-#resultsSection #riScannerAnalysis #riScannerToolsHost .ri-embedded-tabs {
-  display: none !important;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__summary p {
-  padding: 0;
-  border: 0;
-  font-size: 13px;
-  line-height: 1.65;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__aside {
-  padding: 0;
-  border: 0;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__links {
-  margin-top: 10px;
-  padding-left: 0;
-}
-
-#resultsSection #riScannerAnalysis #rsa-market > .result-summary {
-  display: flex;
-}
-
-@media (max-width: 760px) {
-  #riScannerAnalysis .rsa-metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  #riScannerAnalysis .rsa-columns {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 380px) {
-  #riScannerAnalysis .rsa-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-#resultsSection .quick-result-card:has(> #riScannerAnalysis) {
-  padding: 0;
-  border: 0;
-  background: none;
-}
-
+#resultsSection .rsa-source, #riScannerAnalysis [hidden] { display:none !important }
+#resultsSection .quick-result-card:has(> #riScannerAnalysis) { padding:0; border:0; background:transparent }
 #resultsSection .quick-result-card > .token-overview:has(+ #riScannerAnalysis) {
-  margin-bottom: 20px;
-  padding: clamp(14px, 2vw, 24px);
-  border: 1px solid #21483a;
-  border-radius: 16px;
-  background: #061610;
+  margin-bottom:18px; padding:clamp(14px,2vw,24px); border:1px solid #21483a; border-radius:16px; background:#061610;
 }
-
-#riScannerAnalysis .rsa-bar {
-  padding-inline: 8px;
+#riScannerAnalysis > section, #riScannerAnalysis [data-wallet-panel] { display:grid; gap:14px; min-width:0 }
+#riScannerAnalysis :is(.rsa-bar,.rsa-tabs,.rsa-tools,.rsa-head,.rsa-heading,.rsa-platform) { display:flex; align-items:center }
+#riScannerAnalysis :is(.rsa-bar,.rsa-tabs) { overflow-x:auto }
+#riScannerAnalysis .rsa-bar { justify-content:space-between; border:1px solid var(--rsa-line); border-radius:12px; background:var(--rsa-surface) }
+#riScannerAnalysis .rsa-bar > div { flex:0 0 auto; overflow:visible }
+#riScannerAnalysis .rsa-tools { border-left:1px solid var(--rsa-line) }
+#riScannerAnalysis :is(.rsa-tabs,.rsa-tools) button {
+  flex:0 0 auto; min-height:44px; padding:7px 15px; border:0; border-bottom:2px solid transparent;
+  background:transparent; color:var(--rsa-muted); font:inherit; font-size:13px; white-space:nowrap; cursor:pointer;
 }
-
-#riScannerAnalysis .rsa-bar button {
-  min-height: 48px;
-  padding-inline: clamp(12px, 1.6vw, 26px);
-  font-size: 14px;
+#riScannerAnalysis .rsa-tools [data-tool] { display:grid; justify-items:center; gap:2px }
+#riScannerAnalysis :is(button[aria-pressed="true"],button[aria-expanded="true"]) {
+  color:#eef8f2; border-bottom-color:var(--rsa-accent); background:#0e2b20;
 }
-
-#riScannerAnalysis .rsa-metrics > div {
-  padding: 12px clamp(12px, 1.8vw, 28px);
+#riScannerAnalysis button:focus-visible { outline:2px solid var(--rsa-accent); outline-offset:-3px }
+#riScannerAnalysis #rsa-wallets > .rsa-tabs { border-bottom:1px solid var(--rsa-line) }
+#riScannerAnalysis :is(.rsa-heading,.rsa-platform) { gap:9px }
+#riScannerAnalysis :is(.rsa-heading,h3,h4) { margin:0 }
+#riScannerAnalysis h3 { font-size:16px }
+#riScannerAnalysis h4 { font-size:14px }
+#riScannerAnalysis :is(.rsa-metrics,.rsa-heading,.rsa-concentration,.rsa-platform,.rsa-tools) svg {
+  width:19px; height:19px; flex:0 0 auto; color:var(--rsa-accent);
 }
-
-#riScannerAnalysis .rsa-metrics dd {
-  font-size: 17px;
+#riScannerAnalysis .rsa-tools svg { width:13px; height:13px }
+#riScannerAnalysis .rsa-metrics {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr)); gap:9px; margin:0;
 }
-
-#riScannerAnalysis .rsa-card {
-  padding: 16px 18px;
+#riScannerAnalysis .rsa-metrics > div, #riScannerAnalysis :is(.rsa-card,.rsa-platform,.rsa-table) {
+  min-width:0; border:1px solid var(--rsa-line); border-radius:11px; background:var(--rsa-surface);
 }
-
-#riScannerAnalysis .rsa-card h3 {
-  font-size: 17px;
+#riScannerAnalysis .rsa-metrics > div { display:flex; align-items:center; gap:11px; padding:11px 13px }
+#riScannerAnalysis .rsa-metrics strong { font-size:16px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere }
+#riScannerAnalysis .rsa-metrics dd, #riScannerAnalysis .rsa-lines dd { margin:0; text-align:right }
+#riScannerAnalysis .rsa-metrics dd { text-align:left }
+#riScannerAnalysis :is(dt,small) { color:var(--rsa-muted); font-size:12px }
+#riScannerAnalysis small:empty { display:none }
+#riScannerAnalysis [data-drop]:not(:empty) { font-variant-numeric:tabular-nums }
+#riScannerAnalysis .rsa-columns { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:14px; align-items:start }
+#riScannerAnalysis .rsa-card { padding:14px 16px }
+#riScannerAnalysis .rsa-head { gap:12px; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap }
+#riScannerAnalysis .rsa-lines { margin:8px 0 }
+#riScannerAnalysis .rsa-lines > div { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 0; border-top:1px solid var(--rsa-line) }
+#riScannerAnalysis .rsa-concentration {
+  display:grid; grid-template-columns:auto minmax(0,1fr) minmax(32px,110px) auto;
+  align-items:center; gap:10px; padding:9px 10px; background:#0b241a; border-radius:8px;
 }
-
-#riScannerAnalysis .rsa-finding {
-  border-left: 3px solid #efc76b;
-  padding-left: 10px;
-  margin-bottom: 4px;
+#riScannerAnalysis .rsa-concentration small,#riScannerAnalysis .rsa-exit small { display:block }
+#riScannerAnalysis .rsa-meter { height:6px; background:#21483a; border-radius:99px; overflow:hidden }
+#riScannerAnalysis .rsa-meter i { display:block; height:100%; background:var(--rsa-accent); border-radius:inherit }
+#riScannerAnalysis .rsa-table { overflow:auto }
+#riScannerAnalysis :is(.rsa-table,.modern-holder-table-wrapper,.ri-bundlers-table-wrap) table {
+  width:100%; border-collapse:collapse; min-width:420px; font-size:13px;
 }
-
-#riScannerAnalysis .rsa-finding:not(:has([data-severity="warning"], [data-severity="high"])) {
-  border-left-color: var(--rsa-line);
+#riScannerAnalysis :is(.rsa-table,.modern-holder-table-wrapper,.ri-bundlers-table-wrap) :is(th,td) {
+  padding:9px 12px; text-align:left; border-bottom:1px solid var(--rsa-line);
 }
-
-#riScannerAnalysis .rsa-finding:has([data-severity="high"]) {
-  border-left-color: #ff9393;
+#riScannerAnalysis :is(.rsa-table,.modern-holder-table-wrapper,.ri-bundlers-table-wrap) thead { background:#0d291e }
+#riScannerAnalysis :is([data-networks],#holdersTableBody) tr > :last-child { text-align:right }
+#riScannerAnalysis .rsa-empty { padding:18px 12px !important; text-align:center !important; color:var(--rsa-muted) }
+#riScannerAnalysis [data-holder-table] { margin-top:10px; overflow:auto }
+#riScannerAnalysis #riskSignalsList { display:grid; grid-template-columns:minmax(0,1fr); gap:0; margin:0 0 9px }
+#riScannerAnalysis #riskSignalsList .ri-risk-card { padding:9px 6px; background:transparent; border:0; border-top:1px solid var(--rsa-line); border-radius:0 }
+#riScannerAnalysis #riskSignalsList .ri-risk-content p { font-size:12px; line-height:1.5 }
+#riScannerAnalysis .rsa-platform { padding:8px 11px; font-size:13px; flex-wrap:wrap }
+#riScannerAnalysis [data-fee-link] { margin-left:auto }
+#riScannerAnalysis a { color:var(--rsa-accent) }
+#riScannerAnalysis .rsa-fees { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:13px 0 8px }
+#riScannerAnalysis .rsa-fees > section { padding:0 12px; min-width:0 }
+#riScannerAnalysis .rsa-fees > section + section { border-left:1px solid var(--rsa-line) }
+#riScannerAnalysis .rsa-rate { margin:7px 0; min-height:24px; font-size:13px }
+#riScannerAnalysis .rsa-rate strong { color:var(--rsa-accent); font-size:18px; font-variant-numeric:tabular-nums }
+#riScannerAnalysis [data-fee-sides] > span { margin-left:8px }
+#riScannerAnalysis :is([data-state],.rsa-badge) { display:inline-block; border:1px solid var(--rsa-line); border-radius:6px; padding:3px 7px; font-size:12px }
+#riScannerAnalysis [data-tone="ok"], #riScannerAnalysis .rsa-badge { color:var(--rsa-accent) }
+#riScannerAnalysis [data-tone="danger"] { color:#ff9999 }
+#riScannerAnalysis [data-tone="warn"] { color:#efc76b }
+#riScannerAnalysis [data-tone="neutral"] { color:var(--rsa-muted) }
+#riScannerAnalysis [data-risk-summary] { margin-top:14px; border-top:1px solid var(--rsa-line); padding-top:12px }
+#resultsSection #riScannerAnalysis :is(#riRiskSummary,#riTokenContext) {
+  margin:0; min-width:0; background:var(--rsa-surface); box-shadow:none;
 }
-
-#riScannerAnalysis .rsa-wallet-nav {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--rsa-line);
+#resultsSection #riScannerAnalysis #riRiskSummary { padding:0; border:0 }
+#resultsSection #riScannerAnalysis #riTokenContext { padding:15px 18px; border:1px solid var(--rsa-line); border-radius:12px }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__header { margin-bottom:10px; padding-bottom:10px }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__heading h3::before {
+  content:"RII"; display:inline-block; color:var(--rsa-accent); border:1px solid var(--rsa-line); border-radius:5px;
+  padding:2px 6px; margin-right:8px; font-size:11px;
 }
-
-#riScannerAnalysis .rsa-wallet-nav button {
-  flex: 0 0 auto;
-  padding: 10px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--rsa-muted);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
+#resultsSection #riScannerAnalysis :is(#riTokenContext,#riRiskSummary) .ri-context__quote,
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__main-icon,
+#resultsSection #riScannerAnalysis #riScannerToolsHost .ri-embedded-tabs { display:none !important }
+#resultsSection #riScannerAnalysis :is(#riTokenContext,#riRiskSummary) .ri-context__summary p { padding:0; border:0; font-size:15px; line-height:1.6 }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__summary p { font-size:17px }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout { display:flex; align-items:center; flex-wrap:wrap; gap:7px 10px }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__content { display:contents }
+#resultsSection #riScannerAnalysis #riTokenContext :is(.ri-context__category,.ri-context__summary) { flex-basis:100% }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout:has(a)::before { content:"Sources"; order:1; font-size:12px; color:var(--rsa-muted) }
+#resultsSection #riScannerAnalysis #riTokenContext :is(.ri-context__links,.ri-context__aside) { display:flex; flex-wrap:wrap; gap:7px; order:2; margin:0; padding:0; border:0 }
+#resultsSection #riScannerAnalysis #riTokenContext .ri-context__aside h4 { display:none }
+#resultsSection #riScannerAnalysis #riTokenContext :is(.ri-context__social,.ri-context__link) { width:auto; min-width:0; min-height:32px; margin:0; padding:4px 9px }
+#resultsSection #riScannerAnalysis #allInfoSection { grid-area:auto; margin:0; padding:0 }
+#resultsSection #riScannerAnalysis [data-wallet-native] { border:0; background:transparent; margin:0 }
+#resultsSection #riScannerAnalysis [data-wallet-native] > summary { display:none }
+#resultsSection #riScannerAnalysis [data-wallet-native] .ri-accordion-body { padding:0 }
+#resultsSection #riScannerAnalysis [data-wallet-native] .rsa-heading { margin-bottom:10px }
+#resultsSection #riScannerAnalysis .ri-bundlers-content { padding:0 }
+#resultsSection #riScannerAnalysis .ri-bundlers-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; background:transparent; padding:0 }
+#resultsSection #riScannerAnalysis .ri-bundlers-stats > div { padding:11px; border:1px solid var(--rsa-line); border-radius:9px; background:var(--rsa-surface) }
+#resultsSection #riScannerAnalysis .ri-bundlers-stats strong { font-size:17px }
+#resultsSection #riScannerAnalysis .ri-bundlers-table-wrap { border:1px solid var(--rsa-line); border-radius:9px }
+#resultsSection #riScannerAnalysis [data-wallet-native="creator"] :is(#riDevActivity,#creatorSolscanLink) { display:none !important }
+#resultsSection #riScannerAnalysis [data-wallet-native="creator"] .ri-accordion-body > section {
+  display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr); gap:10px;
 }
-
-#riScannerAnalysis .rsa-wallet-nav button[aria-pressed="true"] {
-  border-bottom-color: var(--rsa-accent);
-  color: #edf7f1;
+#resultsSection #riScannerAnalysis .creator-modern-grid { display:contents }
+#resultsSection #riScannerAnalysis [data-wallet-native="creator"] .ri-accordion-body > section > :not(.creator-wallet-modern,.creator-modern-grid) { grid-column:1/-1 }
+#resultsSection #riScannerAnalysis :is(.creator-wallet-modern,.creator-modern-card) { min-width:0; min-height:0; padding:10px 12px; margin:0 }
+#resultsSection #riScannerAnalysis #riDeveloperHistory { margin-top:2px; min-width:0 }
+@media (max-width:760px) {
+  #riScannerAnalysis .rsa-columns, #riScannerAnalysis .rsa-fees,
+  #resultsSection #riScannerAnalysis [data-wallet-native="creator"] .ri-accordion-body > section { grid-template-columns:minmax(0,1fr) }
+  #riScannerAnalysis .rsa-fees > section { padding:8px 0 }
+  #riScannerAnalysis .rsa-fees > section + section { border-left:0; border-top:1px solid var(--rsa-line) }
+  #riScannerAnalysis .rsa-concentration { grid-template-columns:auto minmax(0,1fr) minmax(28px,64px) auto }
 }
-
-#riScannerAnalysis .rsa-distribution {
-  display: grid;
-  gap: 16px;
-}
-
-#riScannerAnalysis .rsa-distribution[hidden],
-#riScannerAnalysis [data-wallet-early][hidden],
-#riScannerAnalysis #rsa-wallets > .ri-overview-sidebar,
-#riScannerAnalysis .rsa-more[hidden] {
-  display: none !important;
-}
-
-#riScannerAnalysis .rsa-distribution small {
-  color: var(--rsa-muted);
-}
-
-#riScannerAnalysis .rsa-wallet-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 22px;
-  margin: 0;
-}
-
-#riScannerAnalysis .rsa-wallet-stats > div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 3px 12px;
-}
-
-#riScannerAnalysis .rsa-wallet-stats dt {
-  color: var(--rsa-muted);
-  font-size: 12px;
-}
-
-#riScannerAnalysis .rsa-wallet-stats dd {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 650;
-}
-
-#riScannerAnalysis .rsa-more > summary {
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#riScannerAnalysis .rsa-more[open] > summary {
-  margin-bottom: 14px;
-}
-
-#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
-}
-
-#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip .metric-card {
-  min-width: 0;
-  min-height: 0;
-  padding: 12px;
-}
-
-#resultsSection #riScannerAnalysis #rsa-market .ri-market-strip .metric-value {
-  font-size: 16px;
-}
-
-#resultsSection #riScannerAnalysis #rsa-market .rsa-more .result-summary {
-  display: flex;
-}
-
-#riScannerAnalysis #rsa-token > .token-metric-card {
-  padding: 14px 16px;
-  border: 1px solid var(--rsa-line);
-  border-radius: 12px;
-  background: var(--rsa-surface);
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__content {
-  display: contents;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext :is(
-  .ri-context__category, .ri-context__summary
-) {
-  flex-basis: 100%;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__layout:has(a)::before {
-  content: "Sources";
-  order: 1;
-  color: var(--rsa-muted);
-  font-size: 12px;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext :is(
-  .ri-context__links, .ri-context__aside
-) {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  order: 2;
-  margin: 0;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__aside h4,
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__social small {
-  display: none;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext .ri-context__social {
-  width: auto;
-  min-width: 0;
-  margin: 0;
-}
-
-#resultsSection #riScannerAnalysis #riTokenContext :is(
-  .ri-context__link, .ri-context__social
-) {
-  min-height: 30px;
-  padding: 4px 9px;
-  font-size: 12px;
-}
-
-#riScannerAnalysis .rsa-project-table {
-  overflow-x: auto;
-  border: 1px solid var(--rsa-line);
-  border-radius: 10px;
-}
-
-#riScannerAnalysis .rsa-project-table table {
-  width: 100%;
-  min-width: 610px;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-#riScannerAnalysis .rsa-project-table :is(th, td) {
-  padding: 10px 13px;
-  border-bottom: 1px solid var(--rsa-line);
-  text-align: left;
-}
-
-#riScannerAnalysis .rsa-project-table thead {
-  background: #0d291e;
-}
-
-#riScannerAnalysis .rsa-project-table tbody tr:last-child > * {
-  border-bottom: 0;
-}
-
-#riScannerAnalysis :is(.rsa-status, .rsa-badge, .rsa-project a) {
-  display: inline-block;
-  padding: 3px 8px;
-  border: 1px solid var(--rsa-line);
-  border-radius: 6px;
-  font-size: 12px;
-}
-
-#riScannerAnalysis .rsa-status {
-  color: var(--rsa-muted);
-}
-
-#riScannerAnalysis :is(.rsa-badge, .rsa-status[data-linked], .rsa-project a) {
-  color: var(--rsa-accent);
-}
-
-#riScannerAnalysis .rsa-project-sources {
-  margin-top: 12px;
-}
-
-#riScannerAnalysis .rsa-project-sources:has(a)::before {
-  content: "Sources";
-  color: var(--rsa-muted);
-}
+#riScannerAnalysis #holdersTableBody small { display:block }
+#riScannerAnalysis .rsa-table:has([data-networks]) tr > :nth-child(n+3),
+#riScannerAnalysis .modern-holder-table-wrapper tr > :last-child { text-align:right }

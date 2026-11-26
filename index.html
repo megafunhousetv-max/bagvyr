@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="style.css?v=42">
   <link rel="stylesheet" href="account.css?v=5">
   <link rel="stylesheet" href="trade.css?v=5">
-  <link rel="stylesheet" href="scanner-analysis.css?v=2">
+  <link rel="stylesheet" href="scanner-analysis.css?v=3">
 
   <style>
     html {
@@ -5824,8 +5824,7 @@
             function (link) {
 
               const targetName =
-                link
-                  .getAttribute("href")
+                (link.getAttribute("href") || "")
                   .replace("#", "");
 
 
@@ -5951,8 +5950,8 @@
   <script src="history-images.js?v=1"></script>
   <script src="recent.js?v=2"></script>
   <script src="dev-history.js?v=3"></script>
-  <script src="scanner-analysis.js?v=2"></script>
-  <script src="app.js?v=41"></script>
+  <script src="scanner-analysis.js?v=3"></script>
+  <script src="app.js?v=42"></script>
   <script src="search.js?v=2"></script>
 
 
